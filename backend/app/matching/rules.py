@@ -100,10 +100,12 @@ class RuleEvaluator:
 
     @staticmethod
     def evaluate_gender(
-        allowed_genders: List[str],
+        allowed_genders: Any,
         user_gender: Optional[str],
     ) -> Tuple[Optional[bool], Optional[RuleResult], Optional[Dict[str, str]]]:
-        allowed_lower = [g.lower() for g in allowed_genders]
+        if isinstance(allowed_genders, str):
+            allowed_genders = [allowed_genders]
+        allowed_lower = [g.lower() for g in (allowed_genders or [])]
         if not allowed_lower or "all" in allowed_lower:
             return True, None, None
 
@@ -124,76 +126,85 @@ class RuleEvaluator:
 
     @staticmethod
     def evaluate_occupation(
-        allowed_occupations: List[str],
+        allowed_occupations: Any,
         user_occupation: Optional[str],
     ) -> Tuple[Optional[bool], Optional[RuleResult], Optional[Dict[str, str]]]:
-        if not allowed_occupations or "all" in [o.lower() for o in allowed_occupations]:
+        if isinstance(allowed_occupations, str):
+            allowed_occupations = [allowed_occupations]
+        allowed_list = allowed_occupations or []
+        if not allowed_list or "all" in [o.lower() for o in allowed_list]:
             return True, None, None
 
         if not user_occupation:
             return None, None, {
                 "field": "occupation",
-                "reason": f"Target occupations: {', '.join(allowed_occupations)}",
+                "reason": f"Target occupations: {', '.join(allowed_list)}",
             }
 
         user_clean = user_occupation.lower().strip()
         passed = any(
             req.lower().strip() in user_clean or user_clean in req.lower().strip()
-            for req in allowed_occupations
+            for req in allowed_list
         )
         return passed, RuleResult(
             rule_name="occupation",
             passed=passed,
             reason=f"Occupation '{user_occupation}' {'matches' if passed else 'does not match'} target group.",
-            required_value=allowed_occupations,
+            required_value=allowed_list,
             user_value=user_occupation,
         ), None
 
     @staticmethod
     def evaluate_category(
-        allowed_categories: List[str],
+        allowed_categories: Any,
         user_category: Optional[str],
     ) -> Tuple[Optional[bool], Optional[RuleResult], Optional[Dict[str, str]]]:
-        if not allowed_categories or "all" in [c.lower() for c in allowed_categories]:
+        if isinstance(allowed_categories, str):
+            allowed_categories = [allowed_categories]
+        allowed_list = allowed_categories or []
+        if not allowed_list or "all" in [c.lower() for c in allowed_list]:
             return True, None, None
 
         if not user_category:
             return None, None, {
                 "field": "category",
-                "reason": f"Target social categories: {', '.join(allowed_categories)}",
+                "reason": f"Target social categories: {', '.join(allowed_list)}",
             }
 
         user_clean = user_category.upper().strip()
-        passed = any(c.upper().strip() == user_clean for c in allowed_categories)
+        passed = any(c.upper().strip() == user_clean for c in allowed_list)
         return passed, RuleResult(
             rule_name="category",
             passed=passed,
             reason=f"Category '{user_category}' {'qualifies' if passed else 'is not among eligible categories'}.",
-            required_value=allowed_categories,
+            required_value=allowed_list,
             user_value=user_category,
         ), None
 
     @staticmethod
     def evaluate_area(
-        allowed_areas: List[str],
+        allowed_areas: Any,
         user_area: Optional[str],
     ) -> Tuple[Optional[bool], Optional[RuleResult], Optional[Dict[str, str]]]:
-        if not allowed_areas or "all" in [a.lower() for a in allowed_areas]:
+        if isinstance(allowed_areas, str):
+            allowed_areas = [allowed_areas]
+        allowed_list = allowed_areas or []
+        if not allowed_list or "all" in [a.lower() for a in allowed_list]:
             return True, None, None
 
         if not user_area:
             return None, None, {
                 "field": "area",
-                "reason": f"Target area: {', '.join(allowed_areas)}",
+                "reason": f"Target area: {', '.join(allowed_list)}",
             }
 
         user_clean = user_area.lower().strip()
-        passed = any(a.lower().strip() == user_clean for a in allowed_areas)
+        passed = any(a.lower().strip() == user_clean for a in allowed_list)
         return passed, RuleResult(
             rule_name="area",
             passed=passed,
             reason=f"Area '{user_area}' {'matches' if passed else 'does not match'} scheme coverage.",
-            required_value=allowed_areas,
+            required_value=allowed_list,
             user_value=user_area,
         ), None
 

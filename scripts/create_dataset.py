@@ -1,0 +1,2136 @@
+"""Generate verified comprehensive government scheme catalog for Yojana Sahayak."""
+
+import json
+from pathlib import Path
+
+SCHEMES = [
+    # =========================================================================
+    # 1. EDUCATION & SCHOLARSHIPS (Central & UP State)
+    # =========================================================================
+    {
+        "slug": "post-matric-scholarship",
+        "name": "Post-Matric Scholarship for SC/ST/OBC Students",
+        "name_hi": "अनुसूचित जाति/जनजाति/अन्य पिछड़ा वर्ग हेतु पोस्ट-मैट्रिक छात्रवृत्ति",
+        "description": "Centrally sponsored scholarship scheme providing financial assistance for post-secondary education including tuition fees, maintenance allowance, and academic study expenses.",
+        "description_hi": "मैट्रिकोत्तर कक्षाओं (11वीं, 12वीं, स्नातक, स्नातकोत्तर) में अध्ययनरत छात्रों को शिक्षण शुल्क प्रतिपूर्ति एवं जीवन निर्वाह भत्ता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Social Justice and Empowerment",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "OBC, SC, and ST students enrolled in post-matric courses",
+            "Low-income students pursuing college or technical diplomas"
+        ],
+        "eligibility_rules": {
+            "occupation": ["student"],
+            "category": ["SC", "ST", "OBC"],
+            "income": {"max": 250000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Complete reimbursement of non-refundable tuition and institutional fees.",
+            "Monthly maintenance allowance of ₹4,000 to ₹13,500 per year depending on course level.",
+            "Special study tour and thesis allowance for research students."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Caste Certificate issued by Tehsildar / Competent Authority",
+            "Family Income Certificate (below ₹2.5 Lakh)",
+            "Previous Class Marksheet / Passing Certificate",
+            "Fee Receipt and College Bonafide Certificate",
+            "Active Bank Account linked with Aadhaar"
+        ],
+        "application_steps": [
+            "Register on National Scholarship Portal (scholarships.gov.in) or respective State scholarship portal.",
+            "Select Post-Matric Scholarship scheme and fill academic, caste, and income details.",
+            "Upload scanned copies of required documents.",
+            "Submit online application and download the verification receipt.",
+            "Submit printed copy with attested documents to the educational institution for verification."
+        ],
+        "official_url": "https://scholarships.gov.in/",
+        "source_url": "https://socialjustice.gov.in/",
+        "source_name": "Ministry of Social Justice and Empowerment",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "student", "post-matric", "obc", "sc", "st", "tuition", "college"]
+    },
+    {
+        "slug": "up-post-matric-scholarship-obc",
+        "name": "Uttar Pradesh Post-Matric Scholarship (OBC)",
+        "name_hi": "उत्तर प्रदेश दशमोत्तर छात्रवृत्ति एवं शुल्क प्रतिपूर्ति (अन्य पिछड़ा वर्ग)",
+        "description": "Uttar Pradesh state scholarship providing complete tuition fee reimbursement and monthly maintenance stipend for OBC students enrolled in Class 11, 12, undergraduate, postgraduate, and professional degree courses in UP.",
+        "description_hi": "उत्तर प्रदेश के अन्य पिछड़ा वर्ग (OBC) के छात्र-छात्राओं हेतु 11वीं, 12वीं, स्नातक एवं परास्नातक स्तर पर शुल्क प्रतिपूर्ति एवं छात्रवृत्ति।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Backward Classes Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "OBC students domiciled in Uttar Pradesh",
+            "Students pursuing intermediate, diploma, graduation, and post-graduation"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "category": ["OBC"],
+            "occupation": ["student"],
+            "income": {"max": 250000},
+            "age": {"min": 16, "max": 35}
+        },
+        "benefits": [
+            "Full tuition fee reimbursement as approved by the fee fixation committee.",
+            "Maintenance allowance directly credited via DBT to Aadhaar-seeded bank account.",
+            "Special allowance for day scholars and hostellers."
+        ],
+        "documents": [
+            "Uttar Pradesh Domicile / Niwas Praman Patra",
+            "OBC Caste Certificate verified via UP eDistrict portal",
+            "Income Certificate (family income under ₹2.5 Lakh/year)",
+            "High School and Intermediate Marksheets",
+            "College Enrollment / Registration Number",
+            "Fee Receipt of current academic session",
+            "Aadhaar Card linked to Bank Account (DBT enabled)"
+        ],
+        "application_steps": [
+            "Visit the official UP Scholarship portal (scholarship.up.gov.in).",
+            "Click on 'Student' menu and select 'Registration' -> 'Post Matric Other than Inter' or 'Post Matric Inter'.",
+            "Complete registration using Aadhaar number and mobile OTP.",
+            "Log in, fill educational, personal, and fee details.",
+            "Upload necessary certificates and lock application.",
+            "Submit hard copy with document proofs to your college or institute within the designated date."
+        ],
+        "official_url": "https://scholarship.up.gov.in/",
+        "source_url": "https://backwardclasswelfare.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "student", "up", "uttar pradesh", "obc", "post-matric", "tuition", "fee-reimbursement"]
+    },
+    {
+        "slug": "up-dashmottar-scholarship",
+        "name": "Uttar Pradesh Dashmottar Scholarship & Fee Reimbursement",
+        "name_hi": "उत्तर प्रदेश दशमोत्तर (कक्षा 11-12 एवं उच्च शिक्षा) छात्रवृत्ति एवं शुल्क प्रतिपूर्ति योजना",
+        "description": "Flagship Uttar Pradesh scholarship scheme for General, OBC, SC, ST, and EWS students pursuing higher education, degree programs, engineering, medical, ITI, and polytechnic courses.",
+        "description_hi": "उत्तर प्रदेश सरकार द्वारा उच्च शिक्षा, डिग्री, इंजीनियरिंग, पॉलिटेक्निक एवं मेडिकल कोर्स कर रहे विद्यार्थियों हेतु व्यापक शुल्क प्रतिपूर्ति योजना।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Social Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "College, university, and technical institute students domiciled in UP",
+            "Meritorious and economically disadvantaged students in higher education"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "occupation": ["student"],
+            "income": {"max": 250000},
+            "age": {"min": 17, "max": 35}
+        },
+        "benefits": [
+            "Reimbursement of non-refundable college and university course fees.",
+            "Annual scholarship grant ranging from ₹6,000 to ₹50,000+ based on course.",
+            "Direct Benefit Transfer (DBT) into student's Aadhaar-linked savings account."
+        ],
+        "documents": [
+            "UP Domicile Certificate",
+            "Income Certificate issued by Revenue Authority",
+            "Caste Certificate (for reserved category applicants)",
+            "Aadhaar Card",
+            "Current Year Fee Challan / Receipt",
+            "Last Exam Passed Marksheet"
+        ],
+        "application_steps": [
+            "Go to scholarship.up.gov.in portal.",
+            "Select Student Registration -> Postmatric (Other than Inter) Fresh / Renewal.",
+            "Verify Aadhaar with DigiLocker integration.",
+            "Fill current course details, roll number, and tuition fee paid.",
+            "Verify all details and submit final application.",
+            "Forward physical copy to university or college verification officer."
+        ],
+        "official_url": "https://scholarship.up.gov.in/",
+        "source_url": "https://samajkalyan.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "student", "up", "dashmottar", "higher-education", "college", "university", "fee-reimbursement"]
+    },
+    {
+        "slug": "up-mukhyamantri-abhyudaya",
+        "name": "Uttar Pradesh Mukhyamantri Abhyudaya Yojana",
+        "name_hi": "उत्तर प्रदेश मुख्यमंत्री अभ्युदय योजना (नि:शुल्क प्रतियोगी परीक्षा कोचिंग)",
+        "description": "Free coaching program organized across all 75 districts of Uttar Pradesh for youth preparing for UPSC Civil Services, UPPSC, JEE, NEET, CDS, NDA, and other state entrance examinations.",
+        "description_hi": "आईएएस, आईपीएस, पीसीएस, नीट, जेईई, एनडीए आदि प्रतियोगी परीक्षाओं की तैयारी हेतु राज्य के मेधावी छात्र-छात्राओं को नि:शुल्क कोचिंग एवं टैबलेट सहायता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Social Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "Aspirants preparing for competitive examinations in Uttar Pradesh",
+            "Students from rural and financially weak backgrounds"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "occupation": ["student"],
+            "age": {"min": 18, "max": 35}
+        },
+        "benefits": [
+            "Free classroom coaching delivered by IAS, IPS, PCS officers and subject specialists.",
+            "Free high-quality digital study material, question banks, and e-learning resources.",
+            "Free tablet/device distribution to selected meritorious coaching participants."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "UP Resident / Domicile Certificate",
+            "Graduation / 12th Marksheet",
+            "Passport Size Photograph"
+        ],
+        "application_steps": [
+            "Visit the official Abhyudaya portal (abhyudaya.up.gov.in).",
+            "Click on 'Register' and select the target exam (UPSC/UPPSC, JEE, NEET, NDA).",
+            "Enter educational qualifications and preferred district study center.",
+            "Appear for the online eligibility screening test.",
+            "Qualified candidates are allotted offline classroom batches or virtual live lectures."
+        ],
+        "official_url": "http://abhyudaya.up.gov.in/",
+        "source_url": "https://abhyudaya.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "coaching", "upsc", "uppsc", "jee", "neet", "competitive-exam", "abhyudaya", "student", "up"]
+    },
+    {
+        "slug": "pm-yasasvi-scholarship",
+        "name": "PM Young Achievers Scholarship Award Scheme (PM YASASVI)",
+        "name_hi": "प्रधानमंत्री यशस्वी छात्रवृत्ति योजना (पीएम यशस्वी)",
+        "description": "Comprehensive scholarship scheme by the Government of India for meritorious students belonging to Other Backward Classes (OBC), Economically Backward Classes (EBC), and De-Notified Tribes (DNT) studying in top designated schools and higher educational institutions.",
+        "description_hi": "ओबीसी, ईबीसी एवं डीएनटी वर्ग के होनहार विद्यार्थियों के लिए केंद्र सरकार की प्रतिष्ठित प्री एवं पोस्ट-मैट्रिक छात्रवृत्ति योजना।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Social Justice and Empowerment",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "OBC, EBC, and DNT students studying in Class 9, 10, 11, 12 or top colleges",
+            "Students with annual family income up to ₹2.50 Lakh"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "category": ["OBC", "EBC", "DNT"],
+            "occupation": ["student"],
+            "income": {"max": 250000},
+            "age": {"min": 14, "max": 25}
+        },
+        "benefits": [
+            "Scholarship grant up to ₹75,000 per year for Class 9 and 10 students.",
+            "Scholarship grant up to ₹1,25,000 per year for Class 11 and 12 students.",
+            "Full tuition fee coverage and living expense stipend for top-class college education."
+        ],
+        "documents": [
+            "Aadhaar Card of the student",
+            "OBC / EBC / DNT Category Certificate",
+            "Valid Family Income Certificate (below ₹2.50 Lakh)",
+            "Previous Class Academic Marksheet (minimum 60% marks)",
+            "Bank Account linked with Aadhaar"
+        ],
+        "application_steps": [
+            "Register on National Scholarship Portal (NSP) under Ministry of Social Justice.",
+            "Choose PM-YASASVI scheme according to your class (Pre-Matric / Post-Matric / Top Class).",
+            "Provide personal details, caste certificate verification number, and academic record.",
+            "Upload necessary certificates and submit application.",
+            "Institute verifies records online and DBT disbursement is made directly by the Ministry."
+        ],
+        "official_url": "https://scholarships.gov.in/",
+        "source_url": "https://socialjustice.gov.in/schemes/pm-yasasvi",
+        "source_name": "Ministry of Social Justice and Empowerment",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "yasasvi", "obc", "ebc", "dnt", "student", "merit", "central"]
+    },
+    {
+        "slug": "central-sector-scholarship-pm-usp",
+        "name": "Central Sector Scheme of Scholarships for College and University Students (PM-USP)",
+        "name_hi": "कॉलेज एवं विश्वविद्यालयी छात्रों हेतु केंद्रीय क्षेत्र छात्रवृत्ति योजना (पीएम-यूएसपी)",
+        "description": "Department of Higher Education scholarship awarded to meritorious college and university students who have secured above 80th percentile in their respective Class 12 board examinations.",
+        "description_hi": "12वीं बोर्ड में 80 परसेंटाइल से अधिक अंक प्राप्त करने वाले मेधावी स्नातक एवं स्नातकोत्तर विद्यार्थियों को वित्तीय सहायता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "Meritorious Class 12 pass-outs entering regular degree programs",
+            "College and university students with family income under ₹4.5 Lakh"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "occupation": ["student"],
+            "income": {"max": 450000},
+            "age": {"min": 17, "max": 25}
+        },
+        "benefits": [
+            "₹12,000 per annum at graduation level for first three years of college.",
+            "₹20,000 per annum at post-graduation level.",
+            "Paid directly through DBT into beneficiary bank account without any deductions."
+        ],
+        "documents": [
+            "Class 12 Marksheet showing >80th percentile in State / CBSE / ICSE board",
+            "Income Certificate issued by Competent Government Authority",
+            "College Admission Letter and Fee Receipt",
+            "Aadhaar Card",
+            "Bank Account Passbook with IFSC"
+        ],
+        "application_steps": [
+            "Log in to National Scholarship Portal (scholarships.gov.in).",
+            "Apply under 'Department of Higher Education' -> 'Central Sector Scheme of Scholarship'.",
+            "Enter Class 12 roll number, board name, and college roll number.",
+            "Upload income certificate and submit application.",
+            "Institution and State Nodal Officer verify credentials online."
+        ],
+        "official_url": "https://scholarships.gov.in/",
+        "source_url": "https://www.education.gov.in/higher_education",
+        "source_name": "Ministry of Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "college", "university", "pm-usp", "higher-education", "student", "merit"]
+    },
+    {
+        "slug": "national-means-cum-merit-scholarship",
+        "name": "National Means-cum-Merit Scholarship Scheme (NMMSS)",
+        "name_hi": "राष्ट्रीय साधन-सह-योग्यता छात्रवृत्ति योजना (एनएमएमएसएस)",
+        "description": "Centrally sponsored scholarship scheme to arrest school dropouts at Class 8 and encourage meritorious students from economically weaker sections to continue secondary and higher secondary education.",
+        "description_hi": "कक्षा 8 के बाद पढ़ाई छोड़ने वाले छात्रों को रोकने हेतु मेधावी छात्र-छात्राओं को कक्षा 9 से 12 तक वार्षिक छात्रवृत्ति।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "Class 9 to 12 students in government, local body, and government-aided schools",
+            "Students clearing the state-level NMMSS selection exam"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "occupation": ["student"],
+            "income": {"max": 350000},
+            "age": {"min": 13, "max": 18}
+        },
+        "benefits": [
+            "Scholarship of ₹12,000 per annum (₹1,000 per month) from Class 9 to Class 12.",
+            "Disbursed quarterly directly through Public Financial Management System (PFMS)."
+        ],
+        "documents": [
+            "Class 8 Marksheet (minimum 55% marks, 50% for SC/ST)",
+            "Income Certificate (family income under ₹3.5 Lakh)",
+            "NMMSS Qualifying Exam Scorecard",
+            "Aadhaar Card and School Identity Card"
+        ],
+        "application_steps": [
+            "Appear for the state-level NMMSS written exam in Class 8.",
+            "After qualifying, register on the National Scholarship Portal (scholarships.gov.in).",
+            "Submit academic and banking details for DBT disbursement.",
+            "Renew application annually from Class 9 through Class 12."
+        ],
+        "official_url": "https://scholarships.gov.in/",
+        "source_url": "https://www.education.gov.in/",
+        "source_name": "Ministry of Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "merit", "nmms", "secondary", "school", "student"]
+    },
+    {
+        "slug": "vidya-lakshmi-csis",
+        "name": "Central Sector Interest Subsidy (CSIS) on Education Loans / Vidya Lakshmi",
+        "name_hi": "शिक्षा ऋण पर केंद्रीय क्षेत्र ब्याज सब्सिडी (सीएसआईएस) / विद्या लक्ष्मी योजना",
+        "description": "Government interest subsidy providing full moratorium on interest during course duration plus one year for education loans availed by students from economically weaker sections pursuing approved professional and technical degree courses.",
+        "description_hi": "आर्थिक रूप से कमजोर वर्ग के छात्रों को उच्च व्यावसायिक एवं तकनीकी शिक्षा हेतु लिए गए बैंक ऋण पर पढ़ाई की अवधि तक शून्य ब्याज सहायता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education", "financial"],
+        "target_beneficiaries": [
+            "Students enrolled in technical and professional courses in India",
+            "Students with parental family income up to ₹4.50 Lakh per annum"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "occupation": ["student"],
+            "income": {"max": 450000}
+        },
+        "benefits": [
+            "100% interest waiver during the moratorium period (course duration + 1 year).",
+            "Single-window online education loan application via Vidya Lakshmi portal across 40+ banks.",
+            "Collateral-free loan options under Credit Guarantee Fund Scheme for Education Loans (CGFSEL)."
+        ],
+        "documents": [
+            "Income Certificate from authorized government revenue official (below ₹4.5 Lakh)",
+            "Admission letter to NAAC/NBA accredited university or professional institute",
+            "Fee schedule of the course",
+            "KYC documents (Aadhaar Card, PAN Card)",
+            "Mark sheets of 10th, 12th, or graduation"
+        ],
+        "application_steps": [
+            "Visit Vidya Lakshmi portal (vidyalakshmi.co.in).",
+            "Register and fill the Common Education Loan Application Form (CELAF).",
+            "Search and select loan schemes from participating scheduled commercial banks.",
+            "Select eligibility for Central Sector Interest Subsidy (CSIS).",
+            "Upload proof of income and admission, then track bank approval online."
+        ],
+        "official_url": "https://www.vidyalakshmi.co.in/",
+        "source_url": "https://www.education.gov.in/higher_education",
+        "source_name": "Ministry of Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "loan", "interest-subsidy", "higher-education", "vidya-lakshmi", "csis", "student", "financial"]
+    },
+    {
+        "slug": "aicte-pragati-scholarship",
+        "name": "AICTE Pragati Scholarship for Girl Students",
+        "name_hi": "एआईसीटीई प्रगति छात्रवृत्ति योजना (बालिकाओं हेतु तकनीकी शिक्षा छात्रवृत्ति)",
+        "description": "Scheme implemented by All India Council for Technical Education (AICTE) providing financial support to meritorious girl students admitted to technical degree or diploma courses in AICTE-approved institutions.",
+        "description_hi": "एआईसीटीई द्वारा अनुमोदित संस्थानों में बी.टेक, बी.ई., या पॉलिटेक्निक डिप्लोमा में प्रवेश लेने वाली बालिकाओं को वार्षिक ₹50,000 छात्रवृत्ति।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "Female students entering 1st year of technical degree or diploma courses",
+            "Up to 2 girls per family with annual income under ₹8 Lakh"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "gender": "female",
+            "occupation": ["student"],
+            "income": {"max": 800000}
+        },
+        "benefits": [
+            "₹50,000 per annum for each year of study (up to 4 years for degree, 3 years for diploma).",
+            "Can be utilized for college fee payment, computer purchase, books, and stationeries."
+        ],
+        "documents": [
+            "Admission letter from centralized counseling admission process (CAP)",
+            "Family income certificate (below ₹8 Lakh per annum)",
+            "Class 10 and 12 marksheets",
+            "Aadhaar Card and Student Bank Account Details"
+        ],
+        "application_steps": [
+            "Register on the National Scholarship Portal (scholarships.gov.in).",
+            "Apply under 'AICTE' -> 'Pragati Scholarship Scheme for Girl Students'.",
+            "Submit academic admission and family details.",
+            "Institution verifies application online and scholarship is disbursed directly via DBT."
+        ],
+        "official_url": "https://www.aicte-india.org/schemes/students-development-schemes/Pragati",
+        "source_url": "https://scholarships.gov.in/",
+        "source_name": "All India Council for Technical Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "girl-child", "technical", "engineering", "diploma", "aicte", "pragati"]
+    },
+    {
+        "slug": "aicte-saksham-scholarship",
+        "name": "AICTE Saksham Scholarship for Specially-Abled Students",
+        "name_hi": "एआईसीटीई सक्षम छात्रवृत्ति योजना (दिव्यांग विद्यार्थियों हेतु)",
+        "description": "Scholarship to encourage and support specially-abled students with disability not less than 40% to pursue technical education in degree and diploma courses in AICTE-recognized institutions.",
+        "description_hi": "40% या अधिक दिव्यांगता वाले छात्र-छात्राओं को इंजीनियरिंग एवं तकनीकी शिक्षा हेतु वार्षिक ₹50,000 वित्तीय प्रोत्साहन।",
+        "primary_category": "Differently Abled Support",
+        "category": "Differently Abled Support",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education", "disability"],
+        "target_beneficiaries": [
+            "Differently-abled students with >= 40% disability enrolled in technical courses",
+            "Students with family income under ₹8 Lakh"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "disability": True,
+            "occupation": ["student"],
+            "income": {"max": 800000}
+        },
+        "benefits": [
+            "₹50,000 per annum for tuition fees, books, and assistive software/equipment.",
+            "Provided for the entire standard duration of the degree or diploma program."
+        ],
+        "documents": [
+            "Unique Disability ID (UDID) Card or Disability Certificate (>=40%)",
+            "Family Income Certificate",
+            "AICTE College Admission Proof",
+            "Aadhaar Card"
+        ],
+        "application_steps": [
+            "Apply online via National Scholarship Portal under AICTE section.",
+            "Upload UDID disability certificate and college allotment order.",
+            "Verify bank details for direct benefit transfer."
+        ],
+        "official_url": "https://www.aicte-india.org/schemes/students-development-schemes/Saksham",
+        "source_url": "https://scholarships.gov.in/",
+        "source_name": "All India Council for Technical Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "disability", "differently-abled", "technical", "aicte", "saksham"]
+    },
+    {
+        "slug": "up-pre-matric-scholarship",
+        "name": "Uttar Pradesh Pre-Matric Scholarship",
+        "name_hi": "उत्तर प्रदेश पूर्वदशम (कक्षा 9-10) छात्रवृत्ति योजना",
+        "description": "State government scholarship for students enrolled in Class 9 and 10 in recognized schools in Uttar Pradesh belonging to SC, ST, OBC, General, and Minority communities.",
+        "description_hi": "उत्तर प्रदेश के माध्यमिक विद्यालयों में कक्षा 9 व 10 में अध्ययनरत विद्यार्थियों हेतु वार्षिक छात्रवृत्ति सहायता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Social Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["education"],
+        "target_beneficiaries": [
+            "Class 9 and 10 school students in Uttar Pradesh",
+            "Families with income up to ₹2,00,000 per annum"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "occupation": ["student"],
+            "income": {"max": 200000},
+            "age": {"min": 12, "max": 17}
+        },
+        "benefits": [
+            "Annual scholarship of ₹3,000 to ₹4,500 credited to student's bank account.",
+            "Covers school stationary, uniform, and exam fees."
+        ],
+        "documents": [
+            "UP Domicile Certificate",
+            "Class 8 Marksheet",
+            "Family Income Certificate",
+            "Aadhaar Card of student",
+            "School Fee Receipt"
+        ],
+        "application_steps": [
+            "Register on scholarship.up.gov.in under 'Pre-Matric Fresh' registration.",
+            "Enter school name, roll number, and personal details.",
+            "Submit application and print verification form for principal's signature."
+        ],
+        "official_url": "https://scholarship.up.gov.in/",
+        "source_url": "https://scholarship.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "student", "pre-matric", "up", "school"]
+    },
+
+    # =========================================================================
+    # 2. AGRICULTURE & FARMING
+    # =========================================================================
+    {
+        "slug": "pm-kisan",
+        "name": "Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)",
+        "name_hi": "प्रधानमंत्री किसान सम्मान निधि (पीएम-किसान)",
+        "description": "Income support of Rs. 6,000 per year in three equal installments directly transferred into bank accounts of all landholding farmer families across India.",
+        "description_hi": "सभी पात्र भूमिधारक किसान परिवारों को ₹6,000 प्रति वर्ष की वित्तीय सहायता, तीन समान किस्तों में सीधे बैंक खाते में प्रदान की जाती है।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Agriculture & Farmers Welfare",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture"],
+        "target_beneficiaries": [
+            "Small and marginal farmers",
+            "Landholding farmer families across all Indian states"
+        ],
+        "eligibility_rules": {
+            "occupation": ["farmer", "agricultural worker"],
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Direct financial assistance of ₹6,000 per financial year.",
+            "Paid in three 4-monthly installments of ₹2,000 each via DBT.",
+            "Direct Aadhaar-linked payment into bank accounts without middlemen."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Land ownership record / Khasra-Khatauni",
+            "Active Bank Account Passbook",
+            "Mobile number linked to Aadhaar"
+        ],
+        "application_steps": [
+            "Visit the official PM-KISAN portal (pmkisan.gov.in).",
+            "Click on 'New Farmer Registration' under Farmers Corner.",
+            "Enter Aadhaar number and select Rural or Urban Farmer Registration.",
+            "Fill landholding survey number, bank details, and submit.",
+            "Complete eKYC via OTP or biometric CSC centre."
+        ],
+        "official_url": "https://pmkisan.gov.in/",
+        "source_url": "https://data.gov.in/",
+        "source_name": "Ministry of Agriculture & Farmers Welfare",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "farmer", "income-support", "crop", "kisan", "rural"]
+    },
+    {
+        "slug": "pm-fasal-bima-yojana",
+        "name": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+        "name_hi": "प्रधानमंत्री फसल बीमा योजना (पीएमएफबीवाई)",
+        "description": "Comprehensive crop insurance scheme providing comprehensive financial risk coverage against natural calamities, pests, droughts, floods, and unseasonal rains at minimal premium rates.",
+        "description_hi": "प्राकृतिक आपदाओं, कीटों और बेमौसम बारिश से फसल बर्बादी के जोखिम के खिलाफ किसानों को न्यूनतम प्रीमियम पर व्यापक फसल बीमा सुरक्षा।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Agriculture & Farmers Welfare",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture"],
+        "target_beneficiaries": [
+            "All farmers growing notified crops in notified areas including sharecroppers"
+        ],
+        "eligibility_rules": {
+            "occupation": ["farmer", "agricultural worker"],
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Lowest premium: 2% for Kharif crops, 1.5% for Rabi, 5% for commercial/horticultural crops.",
+            "Balance premium heavily subsidized by Central and State governments.",
+            "Claims paid directly into bank account based on satellite and mobile app crop cutting experiments."
+        ],
+        "documents": [
+            "Land possession certificate / RoR / Khasra Khatauni",
+            "Sowing Certificate issued by Patwari / Village Officer",
+            "Aadhaar Card",
+            "Bank Account Passbook"
+        ],
+        "application_steps": [
+            "Apply online via PMFBY portal (pmfby.gov.in) or through nearest bank/CSC.",
+            "Select state, district, crop season (Kharif/Rabi), and crop name.",
+            "Upload land record and pay the nominal farmer share premium.",
+            "Receive policy number and download crop insurance certificate."
+        ],
+        "official_url": "https://pmfby.gov.in/",
+        "source_url": "https://agricoop.gov.in/",
+        "source_name": "Ministry of Agriculture & Farmers Welfare",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "crop-insurance", "farmer", "pmfby", "disaster", "kisan"]
+    },
+    {
+        "slug": "kisan-credit-card",
+        "name": "Kisan Credit Card (KCC) Scheme",
+        "name_hi": "किसान क्रेडिट कार्ड योजना (केसीसी)",
+        "description": "Concessional short-term institutional credit facility allowing farmers, dairy farmers, and fishers to obtain timely loans for crop cultivation, seeds, fertilizers, and farm equipment at an effective 4% annual interest rate.",
+        "description_hi": "किसानों, पशुपालकों एवं मत्स्य पालकों को खेती और उपकरणों हेतु मात्र 4% प्रभावी ब्याज दर पर सुलभ संस्थागत ऋण।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Agriculture & Farmers Welfare",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture", "financial"],
+        "target_beneficiaries": [
+            "Individual and joint borrower farmers, tenant farmers, and oral lessees",
+            "Animal husbandry and fisheries entrepreneurs"
+        ],
+        "eligibility_rules": {
+            "occupation": ["farmer", "agricultural worker"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 75}
+        },
+        "benefits": [
+            "Credit limit up to ₹3,00,000 at subvented interest rate of 4% per year on prompt repayment.",
+            "Collateral-free credit limit up to ₹1,60,000.",
+            "Flexible revolving cash credit with built-in RuPay card for ATM withdrawals."
+        ],
+        "documents": [
+            "Completed KCC application form",
+            "Aadhaar Card and PAN / Form 60",
+            "Land title documents verified by revenue authority",
+            "Passport size photograph"
+        ],
+        "application_steps": [
+            "Download KCC 1-page application from pmkisan.gov.in or obtain from local bank branch.",
+            "Submit along with land ownership copy and Aadhaar.",
+            "Bank verifies land records and issues KCC card within 14 working days."
+        ],
+        "official_url": "https://www.myscheme.gov.in/schemes/kcc",
+        "source_url": "https://pmkisan.gov.in/",
+        "source_name": "Ministry of Finance & Ministry of Agriculture",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "credit", "loan", "kcc", "farmer", "short-term-credit", "financial"]
+    },
+    {
+        "slug": "pm-krishi-sinchayee-yojana",
+        "name": "Pradhan Mantri Krishi Sinchayee Yojana (PMKSY - Per Drop More Crop)",
+        "name_hi": "प्रधानमंत्री कृषि सिंचाई योजना (प्रति बूंद अधिक फसल)",
+        "description": "Government subsidy scheme providing financial assistance of up to 55% for small & marginal farmers to install micro-irrigation systems including drip and sprinkler irrigation.",
+        "description_hi": "खेतों में ड्रिप एवं स्प्रिंकलर सिंचाई प्रणाली स्थापित करने हेतु किसानों को 45% से 55% तक सरकारी सब्सिडी।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Agriculture & Farmers Welfare",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture"],
+        "target_beneficiaries": [
+            "All landholding farmers adopting drip or micro-sprinkler irrigation methods"
+        ],
+        "eligibility_rules": {
+            "occupation": ["farmer", "agricultural worker"],
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "55% subsidy for small and marginal farmers on micro-irrigation equipment.",
+            "45% subsidy for other farmers.",
+            "Water saving of up to 40-50% with higher crop productivity."
+        ],
+        "documents": [
+            "Land ownership record (Khasra-Khatauni)",
+            "Aadhaar Card",
+            "Bank Passbook",
+            "Electricity connection / borewell proof"
+        ],
+        "application_steps": [
+            "Apply on State Agriculture Department portal or PMKSY portal.",
+            "Select empanelled micro-irrigation equipment manufacturer.",
+            "Department conducts field verification and releases subsidy directly to manufacturer/farmer."
+        ],
+        "official_url": "https://pmksy.gov.in/",
+        "source_url": "https://agricoop.gov.in/",
+        "source_name": "Ministry of Agriculture & Farmers Welfare",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "irrigation", "water", "drip-irrigation", "pmksy", "farmer"]
+    },
+    {
+        "slug": "up-kisan-pension-yojana",
+        "name": "Uttar Pradesh Kisan Pension Yojana",
+        "name_hi": "उत्तर प्रदेश किसान पेंशन योजना",
+        "description": "Social security pension program provided by the Uttar Pradesh government for elderly small and marginal farmers living below poverty line who no longer have active farm earnings.",
+        "description_hi": "उत्तर प्रदेश के वृद्ध एवं आर्थिक रूप से असहाय किसानों हेतु ₹1,000 प्रति माह की सामाजिक सुरक्षा पेंशन।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Agriculture & Social Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["agriculture", "pension"],
+        "target_beneficiaries": [
+            "Elderly farmers domiciled in Uttar Pradesh aged 60 and above",
+            "Small and marginal farmers holding less than 2.5 acres of land"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "occupation": ["farmer", "agricultural worker"],
+            "age": {"min": 60},
+            "income": {"max": 100000}
+        },
+        "benefits": [
+            "Monthly pension of ₹1,000 credited directly into the farmer's bank account.",
+            "Quarterly disbursement via DBT."
+        ],
+        "documents": [
+            "UP Resident Certificate",
+            "Land Khatauni proving small/marginal holding",
+            "Age Proof (Aadhaar or Voter ID showing 60+ years)",
+            "Income Certificate"
+        ],
+        "application_steps": [
+            "Apply via UP Social Welfare portal (sspy-up.gov.in).",
+            "Fill rural farmer details, landholding size, and bank info.",
+            "Verification conducted by Gram Panchayat and Block Development Officer."
+        ],
+        "official_url": "https://sspy-up.gov.in/",
+        "source_url": "https://upagriculture.com/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "farmer", "pension", "uttar pradesh", "elderly-farmer", "kisan"]
+    },
+
+    # =========================================================================
+    # 3. HEALTHCARE & MEDICAL
+    # =========================================================================
+    {
+        "slug": "ayushman-bharat-pmjay",
+        "name": "Ayushman Bharat PM Jan Arogya Yojana (AB-PMJAY)",
+        "name_hi": "आयुष्मान भारत प्रधानमंत्री जन आरोग्य योजना (पीएम-जय)",
+        "description": "World's largest government-funded health protection scheme providing health coverage of up to Rs. 5 Lakh per family per year for secondary and tertiary healthcare hospitalization.",
+        "description_hi": "प्रति परिवार प्रति वर्ष ₹5 लाख तक का कैशलेस स्वास्थ्य बीमा माध्यमिक और तृतीयक अस्पताल में भर्ती के लिए प्रदान किया जाता है।",
+        "primary_category": "Healthcare",
+        "category": "Healthcare",
+        "ministry": "Ministry of Health & Family Welfare",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["healthcare"],
+        "target_beneficiaries": [
+            "Low-income families",
+            "SECC identified households",
+            "Vulnerable and deprived citizens"
+        ],
+        "eligibility_rules": {
+            "income": {"max": 250000},
+            "category": ["SC", "ST", "OBC", "EWS"],
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Cashless hospitalization coverage up to ₹5,00,000 per family per year.",
+            "Covers pre-existing diseases from Day 1.",
+            "Valid at all empaneled public and private hospitals across India.",
+            "Covers 1,949 medical and surgical procedures including post-hospitalization medicines."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Ration Card / NFSA Card",
+            "Family Register / SECC Household Letter",
+            "Active Mobile Number"
+        ],
+        "application_steps": [
+            "Check eligibility online at beneficiary.nha.gov.in or visit nearest Ayushman Arogya Mandir / CSC.",
+            "Authenticate identity using Aadhaar OTP or Biometric scan.",
+            "Download and print the Ayushman Golden Card (PVC Card).",
+            "Present card at any empaneled hospital for 100% cashless treatment."
+        ],
+        "official_url": "https://pmjay.gov.in/",
+        "source_url": "https://nha.gov.in/",
+        "source_name": "National Health Authority",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["health", "medical", "hospital", "ayushman", "insurance", "treatment", "pmjay"]
+    },
+    {
+        "slug": "pm-janaushadhi-yojana",
+        "name": "Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)",
+        "name_hi": "प्रधानमंत्री भारतीय जनऔषधि परियोजना",
+        "description": "Initiative to make available quality generic medicines and surgical products at 50% to 90% cheaper prices compared to branded medicines through dedicated Jan Aushadhi Kendras across India.",
+        "description_hi": "ब्रांडेड दवाओं की तुलना में 50% से 90% तक कम कीमत पर उच्च गुणवत्ता वाली जेनेरिक दवाएं जनऔषधि केंद्रों से उपलब्ध कराना।",
+        "primary_category": "Healthcare",
+        "category": "Healthcare",
+        "ministry": "Ministry of Chemicals and Fertilizers",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["healthcare"],
+        "target_beneficiaries": [
+            "All citizens, especially chronic patients needing affordable lifelong medicines"
+        ],
+        "eligibility_rules": {
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Over 1,965 quality generic medicines and 293 surgical equipments at 50-90% discount.",
+            "Certified WHO-GMP standard products.",
+            "Over 10,000 Kendras operating across India for easy neighborhood access."
+        ],
+        "documents": [
+            "Valid doctor prescription"
+        ],
+        "application_steps": [
+            "Locate nearest Kendra via 'Jan Aushadhi Sugam' mobile app or website.",
+            "Visit the Kendra with your doctor prescription.",
+            "Purchase medicines directly across the counter."
+        ],
+        "official_url": "http://janaushadhi.gov.in/",
+        "source_url": "http://janaushadhi.gov.in/",
+        "source_name": "Pharmaceuticals & Medical Devices Bureau of India",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["health", "medicine", "pharmacy", "generic-medicines", "janaushadhi", "healthcare"]
+    },
+    {
+        "slug": "up-mukhyamantri-jan-arogya",
+        "name": "Uttar Pradesh Mukhyamantri Jan Arogya Yojana",
+        "name_hi": "उत्तर प्रदेश मुख्यमंत्री जन आरोग्य योजना",
+        "description": "State health insurance scheme by the UP Government providing ₹5 Lakh annual cashless healthcare cover to poor families in Uttar Pradesh not covered under Central Ayushman Bharat PM-JAY.",
+        "description_hi": "आयुष्मान भारत से छूटे उत्तर प्रदेश के निर्धन एवं अन्त्योदय कार्डधारक परिवारों को प्रति वर्ष ₹5 लाख का कैशलेस स्वास्थ्य सुरक्षा कवर।",
+        "primary_category": "Healthcare",
+        "category": "Healthcare",
+        "ministry": "Medical Health and Family Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["healthcare"],
+        "target_beneficiaries": [
+            "Antyodaya ration card holders and registered construction workers in UP",
+            "Economically deprived families not listed in SECC 2011"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "income": {"max": 200000}
+        },
+        "benefits": [
+            "₹5,00,000 cashless medical treatment per family per year.",
+            "Covers major diseases, surgeries, and critical hospitalizations across all empaneled hospitals."
+        ],
+        "documents": [
+            "UP Ration Card (Antyodaya or Eligible Household)",
+            "Aadhaar Card",
+            "Resident Proof of Uttar Pradesh"
+        ],
+        "application_steps": [
+            "Visit any Government Community Health Centre (CHC) or District Hospital in UP.",
+            "Present Ration card and Aadhaar at Ayushman Mitra desk.",
+            "Generate State Mukhyamantri Jan Arogya card instantly."
+        ],
+        "official_url": "http://ayushmanup.in/",
+        "source_url": "https://uphealth.up.nic.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["health", "medical", "hospital", "up", "uttar pradesh", "cashless", "healthcare"]
+    },
+
+    # =========================================================================
+    # 4. HOUSING & SHELTER
+    # =========================================================================
+    {
+        "slug": "pm-awas-yojana-gramin",
+        "name": "Pradhan Mantri Awas Yojana - Gramin (PMAY-G)",
+        "name_hi": "प्रधानमंत्री आवास योजना - ग्रामीण (पीएमएवाई-जी)",
+        "description": "Direct financial assistance of up to Rs. 1,20,000 (plains) to Rs. 1,30,000 (hilly/difficult areas) for the construction of a pucca house with basic amenities for homeless and kutcha-house rural families.",
+        "description_hi": "ग्रामीण क्षेत्रों में बेघर एवं कच्चे मकानों में रहने वाले परिवारों को पक्के मकान निर्माण हेतु ₹1.20 लाख से ₹1.30 लाख की सीधी वित्तीय सहायता।",
+        "primary_category": "Housing & Shelter",
+        "category": "Housing & Shelter",
+        "ministry": "Ministry of Rural Development",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["housing"],
+        "target_beneficiaries": [
+            "Rural households living in kutcha/dilapidated houses or homeless",
+            "Low-income rural families identified in Awaas+ survey"
+        ],
+        "eligibility_rules": {
+            "area": "Rural",
+            "income": {"max": 200000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Direct grant of ₹1,20,000 in plains and ₹1,30,000 in hilly/northeastern states.",
+            "Additional 90-95 days of unskilled wage employment under MGNREGA (~₹20,000+).",
+            "Additional ₹12,000 assistance for construction of household latrine under Swachh Bharat.",
+            "Free LPG connection under PM Ujjwala Yojana and electricity connection under Saubhagya."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Bank Account linked with Aadhaar",
+            "MGNREGA Job Card Number",
+            "Existing Kutcha House photograph with geotag"
+        ],
+        "application_steps": [
+            "Contact your Gram Panchayat Secretary or Block Development Office.",
+            "Ensure inclusion in the Awaas+ survey database.",
+            "Geo-tagging of current house is performed by Gram Rozgar Sahayak.",
+            "Grant disbursed in 3 stages linked to construction progress (plinth, roof, completion)."
+        ],
+        "official_url": "https://pmayg.nic.in/",
+        "source_url": "https://rural.nic.in/",
+        "source_name": "Ministry of Rural Development",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["housing", "awas", "pucca-house", "rural", "pmay-g", "shelter"]
+    },
+    {
+        "slug": "pm-awas-yojana-urban",
+        "name": "Pradhan Mantri Awas Yojana - Urban 2.0 (PMAY-U)",
+        "name_hi": "प्रधानमंत्री आवास योजना - शहरी 2.0",
+        "description": "Financial assistance and interest subsidy up to ₹2.5 Lakh for eligible Economically Weaker Section (EWS) and Low Income Group (LIG) urban families to construct or buy their first pucca house in cities.",
+        "description_hi": "शहरी क्षेत्रों में अपना पक्का मकान बनाने अथवा खरीदने हेतु आर्थिक रूप से कमजोर एवं निम्न आय वर्ग के परिवारों को ₹2.5 लाख तक अनुदान व ब्याज सब्सिडी।",
+        "primary_category": "Housing & Shelter",
+        "category": "Housing & Shelter",
+        "ministry": "Ministry of Housing and Urban Affairs",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["housing"],
+        "target_beneficiaries": [
+            "Urban families living in slum or rental accommodations with no pucca house anywhere in India",
+            "EWS (income < ₹3 Lakh) and LIG (income ₹3-6 Lakh) households"
+        ],
+        "eligibility_rules": {
+            "area": "Urban",
+            "income": {"max": 300000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Interest subsidy on home loans under Credit Linked Subsidy Scheme (CLSS).",
+            "Direct subsidy of up to ₹2,50,000 for Beneficiary Led Construction (BLC).",
+            "Houses mandatorily registered in female head of family name."
+        ],
+        "documents": [
+            "Aadhaar Card of all family members",
+            "Income Certificate from authorized officer",
+            "Proof of not owning any pucca house in India (Affidavit)",
+            "Bank statement and PAN card"
+        ],
+        "application_steps": [
+            "Apply online at pmayuclap.gov.in or through Urban Local Body (Nagar Nigam/Palika).",
+            "Enter Aadhaar and fill family income details.",
+            "Local municipal authority conducts physical verification and approves funding."
+        ],
+        "official_url": "https://pmay-urban.gov.in/",
+        "source_url": "https://mohua.gov.in/",
+        "source_name": "Ministry of Housing and Urban Affairs",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["housing", "awas", "urban", "affordable-housing", "pmay-u", "shelter"]
+    },
+
+    # =========================================================================
+    # 5. BUSINESS & ENTREPRENEURSHIP
+    # =========================================================================
+    {
+        "slug": "pm-mudra-yojana",
+        "name": "Pradhan Mantri MUDRA Yojana (PMMY)",
+        "name_hi": "प्रधानमंत्री मुद्रा योजना (पीएमएमवाई)",
+        "description": "Collateral-free institutional loans up to Rs. 20 Lakh for non-corporate, non-farm small and micro enterprises across Shishu (up to ₹50,000), Kishore (₹50,000-₹5 Lakh), and Tarun (₹5-₹20 Lakh) categories.",
+        "description_hi": "गैर-कॉर्पोरेट, गैर-कृषि लघु एवं सूक्ष्म उद्यमों के लिए ₹20 लाख तक का संपार्श्विक-मुक्त (बिना गारंटी) संस्थागत ऋण।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["business"],
+        "target_beneficiaries": [
+            "Micro-entrepreneurs, shopkeepers, traders, artisanal businesses, food vendors",
+            "New and expanding small business enterprises"
+        ],
+        "eligibility_rules": {
+            "income": {"max": 1500000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Zero collateral or third-party guarantee required.",
+            "MUDRA RuPay Debit Card provided for hassle-free working capital withdrawals.",
+            "Repayment tenures up to 5 to 7 years at competitive commercial bank interest rates."
+        ],
+        "documents": [
+            "Aadhaar Card and PAN Card",
+            "Business registration / Udyam Certificate (for existing units)",
+            "Project proposal / quotation for machines or inventory",
+            "Last 6 months bank statement"
+        ],
+        "application_steps": [
+            "Visit the Udyamimitra portal (udyamimitra.in) or any scheduled bank/NBFC.",
+            "Select MUDRA category (Shishu, Kishore, or Tarun).",
+            "Upload project quotation and business details.",
+            "Loan is processed and sanctioned directly by the chosen bank."
+        ],
+        "official_url": "https://www.mudra.org.in/",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Ministry of Finance",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "msme", "loan", "mudra", "entrepreneurship", "credit", "working-capital"]
+    },
+    {
+        "slug": "pm-svanidhi",
+        "name": "PM Street Vendor's AtmaNirbhar Nidhi (PM SVANidhi)",
+        "name_hi": "पीएम स्ट्रीट वेंडर्स आत्मनिर्भर निधि (पीएम स्वनिधि)",
+        "description": "Special micro-credit facility providing affordable collateral-free working capital loans of ₹10,000 (1st tranche), ₹20,000 (2nd tranche), and ₹50,000 (3rd tranche) to urban street vendors, with 7% interest subsidy.",
+        "description_hi": "शहरी रेहड़ी-पटरी विक्रेताओं को ₹10,000, ₹20,000 और ₹50,000 तक का सस्ता कार्यशील पूंजी ऋण एवं 7% ब्याज सब्सिडी।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Ministry of Housing and Urban Affairs",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["business"],
+        "target_beneficiaries": [
+            "Urban street vendors, hawkers, thela-walas, and roadside service providers"
+        ],
+        "eligibility_rules": {
+            "area": "Urban",
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Collateral-free working capital loan starting at ₹10,000 up to ₹50,000.",
+            "7% interest subsidy credited directly to bank account on prompt repayment.",
+            "Monthly cashback reward up to ₹100 for conducting digital sales and UPI payments."
+        ],
+        "documents": [
+            "Certificate of Vending (CoV) / Identity Card issued by Urban Local Body or Letter of Recommendation (LoR)",
+            "Aadhaar Card",
+            "Bank Account Passbook"
+        ],
+        "application_steps": [
+            "Apply via pmsvanidhi.mohua.gov.in portal or through your local municipal town vending committee.",
+            "Authenticate with Aadhaar OTP.",
+            "Select lending institution and submit application for instant sanction."
+        ],
+        "official_url": "https://pmsvanidhi.mohua.gov.in/",
+        "source_url": "https://mohua.gov.in/",
+        "source_name": "Ministry of Housing and Urban Affairs",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "vendor", "working-capital", "street-vendor", "micro-loan", "svanidhi"]
+    },
+    {
+        "slug": "stand-up-india",
+        "name": "Stand-Up India Scheme",
+        "name_hi": "स्टैंड-अप इंडिया योजना",
+        "description": "Bank financing between ₹10 Lakh and ₹1 Crore for at least one SC/ST borrower and at least one woman borrower per bank branch for setting up a greenfield manufacturing, services, or trading enterprise.",
+        "description_hi": "अनुसूचित जाति, जनजाति और महिला उद्यमियों को नया उद्यम स्थापित करने हेतु ₹10 लाख से ₹1 करोड़ तक का बैंक ऋण।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["business"],
+        "target_beneficiaries": [
+            "SC/ST entrepreneurs or women entrepreneurs entering business"
+        ],
+        "eligibility_rules": {
+            "category": ["SC", "ST"],
+            "gender": "female",
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Composite loan between ₹10 Lakh and ₹100 Lakh covering up to 85% of project cost.",
+            "Handholding support via SIDBI for DPR preparation and training.",
+            "Repayable in 7 years with a moratorium period of up to 18 months."
+        ],
+        "documents": [
+            "Caste Certificate (for SC/ST) or Identity Proof (for Women)",
+            "Project Report / Detailed Business Plan",
+            "PAN Card and Aadhaar",
+            "Promoter contribution proof"
+        ],
+        "application_steps": [
+            "Register on standupmitra.in portal.",
+            "Select category and connect with nearby scheduled commercial bank branch.",
+            "Participate in DPR evaluation and receive sanction."
+        ],
+        "official_url": "https://www.standupmitra.in/",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Ministry of Finance",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "entrepreneurship", "greenfield", "sc-st", "women-entrepreneur", "loan"]
+    },
+    {
+        "slug": "up-mukhyamantri-yuva-swarojgar",
+        "name": "Uttar Pradesh Mukhyamantri Yuva Swarojgar Yojana",
+        "name_hi": "उत्तर प्रदेश मुख्यमंत्री युवा स्वरोजगार योजना",
+        "description": "UP state scheme providing loans up to ₹25 Lakh for industrial units and ₹10 Lakh for service units, with a 25% government margin money capital subsidy for educated unemployed youth in Uttar Pradesh.",
+        "description_hi": "उत्तर प्रदेश के शिक्षित बेरोजगार युवाओं को उद्योग हेतु ₹25 लाख एवं सेवा क्षेत्र हेतु ₹10 लाख तक ऋण व 25% सब्सिडी सहायता।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Micro, Small & Medium Enterprises Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["business", "jobs"],
+        "target_beneficiaries": [
+            "Educated unemployed residents of Uttar Pradesh aged 18 to 40 years",
+            "Youth with minimum High School (10th pass) educational qualification"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "age": {"min": 18, "max": 40},
+            "income": {"max": 500000}
+        },
+        "benefits": [
+            "Bank loan up to ₹25,00,000 for manufacturing and ₹10,00,000 for service enterprises.",
+            "25% margin money subsidy (up to ₹6.25 Lakh for industry and ₹2.5 Lakh for service) provided by the UP Government.",
+            "Subsidy converted to outright grant if unit operates successfully for 2 years."
+        ],
+        "documents": [
+            "UP Domicile Certificate",
+            "High School Marksheet / Certificate (proving 10th pass and age)",
+            "Aadhaar Card and PAN Card",
+            "Detailed Project Report (DPR)",
+            "Notarized affidavit of unemployment"
+        ],
+        "application_steps": [
+            "Apply online via UP DIUP portal (diupmsme.upsdc.gov.in).",
+            "Select 'Mukhyamantri Yuva Swarojgar Yojana' and fill project details.",
+            "Application screened by District Level Task Force Committee (DLTFC) chaired by District Magistrate.",
+            "Bank sanctions and disburses loan with margin money subsidy deposit."
+        ],
+        "official_url": "http://diupmsme.upsdc.gov.in/",
+        "source_url": "http://diupmsme.upsdc.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "self-employment", "up", "youth", "loan-subsidy", "msme"]
+    },
+
+    # =========================================================================
+    # 6. JOBS & EMPLOYMENT
+    # =========================================================================
+    {
+        "slug": "mgnrega",
+        "name": "Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)",
+        "name_hi": "महात्मा गांधी राष्ट्रीय ग्रामीण रोजगार गारंटी अधिनियम (मनरेगा)",
+        "description": "Legal guarantee of at least 100 days of wage employment in a financial year to every rural household whose adult members volunteer to do unskilled manual work near their village.",
+        "description_hi": "ग्रामीण परिवारों के वयस्क सदस्यों को प्रत्येक वित्तीय वर्ष में कम से कम 100 दिनों के अकुशल शारीरिक मजदूरी रोजगार की कानूनी गारंटी।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Rural Development",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["jobs"],
+        "target_beneficiaries": [
+            "Any adult member of a rural household willing to do manual labor"
+        ],
+        "eligibility_rules": {
+            "area": "Rural",
+            "age": {"min": 18},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Guaranteed 100 days of paid wage employment per household per year.",
+            "Statutory wage rate (₹240 to ₹375+ per day based on State schedule).",
+            "Unemployment allowance paid if employment is not provided within 15 days of application.",
+            "Works focused on water conservation, soil health, afforestation, and village rural infrastructure."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Photograph of adult family members",
+            "Rural residence proof",
+            "Aadhaar-linked bank account"
+        ],
+        "application_steps": [
+            "Submit written or verbal application for Job Card to Gram Panchayat.",
+            "Gram Panchayat issues Job Card free of charge within 15 days.",
+            "Submit application for work whenever needed; get work assigned within 5 km radius."
+        ],
+        "official_url": "https://nrega.nic.in/",
+        "source_url": "https://rural.nic.in/",
+        "source_name": "Ministry of Rural Development",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["employment", "jobs", "wage", "rural", "guaranteed-work", "mgnrega"]
+    },
+    {
+        "slug": "pmegp-employment-generation",
+        "name": "Prime Minister's Employment Generation Programme (PMEGP)",
+        "name_hi": "प्रधानमंत्री रोजगार सृजन कार्यक्रम (पीएमईजीपी)",
+        "description": "Credit-linked subsidy programme to generate self-employment opportunities through establishment of micro-enterprises in non-farm sector, offering 15% to 35% government capital subsidy.",
+        "description_hi": "लघु उद्योग एवं सेवा उद्यम स्थापित कर स्वरोजगार के अवसर पैदा करने हेतु 15% से 35% तक सरकारी सब्सिडी युक्त बैंक ऋण योजना।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Micro, Small and Medium Enterprises",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["jobs", "business"],
+        "target_beneficiaries": [
+            "Unemployed individuals aged 18 and above wanting to start their own enterprise",
+            "SHGs, cooperative societies, and registered charitable institutions"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 18},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Project loans up to ₹50 Lakh for manufacturing units and ₹20 Lakh for service units.",
+            "Government subsidy of 25% (urban) to 35% (rural) for special categories (SC/ST/OBC/Women/Ex-Servicemen).",
+            "Beneficiary own contribution only 5% to 10% of total project cost."
+        ],
+        "documents": [
+            "Aadhaar Card and PAN Card",
+            "Project Report",
+            "Education Marksheet (8th pass minimum for projects > ₹10L in manufacturing)",
+            "Special Category / Caste Certificate"
+        ],
+        "application_steps": [
+            "Apply online at kviconline.gov.in (PMEGP e-portal).",
+            "Upload project report and applicant details.",
+            "District Level Task Force evaluates proposal and forwards to chosen bank.",
+            "Complete mandatory Entrepreneurship Development Programme (EDP) training."
+        ],
+        "official_url": "https://www.kviconline.gov.in/pmegp.jsp",
+        "source_url": "https://msme.gov.in/",
+        "source_name": "KVIC / Ministry of MSME",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["employment", "manufacturing", "service", "pmegp", "subsidy", "self-employment", "jobs"]
+    },
+    {
+        "slug": "up-rozgar-sangam",
+        "name": "Uttar Pradesh Rozgar Sangam (Sewayojan) & Berojgari Bhatta",
+        "name_hi": "उत्तर प्रदेश रोजगार संगम (सेवायोजन पोर्टल) एवं रोजगार मेला",
+        "description": "Single-window online employment exchange connecting job seekers with government departments, public sector units, and private sector employers with regular district Rozgar Melas and youth allowances.",
+        "description_hi": "उत्तर प्रदेश के शिक्षित बेरोजगारों को निजी व सरकारी क्षेत्रों में नौकरियों के अवसर, रोजगार मेला और आजीविका मार्गदर्शन।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Labour and Employment Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["jobs"],
+        "target_beneficiaries": [
+            "Unemployed youth residing in Uttar Pradesh seeking career opportunities"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "age": {"min": 18, "max": 35}
+        },
+        "benefits": [
+            "Direct online application to thousands of verified private and contractual public job vacancies.",
+            "Free participation in monthly district-level mega Rozgar Melas.",
+            "Free skill assessment and interview coaching sessions."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "UP Domicile Certificate",
+            "Educational Certificates (10th, 12th, Degree/Diploma)",
+            "Resume / CV"
+        ],
+        "application_steps": [
+            "Register on sewayojan.up.nic.in portal.",
+            "Create profile, upload certificates, and fill skills and qualifications.",
+            "Browse active vacancies and apply directly with 1 click."
+        ],
+        "official_url": "http://sewayojan.up.nic.in/",
+        "source_url": "http://sewayojan.up.nic.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["employment", "job-portal", "up", "uttar pradesh", "unemployed", "allowance", "jobs"]
+    },
+
+    # =========================================================================
+    # 7. INTERNSHIPS / APPRENTICESHIPS
+    # =========================================================================
+    {
+        "slug": "pm-internship-scheme",
+        "name": "Prime Minister's Internship Scheme (PMIS)",
+        "name_hi": "प्रधानमंत्री इंटर्नशिप योजना",
+        "description": "Government scheme providing 12-month paid internships in India's top 500 companies for youth aged 21-24 with monthly stipend of Rs. 5,000 plus a one-time grant of Rs. 6,000 for incidental expenses.",
+        "description_hi": "देश की शीर्ष 500 कंपनियों में 21 से 24 वर्ष के युवाओं को 12 माह की सवेतन व्यावहारिक इंटर्नशिप, ₹5,000 प्रति माह वजीफा और ₹6,000 एकमुश्त सहायता।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Corporate Affairs",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["internships", "jobs"],
+        "target_beneficiaries": [
+            "Youth aged 21 to 24 who have completed Class 10, 12, ITI, Polytechnic, or Graduation",
+            "Candidates not in full-time employment or full-time education",
+            "Family income under ₹8 Lakh per annum"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 21, "max": 24},
+            "income": {"max": 800000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Monthly stipend of ₹5,000 (₹4,500 from Central Govt + ₹500 from company CSR) for 12 months.",
+            "One-time incidental grant of ₹6,000 upon joining the internship.",
+            "Insurance coverage under PM Jeevan Jyoti Bima and PM Suraksha Bima paid by the Government.",
+            "Hands-on corporate exposure with certificate of completion from top industry leaders."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Educational Qualification Certificates / Final Marksheet",
+            "Self-declaration of family income (< ₹8 Lakh)",
+            "Aadhaar-seeded bank account details"
+        ],
+        "application_steps": [
+            "Visit the official PMIS portal (pminternship.mca.gov.in).",
+            "Register using Aadhaar and complete profile verification.",
+            "Browse internships posted by top 500 companies by sector, state, and district.",
+            "Select and apply for up to 5 internship opportunities.",
+            "Shortlisted candidates are contacted directly by host companies for onboarding."
+        ],
+        "official_url": "https://pminternship.mca.gov.in/",
+        "source_url": "https://www.mca.gov.in/",
+        "source_name": "Ministry of Corporate Affairs",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["internship", "stipend", "corporate", "pmis", "youth", "learner", "jobs"]
+    },
+    {
+        "slug": "nats-apprenticeship",
+        "name": "National Apprenticeship Training Scheme (NATS 2.0)",
+        "name_hi": "राष्ट्रीय शिक्षुता प्रशिक्षण योजना (एनएटीएस)",
+        "description": "One-year apprenticeship training program for technically qualified youth (graduates, diploma holders, and general vocational degree students) providing industry stipends subsidized by the Central Government.",
+        "description_hi": "डिप्लोमा एवं डिग्री धारक युवाओं को उद्योगों में 1 वर्ष का व्यावहारिक प्रशिक्षण एवं सरकारी सहायता प्राप्त मासिक वजीफा।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Education",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["internships", "skills"],
+        "target_beneficiaries": [
+            "Fresh engineering, general streams, and diploma graduates passing within last 3-5 years"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 18, "max": 28},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Monthly stipend up to ₹9,000 per month for Graduate apprentices and ₹8,000 for Diploma apprentices.",
+            "Direct 50% government DBT subsidy of stipend directly into student bank account.",
+            "National Certificate of Proficiency issued upon completion recognized worldwide."
+        ],
+        "documents": [
+            "Graduation / Diploma Passing Certificate",
+            "Aadhaar Card",
+            "Bank Account Passbook",
+            "College Bonafide / Enrollment number"
+        ],
+        "application_steps": [
+            "Register on NATS portal (nats.education.gov.in).",
+            "Complete student enrollment and verify email/mobile.",
+            "Search establishments and apply for active apprenticeship vacancies."
+        ],
+        "official_url": "https://nats.education.gov.in/",
+        "source_url": "https://www.education.gov.in/",
+        "source_name": "Board of Apprenticeship Training (BOAT) / Ministry of Education",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["apprenticeship", "nats", "stipend", "technical-training", "graduate", "diploma", "internship"]
+    },
+
+    # =========================================================================
+    # 8. SKILL DEVELOPMENT / TRAINING
+    # =========================================================================
+    {
+        "slug": "pradhan-mantri-kaushal-vikas-yojana",
+        "name": "Pradhan Mantri Kaushal Vikas Yojana (PMKVY 4.0)",
+        "name_hi": "प्रधानमंत्री कौशल विकास योजना (पीएमकेवीवाई 4.0)",
+        "description": "Skill certification scheme offering free industry-aligned technical and vocational training, assessment, and government certification across futuristic job roles including AI, robotics, drones, and green energy.",
+        "description_hi": "उद्योगों की मांग के अनुसार युवाओं को तकनीकी और व्यावसायिक कौशल का निःशुल्क प्रशिक्षण, मूल्यांकन और सरकारी प्रमाणन प्रदान करने की प्रमुख योजना।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Skill Development and Entrepreneurship",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["skills", "jobs"],
+        "target_beneficiaries": [
+            "School and college dropouts or unemployed youth seeking skill certification"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 15, "max": 45},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "100% free training courses aligned with National Skill Qualification Framework (NSQF).",
+            "Monetary reward/stipend of ₹8,000 on successful certification.",
+            "Free accidental insurance coverage of ₹2 Lakh for 3 years under Kaushal Bima.",
+            "Placement and apprenticeship assistance through Rozgar Melas."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Bank Account details",
+            "Previous education marksheet",
+            "Passport size photos"
+        ],
+        "application_steps": [
+            "Visit Skill India Digital portal (skillindiadigital.gov.in).",
+            "Search training centers near your location by course or sector.",
+            "Register online with Aadhaar and enroll in the batch of your choice."
+        ],
+        "official_url": "https://www.pmkvyofficial.org/",
+        "source_url": "https://www.msde.gov.in/",
+        "source_name": "Ministry of Skill Development and Entrepreneurship",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["skill", "training", "pmkvy", "vocational", "certification", "iti", "skills"]
+    },
+    {
+        "slug": "ddu-gky-rural-skills",
+        "name": "Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)",
+        "name_hi": "दीन दयाल उपाध्याय ग्रामीण कौशल्या योजना",
+        "description": "Placement-linked skill development scheme for rural poor youth aged 15-35, providing completely free residential training, uniforms, food, and guaranteed minimum 70% job placement in organized sectors.",
+        "description_hi": "ग्रामीण गरीब युवाओं हेतु पूर्णतः निःशुल्क आवासीय कौशल प्रशिक्षण, वर्दी, भोजन एवं संगठित क्षेत्र में कम से कम 70% सुनिश्चित रोजगार।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Rural Development",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["skills", "jobs"],
+        "target_beneficiaries": [
+            "Rural youth aged 15 to 35 years belonging to poor households (SECC/BPL)"
+        ],
+        "eligibility_rules": {
+            "area": "Rural",
+            "age": {"min": 15, "max": 35},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Free residential vocational training with lodging, boarding, and training kit.",
+            "Mandatory placement with minimum wage guarantee in verified companies.",
+            "Post-placement support allowance of ₹1,000 to ₹3,000 per month."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "BPL Card / MGNREGA Job Card / SECC verification",
+            "School Leaving Certificate"
+        ],
+        "application_steps": [
+            "Apply via Gram Panchayat or directly at ddugky.gov.in.",
+            "Attend mobilization camps conducted by Project Implementing Agencies (PIAs).",
+            "Select trade and join the residential training academy."
+        ],
+        "official_url": "http://ddugky.gov.in/",
+        "source_url": "https://rural.nic.in/",
+        "source_name": "Ministry of Rural Development",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["skill", "rural-youth", "placement", "ddu-gky", "training", "jobs"]
+    },
+    {
+        "slug": "up-skill-development-mission",
+        "name": "Uttar Pradesh Skill Development Mission (UPSDM)",
+        "name_hi": "उत्तर प्रदेश कौशल विकास मिशन (यूपीएसडीएम)",
+        "description": "Free vocational training initiative by the UP Government training over 1 million youth across IT, healthcare, apparel, electronics, and automotive trades with certified NSDC standards and job placements.",
+        "description_hi": "उत्तर प्रदेश के युवाओं को रोजगारपरक तकनीकी ट्रेड्स में निःशुल्क प्रशिक्षण और प्रतिष्ठित कंपनियों में प्लेसमेंट।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Vocational Education and Skill Development Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["skills"],
+        "target_beneficiaries": [
+            "Unemployed and school-dropout youth in Uttar Pradesh aged 14 to 35"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "age": {"min": 14, "max": 35}
+        },
+        "benefits": [
+            "Free training courseware, uniform, and certification.",
+            "Training centers situated across all 75 districts of UP.",
+            "Placement drives connecting certified candidates with local industries."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "UP Resident Proof",
+            "Educational Qualification Certificate"
+        ],
+        "application_steps": [
+            "Register at upsdm.gov.in portal.",
+            "Select desired sector, course, and training partner center.",
+            "Enroll in upcoming batch upon counseling."
+        ],
+        "official_url": "http://upsdm.gov.in/",
+        "source_url": "http://upsdm.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["skill", "upsdm", "training", "vocational", "uttar pradesh"]
+    },
+
+    # =========================================================================
+    # 9. WOMEN & CHILD WELFARE
+    # =========================================================================
+    {
+        "slug": "sukanya-samriddhi-yojana",
+        "name": "Sukanya Samriddhi Yojana (SSY)",
+        "name_hi": "सुकन्या समृद्धि योजना (एसएसवाई)",
+        "description": "Government-backed small savings scheme for girl children with the highest post-office interest rate (8.2% p.a.), triple tax exemption under Section 80C, and maturity on reaching 21 years.",
+        "description_hi": "बालिकाओं के उज्ज्वल भविष्य और उच्च शिक्षा हेतु 8.2% उच्चतम ब्याज दर और 80C के तहत पूर्ण कर छूट वाली बचत योजना।",
+        "primary_category": "Women & Child Development",
+        "category": "Women & Child Development",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["women_child"],
+        "target_beneficiaries": [
+            "Parents / legal guardians of girl children aged below 10 years (maximum 2 girls per family)"
+        ],
+        "eligibility_rules": {
+            "gender": "female",
+            "age": {"max": 10},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Attractive guaranteed interest rate (currently 8.2% compounded annually).",
+            "Minimum deposit of only ₹250 per year up to maximum ₹1,50,000 per year.",
+            "EEE tax benefit (principal, interest, and maturity amount completely tax-free).",
+            "Partial withdrawal up to 50% permitted for girl's higher education after age 18."
+        ],
+        "documents": [
+            "Birth Certificate of the girl child",
+            "Aadhaar Card and PAN of parent/guardian",
+            "Address proof",
+            "Photographs of parent and child"
+        ],
+        "application_steps": [
+            "Visit any post office or authorized commercial bank branch.",
+            "Submit SSY Account Opening Form along with birth certificate.",
+            "Deposit initial amount (min ₹250) and receive the SSY Passbook."
+        ],
+        "official_url": "https://www.indiapost.gov.in/Financial/Pages/Content/Sukanya-Samriddhi-Account.aspx",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Ministry of Finance",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["women", "girl-child", "sukanya", "savings", "daughter", "child"]
+    },
+    {
+        "slug": "pm-matru-vandana-pmmvy",
+        "name": "Pradhan Mantri Matru Vandana Yojana (PMMVY)",
+        "name_hi": "प्रधानमंत्री मातृ वंदना योजना (पीएमएमवीवाई)",
+        "description": "Direct Benefit Transfer maternity benefit scheme providing cash incentive of ₹5,000 (1st child) and ₹6,000 (2nd girl child) to pregnant and lactating mothers for wage loss compensation and nutrition.",
+        "description_hi": "गर्भवती एवं धात्री माताओं को पोषण सुधार एवं प्रसव सहायता हेतु ₹5,000 से ₹6,000 तक की सीधी डीबीटी नकद सहायता।",
+        "primary_category": "Women & Child Development",
+        "category": "Women & Child Development",
+        "ministry": "Ministry of Women and Child Development",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["women_child", "healthcare"],
+        "target_beneficiaries": [
+            "Pregnant women and lactating mothers for first two living children"
+        ],
+        "eligibility_rules": {
+            "gender": "female",
+            "age": {"min": 19},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Cash incentive paid in installments directly into mother's Aadhaar-seeded bank account.",
+            "Encourages timely ante-natal check-ups (ANC) and institutional delivery."
+        ],
+        "documents": [
+            "Mother and Child Protection (MCP) Card",
+            "Aadhaar Card of mother and husband",
+            "Bank Passbook of the woman"
+        ],
+        "application_steps": [
+            "Register at local Anganwadi Centre or apply online at pmmvy.wcd.gov.in.",
+            "Submit MCP card details after first ANC checkup.",
+            "Installments are credited automatically through DBT upon milestones."
+        ],
+        "official_url": "https://pmmvy.wcd.gov.in/",
+        "source_url": "https://wcd.nic.in/",
+        "source_name": "Ministry of Women and Child Development",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["women", "maternity", "mother", "pregnant", "lactating", "pmmvy", "child"]
+    },
+    {
+        "slug": "up-kanya-sumangala-yojana",
+        "name": "Uttar Pradesh Mukhyamantri Kanya Sumangala Yojana",
+        "name_hi": "उत्तर प्रदेश मुख्यमंत्री कन्या सुमंगला योजना",
+        "description": "Conditional cash transfer scheme by the UP Government providing a total of ₹25,000 in 6 installments across girl child birth, vaccination, school admissions (Class 1, 6, 9), and higher degree enrollment.",
+        "description_hi": "उत्तर प्रदेश में बालिकाओं के जन्म से लेकर स्नातक तक 6 चरणों में कुल ₹25,000 की वित्तीय सहायता प्रदान करने वाली योजना।",
+        "primary_category": "Women & Child Development",
+        "category": "Women & Child Development",
+        "ministry": "Women and Child Development Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["women_child", "education"],
+        "target_beneficiaries": [
+            "Girl children domiciled in UP from families with annual income under ₹3 Lakh"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "gender": "female",
+            "income": {"max": 300000}
+        },
+        "benefits": [
+            "Total ₹25,000 financial support credited at 6 key developmental stages of the girl child.",
+            "Guarantees school retention, health immunization, and eliminates female foeticide."
+        ],
+        "documents": [
+            "Birth Certificate of girl child",
+            "UP Domicile Certificate",
+            "Family Income Certificate (< ₹3 Lakh)",
+            "School / College Admission receipt",
+            "Bank passbook of mother/guardian"
+        ],
+        "application_steps": [
+            "Apply online via mksy.up.gov.in portal.",
+            "Select relevant phase (birth, vaccine, class 1, 6, 9, or degree).",
+            "Block Development Officer / SDM approves and DBT funds are released."
+        ],
+        "official_url": "https://mksy.up.gov.in/",
+        "source_url": "https://mksy.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["women", "girl-child", "up", "kanya-sumangala", "grant", "education", "child"]
+    },
+
+    # =========================================================================
+    # 10. SENIOR CITIZENS & PENSION
+    # =========================================================================
+    {
+        "slug": "national-old-age-pension",
+        "name": "Indira Gandhi National Old Age Pension Scheme (IGNOAPS)",
+        "name_hi": "इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना",
+        "description": "Monthly social security pension for senior citizens aged 60 years and above belonging to BPL households across all Indian states and Union Territories.",
+        "description_hi": "बीपीएल परिवारों के 60 वर्ष या उससे अधिक आयु के वरिष्ठ नागरिकों हेतु मासिक सामाजिक सुरक्षा वृद्धावस्था पेंशन।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Rural Development",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["pension"],
+        "target_beneficiaries": [
+            "BPL senior citizens aged 60 and above with no other steady source of income"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 60},
+            "income": {"max": 200000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Monthly pension of ₹500 to ₹1,500 credited to beneficiary bank account (combined Central + State contribution).",
+            "Lifelong DBT transfer without intermediaries."
+        ],
+        "documents": [
+            "Aadhaar Card / Age Proof",
+            "BPL Card / Income Certificate",
+            "Bank Account details",
+            "Passport size photograph"
+        ],
+        "application_steps": [
+            "Apply through NSAP portal (nsap.nic.in) or local District Social Welfare Office / Gram Panchayat.",
+            "Submit verification forms; approved pensions are disbursed monthly via PFMS."
+        ],
+        "official_url": "https://nsap.nic.in/",
+        "source_url": "https://rural.nic.in/",
+        "source_name": "National Social Assistance Programme",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["pension", "senior-citizen", "old-age", "nsap", "bpl", "social-security"]
+    },
+    {
+        "slug": "atal-pension-yojana",
+        "name": "Atal Pension Yojana (APY)",
+        "name_hi": "अटल पेंशन योजना (एपीवाई)",
+        "description": "Guaranteed minimum monthly pension scheme for citizens aged 18-40, providing guaranteed lifelong pension of Rs. 1,000 to Rs. 5,000 per month starting at age 60 based on voluntary monthly contributions.",
+        "description_hi": "18 से 40 वर्ष के नागरिकों के लिए 60 वर्ष की आयु से ₹1,000 से ₹5,000 तक की गारंटीकृत आजीवन मासिक पेंशन योजना।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["pension"],
+        "target_beneficiaries": [
+            "All Indian citizens aged 18-40 having a savings bank account (especially unorganized sector workers)"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 18, "max": 40},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Government-guaranteed pension of ₹1,000, ₹2,000, ₹3,000, ₹4,000, or ₹5,000 per month.",
+            "PFRDA regulated pension fund with lifelong payout to subscriber, and thereafter to spouse.",
+            "Nominee receives complete accumulated corpus upon demise of both subscriber and spouse."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Active Savings Bank Account with auto-debit consent",
+            "Mobile number"
+        ],
+        "application_steps": [
+            "Visit your bank branch or log into net banking.",
+            "Fill APY subscriber registration form and choose target pension amount (e.g. ₹5,000/month).",
+            "Set auto-debit on your savings bank account."
+        ],
+        "official_url": "https://www.npscra.nsdl.co.in/scheme-details.php",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Pension Fund Regulatory and Development Authority (PFRDA)",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["pension", "atal", "retirement", "social-security", "senior"]
+    },
+    {
+        "slug": "up-vridhavastha-pension",
+        "name": "Uttar Pradesh Vridhavastha Pension Yojana",
+        "name_hi": "उत्तर प्रदेश वृद्धावस्था पेंशन योजना",
+        "description": "State monthly pension of ₹1,000 per month (₹3,000 quarterly) provided by the Uttar Pradesh Social Welfare Department to elderly citizens aged 60 and above living below poverty line.",
+        "description_hi": "उत्तर प्रदेश के 60 वर्ष से अधिक आयु के निर्धन बुजुर्गों हेतु ₹1,000 प्रति माह की सामाजिक सुरक्षा पेंशन सहायता।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Social Welfare Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["pension"],
+        "target_beneficiaries": [
+            "Senior citizens domiciled in UP aged 60 years or above",
+            "Annual family income up to ₹46,080 (rural) or ₹56,460 (urban)"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "age": {"min": 60},
+            "income": {"max": 56460}
+        },
+        "benefits": [
+            "Pension of ₹1,000 per month credited directly into beneficiary savings bank account.",
+            "Disbursed on quarterly basis via DBT."
+        ],
+        "documents": [
+            "Age Certificate / Aadhaar Card showing 60+ years",
+            "Income Certificate issued by Tehsildar",
+            "UP Domicile Certificate",
+            "Bank Passbook linked to Aadhaar"
+        ],
+        "application_steps": [
+            "Apply online via SSPY portal (sspy-up.gov.in).",
+            "Submit personal, residential, and banking details.",
+            "Verified by Gram Panchayat Secretary / Lekhpal and approved by District Social Welfare Officer."
+        ],
+        "official_url": "https://sspy-up.gov.in/",
+        "source_url": "https://samajkalyan.up.gov.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["pension", "old-age", "vridhavastha", "up", "uttar pradesh", "senior"]
+    },
+
+    # =========================================================================
+    # 11. DISABILITY SUPPORT (DIVYANGJAN)
+    # =========================================================================
+    {
+        "slug": "divyangjan-swavalamban-yojana",
+        "name": "Divyangjan Swavalamban Scheme (NHFDC)",
+        "name_hi": "दिव्यांगजन स्वावलंबन योजना (एनएचएफडीसी)",
+        "description": "Concessional loans up to Rs. 50 Lakh at low interest rates (5% to 8%) with 100% financial assistance for Persons with Disabilities (PwDs) to start self-employment ventures, business units, and pursue professional education.",
+        "description_hi": "दिव्यांग व्यक्तियों (PwD) को स्वरोजगार, व्यवसाय और व्यावसायिक शिक्षा हेतु 5% से 8% की रियायती ब्याज दर पर ₹50 लाख तक का ऋण।",
+        "primary_category": "Differently Abled Support",
+        "category": "Differently Abled Support",
+        "ministry": "Ministry of Social Justice and Empowerment",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["disability"],
+        "target_beneficiaries": [
+            "Indian citizens with 40% or more disability certified under Rights of Persons with Disabilities Act"
+        ],
+        "eligibility_rules": {
+            "disability": True,
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Concessional interest rate between 5% and 8% per annum (rebate of 1% for women with disabilities).",
+            "Loans up to ₹50,00,000 for manufacturing and services enterprises.",
+            "Repayment period up to 10 years with flexible moratorium."
+        ],
+        "documents": [
+            "Disability Certificate (minimum 40% disability) or UDID Card",
+            "Aadhaar Card and PAN Card",
+            "Business project quotation / DPR",
+            "Bank passbook"
+        ],
+        "application_steps": [
+            "Apply via State Channelizing Agencies (SCAs), RRBs, or nationalized banks implementing NHFDC schemes.",
+            "Download forms at nhfdc.nic.in.",
+            "Submit project proposal for loan sanction and disbursal."
+        ],
+        "official_url": "http://www.nhfdc.nic.in/",
+        "source_url": "https://disabilityaffairs.gov.in/",
+        "source_name": "National Handicapped Finance and Development Corporation",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["disability", "differently-abled", "nhfdc", "concessional-loan", "divyangjan", "business"]
+    },
+    {
+        "slug": "adip-scheme-disabled",
+        "name": "ADIP Scheme (Assistance to Disabled Persons for Purchase/Fitting of Aids and Appliances)",
+        "name_hi": "एडीआईपी योजना (दिव्यांगजनों हेतु सहायक उपकरण वितरण योजना)",
+        "description": "Government scheme providing free or heavily subsidized contemporary and scientifically manufactured assistive aids and appliances (wheelchairs, motorized tricycles, hearing aids, braille kits, prosthetics) to PwDs.",
+        "description_hi": "दिव्यांगजनों को आधुनिक सहायक उपकरण (मोटराइज्ड ट्राइसाइकिल, व्हीलचेयर, श्रवण यंत्र, कृत्रिम अंग आदि) निःशुल्क या भारी सब्सिडी पर उपलब्ध कराना।",
+        "primary_category": "Differently Abled Support",
+        "category": "Differently Abled Support",
+        "ministry": "Ministry of Social Justice and Empowerment",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["disability"],
+        "target_beneficiaries": [
+            "Persons with 40% or more disability holding valid certificate",
+            "Monthly income under ₹20,000 (100% free aid) or ₹20,000-₹30,000 (50% subsidy)"
+        ],
+        "eligibility_rules": {
+            "disability": True,
+            "income": {"max": 360000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "100% free aids including motorized tricycles, smart canes, hearing aids, wheelchairs, and artificial limbs.",
+            "Aids delivered via regular district-level assessment and distribution camps organized by ALIMCO."
+        ],
+        "documents": [
+            "Disability Certificate / UDID Card",
+            "Income Certificate (monthly income < ₹20,000 for full grant)",
+            "Aadhaar Card",
+            "Doctor recommendation for specific appliance"
+        ],
+        "application_steps": [
+            "Register at adip.disabilityaffairs.gov.in or attend ALIMCO camp in your district.",
+            "Undergo medical assessment by specialists.",
+            "Receive customized assistive device at distribution ceremony."
+        ],
+        "official_url": "http://adip.disabilityaffairs.gov.in/",
+        "source_url": "https://alimco.in/",
+        "source_name": "Department of Empowerment of Persons with Disabilities",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["disability", "assistive-device", "aids", "adip", "wheelchair", "hearing-aid", "divyangjan"]
+    },
+    {
+        "slug": "up-divyangjan-pension",
+        "name": "Uttar Pradesh Divyangjan Pension Yojana",
+        "name_hi": "उत्तर प्रदेश दिव्यांगजन पेंशन योजना",
+        "description": "Monthly disability pension of ₹1,000 per month provided by the Uttar Pradesh Government to differently-abled persons with 40% or more disability living in UP with low family income.",
+        "description_hi": "उत्तर प्रदेश के 40% या अधिक दिव्यांगता वाले निर्धन नागरिकों हेतु ₹1,000 प्रति माह की नियमित पेंशन सहायता।",
+        "primary_category": "Differently Abled Support",
+        "category": "Differently Abled Support",
+        "ministry": "Divyangjan Empowerment Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["disability", "pension"],
+        "target_beneficiaries": [
+            "Differently-abled citizens domiciled in UP with >=40% disability"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "disability": True,
+            "income": {"max": 46080}
+        },
+        "benefits": [
+            "Monthly financial assistance of ₹1,000 (credited quarterly at ₹3,000 via DBT).",
+            "Priority coverage under state housing and welfare schemes."
+        ],
+        "documents": [
+            "Disability Certificate issued by Chief Medical Officer (CMO) or UDID Card",
+            "UP Domicile Certificate",
+            "Income Certificate from Tehsildar",
+            "Aadhaar Card and Bank Account details"
+        ],
+        "application_steps": [
+            "Apply online via SSPY portal (sspy-up.gov.in) under 'Divyang Pension'.",
+            "Upload CMO disability certificate and income proof.",
+            "Approved by District Divyangjan Empowerment Officer and disbursed to bank account."
+        ],
+        "official_url": "https://sspy-up.gov.in/",
+        "source_url": "http://uphwo.up.nic.in/",
+        "source_name": "Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["disability", "pension", "divyangjan", "up", "uttar pradesh"]
+    },
+
+    # =========================================================================
+    # 12. FINANCIAL ASSISTANCE
+    # =========================================================================
+    {
+        "slug": "pm-jan-dhan-yojana",
+        "name": "Pradhan Mantri Jan-Dhan Yojana (PMJDY)",
+        "name_hi": "प्रधानमंत्री जन-धन योजना (पीएमजेडीवाई)",
+        "description": "National mission for universal financial inclusion providing zero-balance basic savings bank deposit (BSBD) accounts, free RuPay debit card with ₹2 Lakh in-built accidental insurance, and overdraft up to ₹10,000.",
+        "description_hi": "प्रत्येक असंबद्ध परिवार को शून्य शेष बचत बैंक खाता, ₹2 लाख का निःशुल्क दुर्घटना बीमा और ₹10,000 तक की ओवरड्राफ्ट सुविधा।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["financial"],
+        "target_beneficiaries": [
+            "Any Indian citizen aged 10 and above who does not hold a bank account"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 10},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Zero minimum balance required (no penalty for non-maintenance).",
+            "Free RuPay Debit Card with built-in ₹2,00,000 accidental insurance cover.",
+            "Overdraft (OD) facility up to ₹10,000 for eligible account holders.",
+            "Gateway for all Central and State government DBT benefit transfers."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Mobile number",
+            "Passport photo"
+        ],
+        "application_steps": [
+            "Visit any bank branch or Bank Mitra / Customer Service Point (CSP).",
+            "Fill the PMJDY account opening form and submit Aadhaar.",
+            "Account opened and RuPay debit card handed over immediately."
+        ],
+        "official_url": "https://pmjdy.gov.in/",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Department of Financial Services",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["financial", "bank-account", "zero-balance", "dbt", "pmjdy", "insurance"]
+    },
+    {
+        "slug": "pm-suraksha-bima-yojana",
+        "name": "Pradhan Mantri Suraksha Bima Yojana (PMSBY)",
+        "name_hi": "प्रधानमंत्री सुरक्षा बीमा योजना (पीएमएसबीवाई)",
+        "description": "Government accidental death and disability insurance providing ₹2 Lakh accidental death/permanent total disability cover at an ultra-low premium of only ₹20 per year.",
+        "description_hi": "मात्र ₹20 प्रति वर्ष के अत्यंत कम प्रीमियम पर ₹2 लाख का आकस्मिक मृत्यु एवं पूर्ण स्थायी विकलांगता बीमा कवर।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["financial"],
+        "target_beneficiaries": [
+            "All bank account holders aged 18 to 70 years"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 18, "max": 70},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "₹2,00,000 compensation on accidental death or permanent total disability.",
+            "₹1,00,000 compensation on permanent partial disability.",
+            "Nominal premium of just ₹20 auto-debited once a year in May."
+        ],
+        "documents": [
+            "Bank Account linked with Aadhaar",
+            "Auto-debit consent form"
+        ],
+        "application_steps": [
+            "Submit enrollment form to your bank or activate via mobile/internet banking.",
+            "Annual premium is debited automatically every year."
+        ],
+        "official_url": "https://www.jansuraksha.gov.in/",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Ministry of Finance",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["financial", "accidental-insurance", "pmsby", "low-cost-insurance"]
+    },
+    {
+        "slug": "pm-jeevan-jyoti-bima",
+        "name": "Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY)",
+        "name_hi": "प्रधानमंत्री जीवन ज्योति बीमा योजना (पीएमजेजेबीवाई)",
+        "description": "One-year renewable term life insurance offering ₹2 Lakh life cover to citizens aged 18-50 for death due to any cause at an affordable annual premium of ₹436.",
+        "description_hi": "किसी भी कारण से मृत्यु होने पर परिवार को ₹2 लाख का जीवन बीमा कवर, मात्र ₹436 वार्षिक प्रीमियम पर।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Finance",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["financial"],
+        "target_beneficiaries": [
+            "Bank account holders aged 18 to 50 years"
+        ],
+        "eligibility_rules": {
+            "age": {"min": 18, "max": 50},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "₹2,00,000 pure term life risk cover payable to nominee upon death of the insured from any cause.",
+            "Renews automatically annually via bank auto-debit."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Bank Account with auto-debit consent"
+        ],
+        "application_steps": [
+            "Enroll at your bank branch or through mobile banking app.",
+            "Fill nominee details and authorize annual debit of ₹436."
+        ],
+        "official_url": "https://www.jansuraksha.gov.in/",
+        "source_url": "https://financialservices.gov.in/",
+        "source_name": "Ministry of Finance",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["financial", "life-insurance", "pmjjby", "term-insurance"]
+    },
+
+    # =========================================================================
+    # 13. SOCIAL WELFARE
+    # =========================================================================
+    {
+        "slug": "pm-shram-yogi-maandhan",
+        "name": "Pradhan Mantri Shram Yogi Maan-dhan (PM-SYM)",
+        "name_hi": "प्रधानमंत्री श्रम योगी मान-धन योजना (पीएम-एसवाईएम)",
+        "description": "Voluntary and contributory pension scheme for unorganized workers (street vendors, agricultural workers, construction workers, domestic helpers) ensuring guaranteed minimum monthly pension of ₹3,000 after age 60.",
+        "description_hi": "असंगठित क्षेत्र के श्रमिकों (मजदूर, घरेलू कामगार, रेहड़ी पटरी वाले) हेतु 60 वर्ष की आयु के बाद ₹3,000 प्रति माह की सुनिश्चित पेंशन।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Ministry of Labour and Employment",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["social_welfare", "pension"],
+        "target_beneficiaries": [
+            "Unorganized workers aged 18-40 with monthly income <= ₹15,000 not covered by EPFO/ESIC/NPS"
+        ],
+        "eligibility_rules": {
+            "occupation": ["unorganized worker", "informal worker", "labour", "agricultural worker"],
+            "age": {"min": 18, "max": 40},
+            "income": {"max": 180000},
+            "states": ["ALL"]
+        },
+        "benefits": [
+            "Guaranteed minimum pension of ₹3,000 per month on attaining age 60.",
+            "50% matching monthly contribution deposited by the Central Government.",
+            "50% family pension payable to spouse upon death of the pensioner."
+        ],
+        "documents": [
+            "Aadhaar Card",
+            "Savings Bank Account / Jan Dhan Account Passbook",
+            "Mobile number"
+        ],
+        "application_steps": [
+            "Visit any Common Service Centre (CSC) or register via maandhan.in.",
+            "Enter Aadhaar and bank details for eKYC.",
+            "Pay 1st monthly installment in cash at CSC; receive PM-SYM Card instantly."
+        ],
+        "official_url": "https://maandhan.in/",
+        "source_url": "https://labour.gov.in/",
+        "source_name": "Ministry of Labour and Employment",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["welfare", "unorganized-worker", "labour", "pension", "pmsym", "social-welfare"]
+    },
+    {
+        "slug": "up-shramik-kalyan-yojana",
+        "name": "Uttar Pradesh Shramik Kalyan & Sant Ravidas Shiksha Sahayata",
+        "name_hi": "उत्तर प्रदेश श्रमिक कल्याण एवं संत रविदास शिक्षा सहायता योजना",
+        "description": "Comprehensive welfare scheme by the UP Building and Other Construction Workers Welfare Board (UP BOCW) providing monthly stipends up to ₹5,000 and free bicycle for children of registered construction workers pursuing education.",
+        "description_hi": "उत्तर प्रदेश के पंजीकृत निर्माण श्रमिकों के बच्चों को कक्षा 1 से उच्च शिक्षा तक छात्रवृत्ति एवं निःशुल्क साइकिल सहायता।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Labour Department, Government of Uttar Pradesh",
+        "level": "State",
+        "states": ["Uttar Pradesh"],
+        "intents": ["social_welfare", "education"],
+        "target_beneficiaries": [
+            "Registered construction and building workers in Uttar Pradesh and their children"
+        ],
+        "eligibility_rules": {
+            "states": ["Uttar Pradesh"],
+            "occupation": ["construction worker", "labour", "unorganized worker"]
+        },
+        "benefits": [
+            "Monthly educational stipend ranging from ₹500 to ₹5,000 per month based on class level.",
+            "Free bicycle distributed to students in Class 9 and above.",
+            "Marriage assistance up to ₹55,000 for daughters of registered workers."
+        ],
+        "documents": [
+            "UP BOCW Labour Registration Card (Labour Card)",
+            "Aadhaar Card of worker and student",
+            "School admission proof and marksheet",
+            "Bank passbook"
+        ],
+        "application_steps": [
+            "Apply online at upbocw.in portal under 'Sant Ravidas Shiksha Sahayata'.",
+            "Enter Labour Card registration number and student details.",
+            "Assistant Labour Commissioner approves and scholarship funds are credited via DBT."
+        ],
+        "official_url": "http://upbocw.in/",
+        "source_url": "http://upbocw.in/",
+        "source_name": "UP BOCW / Government of Uttar Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["welfare", "labour", "up-bocw", "construction-worker", "uttar pradesh", "social-welfare"]
+    }
+]
+
+def main():
+    processed_path = Path("data/processed/schemes.json")
+    seed_path = Path("data/seed/schemes.json")
+    
+    processed_path.parent.mkdir(parents=True, exist_ok=True)
+    seed_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    print(f"Writing {len(SCHEMES)} comprehensive schemes to {processed_path} and {seed_path}...")
+    
+    with open(processed_path, "w", encoding="utf-8") as f:
+        json.dump(SCHEMES, f, indent=2, ensure_ascii=False)
+        
+    with open(seed_path, "w", encoding="utf-8") as f:
+        json.dump(SCHEMES, f, indent=2, ensure_ascii=False)
+        
+    print("Dataset generation complete!")
+
+if __name__ == "__main__":
+    main()

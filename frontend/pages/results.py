@@ -27,18 +27,19 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
         saved_ids = {s.get("scheme_id") for s in saved_res["data"]}
 
     # Clean Heading
-    eligible_count = sum(1 for r in results if r.get("status") == "eligible")
-    total_matches = len(results)
+    total_matches = match_data.get("total_schemes_evaluated", len(results))
+    eligible_count = match_data.get("eligible_count", sum(1 for r in results if r.get("status") == "eligible"))
+    pot_count = match_data.get("potentially_eligible_count", sum(1 for r in results if r.get("status") == "potentially_eligible"))
 
     st.markdown(
         f"""
         <div style="margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
                 <h2 style="color: #0F172A; font-weight: 800; font-size: 1.75rem; margin-bottom: 4px;">
                     {"आपके लिए सरकारी योजनाएं" if lang == "hi" else "Government Schemes Matching Your Profile"}
                 </h2>
-                <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;">
-                    {total_matches} {"योजनाएं उपलब्ध" if lang == "hi" else "schemes evaluated"}
+                <span style="font-size: 0.85rem; color: #0F766E; font-weight: 600; background: #F0FDFA; border: 1px solid #CCFBF1; padding: 4px 10px; border-radius: 9999px;">
+                    {eligible_count} {"पात्र योजनाएं" if lang == "hi" else "eligible"} · {pot_count} {"सत्यापन आवश्यक" if lang == "hi" else "need verification"} · {total_matches} {"मूल्यांकित" if lang == "hi" else "evaluated"}
                 </span>
             </div>
             <p style="color: #64748B; font-size: 0.95rem; margin: 0;">
@@ -53,9 +54,9 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
     filter_choice = st.radio(
         "Filter results:",
         options=[
-            "All Schemes" if lang != "hi" else "सभी योजनाएं",
-            "Likely Eligible" if lang != "hi" else "पात्र योजनाएं",
-            "Needs Verification" if lang != "hi" else "सत्यापन आवश्यक",
+            f"Likely Eligible ({eligible_count})" if lang != "hi" else f"पात्र योजनाएं ({eligible_count})",
+            f"All Evaluated ({total_matches})" if lang != "hi" else f"सभी योजनाएं ({total_matches})",
+            f"Needs Verification ({pot_count})" if lang != "hi" else f"सत्यापन आवश्यक ({pot_count})",
         ],
         horizontal=True,
         label_visibility="collapsed",

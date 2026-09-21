@@ -88,4 +88,6 @@ class MatchResponse(BaseModel):
     eligible_count: int
     potentially_eligible_count: int
     not_eligible_count: int
+    total_active_schemes: Optional[int] = None
+    candidate_count: Optional[int] = None
     results: List[SchemeMatchResult]

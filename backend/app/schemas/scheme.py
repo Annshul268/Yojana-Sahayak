@@ -15,6 +15,8 @@ class SchemeBase(BaseModel):
     ministry: str
     level: str = "Central"
     states: List[str] = ["ALL"]
+    tags: List[str] = Field(default_factory=list)
+    intents: List[str] = Field(default_factory=list)
     eligibility_rules: Dict[str, Any] = Field(default_factory=dict)
     benefits: List[str] = Field(default_factory=list)
     documents: List[str] = Field(default_factory=list)
@@ -39,6 +41,8 @@ class SchemeUpdate(BaseModel):
     ministry: Optional[str] = None
     level: Optional[str] = None
     states: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
+    intents: Optional[List[str]] = None
     eligibility_rules: Optional[Dict[str, Any]] = None
     benefits: Optional[List[str]] = None
     documents: Optional[List[str]] = None

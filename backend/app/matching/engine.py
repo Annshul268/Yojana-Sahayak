@@ -11,7 +11,10 @@ from backend.app.matching.models import (
 )
 from backend.app.matching.rules import RuleEvaluator
 from backend.app.matching.scoring import MatchScorer
-from backend.app.matching.taxonomy import match_intent_candidate_schemes
+from backend.app.matching.taxonomy import (
+    is_geographically_applicable,
+    match_intent_candidate_schemes,
+)
 
 
 class MatchingEngine:
@@ -312,14 +315,27 @@ class MatchingEngine:
             elif "disab" in need_first or "divyang" in need_first:
                 intent_id = "disability"
 
-        # Step 3: STRICT PRE-RANKING SECTOR FILTERING (Section 21)
-        # Prevents unrelated healthcare, housing, or savings schemes from being returned
-        # for an education/scholarship search.
+        # Step 3: Geographic & Sector Candidate Retrieval
+        # Evaluates Central schemes applicable across India PLUS citizen's State schemes
         active_schemes = [s for s in schemes if getattr(s, "active", True)]
-        if intent_id and intent_id != "general":
-            candidate_schemes = match_intent_candidate_schemes(intent_id, active_schemes)
+
+        # 3a. Filter geographically applicable schemes for citizen's state
+        if normalized_profile.state:
+            geo_schemes = [
+                s for s in active_schemes
+                if is_geographically_applicable(s, normalized_profile.state)
+            ]
         else:
-            candidate_schemes = active_schemes
+            geo_schemes = active_schemes
+
+        # 3b. Filter candidate schemes by citizen intent / sector
+        if intent_id and intent_id != "general":
+            candidate_schemes = match_intent_candidate_schemes(intent_id, geo_schemes)
+            # If no schemes matched the narrow intent, fall back to all geo schemes
+            if not candidate_schemes:
+                candidate_schemes = geo_schemes
+        else:
+            candidate_schemes = geo_schemes
 
         # Step 4: Evaluate deterministic hard eligibility on candidate schemes
         results: List[SchemeMatchResult] = []
@@ -344,6 +360,8 @@ class MatchingEngine:
             eligible_count=eligible_count,
             potentially_eligible_count=pot_count,
             not_eligible_count=not_count,
+            total_active_schemes=len(active_schemes),
+            candidate_count=len(candidate_schemes),
             results=results,
         )
 

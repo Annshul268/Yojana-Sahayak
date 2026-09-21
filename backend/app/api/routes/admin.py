@@ -101,3 +101,100 @@ async def admin_sync_logs(
         }
         for log in logs
     ]
+@router.get("/diagnostics", summary="Admin: System and Catalog Diagnostics")
+async def admin_diagnostics(
+    db: AsyncSession = Depends(get_db),
+    authorized: bool = Depends(verify_admin_access),
+) -> dict:
+    from backend.app.rag.chroma import chroma_manager
+
+    stmt = select(Scheme)
+    result = await db.execute(stmt)
+    schemes = list(result.scalars().all())
+
+    by_level = {}
+    by_category = {}
+    by_ministry = {}
+    by_state = {}
+    active_count = 0
+
+    for s in schemes:
+        if s.active:
+            active_count += 1
+        lvl = s.level or "Central"
+        by_level[lvl] = by_level.get(lvl, 0) + 1
+        cat = s.category or "Other"
+        by_category[cat] = by_category.get(cat, 0) + 1
+        minis = s.ministry or "Other"
+        by_ministry[minis] = by_ministry.get(minis, 0) + 1
+        for st in (s.states or ["ALL"]):
+            by_state[st] = by_state.get(st, 0) + 1
+
+    chroma_count = chroma_manager.count()
+
+    stmt_sync = select(SyncLog).order_by(desc(SyncLog.created_at)).limit(1)
+    res_sync = await db.execute(stmt_sync)
+    last_log = res_sync.scalar_one_or_none()
+
+    return {
+        "total_schemes": len(schemes),
+        "active_schemes": active_count,
+        "chromadb_documents": chroma_count,
+        "by_level": by_level,
+        "by_category": by_category,
+        "by_ministry": by_ministry,
+        "by_state": by_state,
+        "last_sync": {
+            "source": last_log.source_name,
+            "status": last_log.status,
+            "schemes_ingested": last_log.schemes_ingested,
+            "created_at": last_log.created_at.isoformat() if last_log and last_log.created_at else None,
+        } if last_log else None,
+    }
+
+
+@router.post("/reindex", summary="Admin: Rebuild ChromaDB Index")
+async def admin_reindex(
+    db: AsyncSession = Depends(get_db),
+    authorized: bool = Depends(verify_admin_access),
+) -> dict:
+    from backend.app.rag.chroma import chroma_manager
+
+    stmt = select(Scheme).where(Scheme.active == True)
+    result = await db.execute(stmt)
+    schemes = list(result.scalars().all())
+
+    indexed = 0
+    for s in schemes:
+        scheme_dict = {
+            "name": s.name,
+            "name_hi": s.name_hi,
+            "category": s.category,
+            "ministry": s.ministry,
+            "description": s.description,
+            "description_hi": s.description_hi,
+            "benefits": s.benefits or [],
+            "documents": s.documents or [],
+            "application_steps": s.application_steps or [],
+        }
+        doc_text = IngestionPipeline.build_embedding_text(scheme_dict)
+        metadata = {
+            "scheme_id": s.id,
+            "slug": s.slug,
+            "category": s.category or "",
+            "ministry": s.ministry or "",
+            "level": s.level or "Central",
+            "source": s.source_name or "Official Portal",
+            "official_url": s.official_url or "",
+        }
+        chroma_manager.upsert_scheme_document(
+            scheme_id=s.id,
+            document_text=doc_text,
+            metadata=metadata,
+        )
+        indexed += 1
+
+    return {
+        "message": f"Successfully re-indexed {indexed} active schemes into ChromaDB.",
+        "chromadb_count": chroma_manager.count(),
+    }

@@ -58,6 +58,7 @@ class Scheme(Base):
     level = Column(String(50), default="Central", index=True)  # Central, State
     states = Column(JSON, default=lambda: ["ALL"])  # List of state names or ["ALL"]
     tags = Column(JSON, default=list)
+    intents = Column(JSON, default=list)
     eligibility_rules = Column(JSON, default=dict)
     benefits = Column(JSON, default=list)
     documents = Column(JSON, default=list)

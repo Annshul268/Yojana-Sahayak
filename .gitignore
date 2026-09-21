@@ -51,6 +51,7 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/schemes.json
 
 # IDEs & OS
 .vscode/

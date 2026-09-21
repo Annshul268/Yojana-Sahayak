@@ -58,15 +58,18 @@ class IngestionPipeline:
             res = await db.execute(stmt)
             existing_scheme = res.scalar_one_or_none()
 
+            valid_columns = {c.name for c in Scheme.__table__.columns}
+            filtered_data = {k: v for k, v in cleaned.items() if k in valid_columns}
+
             if existing_scheme:
                 # Update existing record
-                for k, v in cleaned.items():
+                for k, v in filtered_data.items():
                     if hasattr(existing_scheme, k):
                         setattr(existing_scheme, k, v)
                 existing_scheme.last_verified_at = datetime.now(timezone.utc)
                 scheme_id = existing_scheme.id
             else:
-                new_scheme = Scheme(**cleaned)
+                new_scheme = Scheme(**filtered_data)
                 db.add(new_scheme)
                 await db.flush()
                 scheme_id = new_scheme.id

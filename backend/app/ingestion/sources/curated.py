@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from backend.app.core.logging import logger
 from backend.app.ingestion.sources.base import SchemeSource
 
@@ -10,8 +10,12 @@ from backend.app.ingestion.sources.base import SchemeSource
 class CuratedSource(SchemeSource):
     """Loads curated and verified government welfare schemes from local storage."""
 
-    def __init__(self, file_path: str = "data/seed/schemes.json"):
-        self.file_path = Path(file_path)
+    def __init__(self, file_path: Optional[str] = None):
+        if file_path:
+            self.file_path = Path(file_path)
+        else:
+            processed = Path("data/processed/schemes.json")
+            self.file_path = processed if processed.exists() else Path("data/seed/schemes.json")
 
     def get_source_name(self) -> str:
         return "Curated Government Schemes"

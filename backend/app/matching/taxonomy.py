@@ -253,3 +253,31 @@ def match_intent_candidate_schemes(intent_id: str, schemes: List[Any]) -> List[A
 
     # Return matched candidates strictly in that sector
     return matched
+
+
+def is_geographically_applicable(scheme: Any, user_state: Optional[str]) -> bool:
+    """Checks if a scheme is geographically applicable to the citizen.
+    
+    A scheme is applicable if:
+    1. Scheme level is Central or scheme states contains 'ALL', OR
+    2. User state is empty/None (explore all), OR
+    3. User state matches one of the scheme's designated states (case-insensitive).
+    """
+    if not user_state:
+        return True
+    
+    scheme_states = getattr(scheme, "states", None)
+    if scheme_states is None and isinstance(scheme, dict):
+        scheme_states = scheme.get("states")
+    if not scheme_states:
+        scheme_states = ["ALL"]
+    elif isinstance(scheme_states, str):
+        scheme_states = [scheme_states]
+        
+    normalized_states = [str(st).strip().upper() for st in scheme_states]
+    if "ALL" in normalized_states:
+        return True
+    
+    user_state_clean = user_state.strip().upper()
+    return user_state_clean in normalized_states
+

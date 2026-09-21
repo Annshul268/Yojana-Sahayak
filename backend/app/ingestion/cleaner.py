@@ -31,6 +31,7 @@ class SchemeCleaner:
         cleaned["source_name"] = raw.get("source_name", "Government Portal").strip()
         cleaned["states"] = raw.get("states", ["ALL"])
         cleaned["tags"] = [cls.clean_text(t).lower() for t in raw.get("tags", []) if cls.clean_text(t)]
+        cleaned["intents"] = [cls.clean_text(i).lower() for i in raw.get("intents", []) if cls.clean_text(i)]
         cleaned["eligibility_rules"] = raw.get("eligibility_rules", {})
         cleaned["benefits"] = [cls.clean_text(b) for b in raw.get("benefits", []) if cls.clean_text(b)]
         cleaned["documents"] = [cls.clean_text(d) for d in raw.get("documents", []) if cls.clean_text(d)]
