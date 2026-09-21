@@ -1,6 +1,6 @@
 """Deterministic Matching Engine for government schemes."""
 
-from typing import List
+from typing import Any, Dict, List, Optional
 from backend.app.database.models import Scheme
 from backend.app.matching.models import (
     CitizenProfileInput,
@@ -11,6 +11,7 @@ from backend.app.matching.models import (
 )
 from backend.app.matching.rules import RuleEvaluator
 from backend.app.matching.scoring import MatchScorer
+from backend.app.matching.taxonomy import match_intent_candidate_schemes
 
 
 class MatchingEngine:
@@ -50,10 +51,11 @@ class MatchingEngine:
             elif age_rule:
                 (matched_rules if age_passed else failed_rules).append(age_rule)
 
-        # 3. Income evaluation
+        # 3. Income evaluation (Manual numeric check against ceiling)
+        effective_income = profile.annual_family_income if profile.annual_family_income is not None else profile.annual_income
         if "income" in rules:
             inc_passed, inc_rule, inc_missing = self.evaluator.evaluate_income(
-                rules["income"], profile.annual_income
+                rules["income"], effective_income
             )
             if inc_missing:
                 missing_info.append(inc_missing)
@@ -71,9 +73,20 @@ class MatchingEngine:
                 (matched_rules if gen_passed else failed_rules).append(gen_rule)
 
         # 5. Occupation evaluation
+        effective_occupation = profile.occupation
+        if not effective_occupation:
+            if profile.intent == "education" or profile.education:
+                effective_occupation = "student"
+            elif profile.intent == "agriculture" or profile.agriculture:
+                effective_occupation = "farmer"
+            elif profile.intent == "business" or profile.business:
+                effective_occupation = "entrepreneur"
+            elif profile.intent in ("internships", "skills"):
+                effective_occupation = "student"
+
         if "occupation" in rules:
             occ_passed, occ_rule, occ_missing = self.evaluator.evaluate_occupation(
-                rules["occupation"], profile.occupation
+                rules["occupation"], effective_occupation
             )
             if occ_missing:
                 missing_info.append(occ_missing)
@@ -90,10 +103,11 @@ class MatchingEngine:
             elif cat_rule:
                 (matched_rules if cat_passed else failed_rules).append(cat_rule)
 
-        # 7. Area evaluation
+        # 7. Area evaluation (Rural / Urban)
+        effective_area = profile.residence_type or profile.area
         if "area" in rules:
             area_passed, area_rule, area_missing = self.evaluator.evaluate_area(
-                rules["area"], profile.area
+                rules["area"], effective_area
             )
             if area_missing:
                 missing_info.append(area_missing)
@@ -133,14 +147,13 @@ class MatchingEngine:
         # Need / Category Intent Matching
         needs_boost = False
         if profile.needs:
-            # Map user-friendly labels to potential category substrings
             need_keywords = {
                 "Education & scholarships": ["education", "scholarship", "learning", "student"],
                 "Health": ["health", "medical", "hospital", "ayushman"],
                 "Housing": ["housing", "awas", "shelter", "home"],
                 "Agriculture": ["agriculture", "agri", "farmer", "kisan", "crop", "rural"],
                 "Business & loans": ["business", "loan", "mudra", "svanidhi", "micro", "enterprise"],
-                "Employment & skills": ["employment", "skill", "job", "training", "work"],
+                "Employment & skills": ["employment", "skill", "job", "training", "work", "internship"],
                 "Pension": ["pension", "atal", "nsap", "senior", "retirement"],
                 "Insurance": ["insurance", "bima", "security", "cover"],
                 "Women & child": ["women", "child", "girl", "sukanya", "mahila", "mother"],
@@ -148,11 +161,9 @@ class MatchingEngine:
             }
             scheme_cat_lower = (scheme.category or "").lower()
             for need in profile.needs:
-                # Direct match
                 if need.lower() in scheme_cat_lower:
                     needs_boost = True
                     break
-                # Keyword mapping match
                 keywords = need_keywords.get(need, [need.lower()])
                 if any(kw in scheme_cat_lower or kw in combined_text for kw in keywords):
                     needs_boost = True
@@ -245,29 +256,45 @@ class MatchingEngine:
         schemes: List[Scheme],
         profile: CitizenProfileInput,
     ) -> MatchResponse:
-        # Step 1: Normalize user answers
+        # Step 1: Normalize citizen answers into canonical structure
+        raw_income = profile.annual_family_income if profile.annual_family_income is not None else profile.annual_income
+        res_area = (profile.residence_type or profile.area or "").strip().capitalize() or None
+
         normalized_profile = CitizenProfileInput(
             state=profile.state.strip() if profile.state else None,
+            district=profile.district.strip() if profile.district else None,
             age=profile.age,
             gender=profile.gender.strip().lower() if profile.gender else None,
-            annual_income=profile.annual_income,
+            marital_status=profile.marital_status.strip().lower() if profile.marital_status else None,
+            annual_income=raw_income,
+            annual_family_income=raw_income,
             occupation=profile.occupation.strip().lower() if profile.occupation else None,
+            employment_status=profile.employment_status.strip().lower() if profile.employment_status else None,
             category=profile.category.strip() if profile.category else None,
-            area=profile.area.strip().capitalize() if profile.area else None,
+            area=res_area,
+            residence_type=res_area,
             disability=profile.disability,
+            minority_status=profile.minority_status,
             requirement=profile.requirement.strip() if profile.requirement else None,
             intent=profile.intent.strip().lower() if profile.intent else None,
             needs=list(profile.needs or []),
+            education=dict(profile.education or {}),
+            business=dict(profile.business or {}),
+            agriculture=dict(profile.agriculture or {}),
+            disability_details=dict(profile.disability_details or {}),
             dynamic_answers=dict(profile.dynamic_answers or {}),
         )
 
-        # Step 2 & 3: Intent determination & Candidate retrieval
+        # Step 2: Intent determination
         intent_id = normalized_profile.intent
-        # Deduce intent from needs if not explicitly provided
         if not intent_id and normalized_profile.needs:
             need_first = normalized_profile.needs[0].lower()
             if "education" in need_first or "scholarship" in need_first:
                 intent_id = "education"
+            elif "intern" in need_first or "apprentice" in need_first:
+                intent_id = "internships"
+            elif "skill" in need_first or "training" in need_first:
+                intent_id = "skills"
             elif "business" in need_first or "loan" in need_first:
                 intent_id = "business"
             elif "agri" in need_first or "farm" in need_first:
@@ -280,17 +307,27 @@ class MatchingEngine:
                 intent_id = "healthcare"
             elif "housing" in need_first:
                 intent_id = "housing"
+            elif "women" in need_first or "child" in need_first:
+                intent_id = "women_child"
             elif "disab" in need_first or "divyang" in need_first:
                 intent_id = "disability"
 
-        # Step 4-6: Evaluate candidate schemes and all active schemes
-        results: List[SchemeMatchResult] = []
-        for scheme in schemes:
-            if scheme.active:
-                result = self.evaluate_scheme(scheme, normalized_profile)
-                results.append(result)
+        # Step 3: STRICT PRE-RANKING SECTOR FILTERING (Section 21)
+        # Prevents unrelated healthcare, housing, or savings schemes from being returned
+        # for an education/scholarship search.
+        active_schemes = [s for s in schemes if getattr(s, "active", True)]
+        if intent_id and intent_id != "general":
+            candidate_schemes = match_intent_candidate_schemes(intent_id, active_schemes)
+        else:
+            candidate_schemes = active_schemes
 
-        # Sort results: Eligible first, then Potentially Eligible, then Not Eligible; then descending by score
+        # Step 4: Evaluate deterministic hard eligibility on candidate schemes
+        results: List[SchemeMatchResult] = []
+        for scheme in candidate_schemes:
+            result = self.evaluate_scheme(scheme, normalized_profile)
+            results.append(result)
+
+        # Step 5: Sort results: Eligible first, then Potentially Eligible, then Not Eligible; then descending by score
         status_priority = {
             EligibilityStatus.ELIGIBLE: 0,
             EligibilityStatus.POTENTIALLY_ELIGIBLE: 1,
