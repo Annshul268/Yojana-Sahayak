@@ -150,3 +150,21 @@ def test_ranking_order(sample_schemes):
     not_eligible_indices = [i for i, s in enumerate(statuses) if s == EligibilityStatus.NOT_ELIGIBLE]
     if eligible_indices and not_eligible_indices:
         assert max(eligible_indices) < min(not_eligible_indices)
+
+
+def test_needs_boost_and_intent(sample_schemes):
+    engine = MatchingEngine()
+    profile = CitizenProfileInput(
+        state="Delhi",
+        age=25,
+        annual_income=100000,
+        occupation="student",
+        category="SC",
+        needs=["Education & scholarships"],
+        intent="Looking for college scholarship",
+    )
+    response = engine.match_all(sample_schemes, profile)
+    scholarship_match = next(r for r in response.results if r.slug == "scholarship-test")
+    assert scholarship_match.status == EligibilityStatus.ELIGIBLE
+    # Needs boost should give top score 100
+    assert scholarship_match.score == 100

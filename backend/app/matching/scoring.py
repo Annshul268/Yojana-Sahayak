@@ -14,6 +14,7 @@ class MatchScorer:
         failed_rules: List[RuleResult],
         missing_count: int,
         keyword_boost: bool = False,
+        needs_boost: bool = False,
     ) -> int:
         if status == EligibilityStatus.NOT_ELIGIBLE:
             # Low score for schemes where citizen is disqualified
@@ -25,10 +26,12 @@ class MatchScorer:
             score = 65 + min(20, len(matched_rules) * 5) - min(15, missing_count * 5)
             if keyword_boost:
                 score += 5
+            if needs_boost:
+                score += 8
             return int(min(89, max(50, score)))
 
         # Status is ELIGIBLE
         score = 90 + min(10, len(matched_rules) * 2)
-        if keyword_boost:
+        if keyword_boost or needs_boost:
             score = 100
         return int(min(100, max(90, score)))

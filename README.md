@@ -87,24 +87,26 @@ pytest -v
 
 ---
 
-## 🧭 Project Roadmap
-- [x] **Phase 0:** Project Foundation (Architecture, FastAPI, Streamlit, Health API, Config)
-- [ ] **Phase 1:** Streamlit UI Foundation (Guided Eligibility Form, Directory, Bilingual Layout)
-- [ ] **Phase 2:** Database & Authentication (PostgreSQL Models, Supabase Auth)
-- [ ] **Phase 3:** Scheme Data System (Structured Eligibility Rules & Seeding)
-- [ ] **Phase 4:** Government Data Pipeline (ETL, Validation & Ingestion)
-- [ ] **Phase 5:** Deterministic Matching Engine (Scoring, Hard Rules & Audit Trails)
-- [ ] **Phase 6:** Scheme Search & Advanced Filters
-- [ ] **Phase 7:** ChromaDB & RAG Retrieval Pipeline
-- [ ] **Phase 8:** Groq / Llama Integration & Grounded Prompting
-- [ ] **Phase 9:** Bilingual Localization (Hindi / English)
-- [ ] **Phase 10:** Saved Schemes & Application Tracker
-- [ ] **Phase 11:** Admin Dashboard
-- [ ] **Phase 12:** AI Scheme Assistant
-- [ ] **Phase 13:** Comprehensive Test Suite
-- [ ] **Phase 14:** Security Review & Hardening
-- [ ] **Phase 15:** Performance Optimization
-- [ ] **Phase 16:** Final Civic UI Polish
+---
+
+## 🎯 Intent-Driven Dynamic Eligibility Architecture
+
+Yojana Sahayak replaces static, overwhelming forms with an **intent-first, adaptive discovery engine**:
+
+$$\text{Citizen Intent} \longrightarrow \text{Adaptive Minimum Questions} \longrightarrow \text{Deterministic Rules Engine} \longrightarrow \text{Grounded AI Explanation} \longrightarrow \text{Official Action}$$
+
+### Key Capabilities:
+1. **Top-Level Intent Taxonomy (`backend/app/matching/taxonomy.py`):**
+   - Covers Education & Scholarships, Business & Loans, Agriculture & Farming, Jobs & Employment, Skill Training, Housing, Healthcare, Senior Citizen & Pension, Women & Child, and Disability Support.
+2. **Scheme Tagging:**
+   - Schemes store structured tags (e.g., `["agriculture", "farmer", "income-support"]`) for fast candidate retrieval before rule matching.
+3. **Adaptive Question Engine (`frontend/services/questionnaire_engine.py`):**
+   - **Minimum-Information Principle:** Irrelevant questions are skipped automatically (e.g. Business applicants never see student questions; Gender is omitted if no candidate scheme restricts gender).
+   - Preserves state on back/forward navigation and handles unknown/not-sure values gracefully.
+4. **Deterministic 9-Step Matching Pipeline (`backend/app/matching/engine.py`):**
+   - Normalization $\rightarrow$ Intent determination $\rightarrow$ Candidate retrieval $\rightarrow$ Hard rules checking $\rightarrow$ Missing info identification $\rightarrow$ Relevance scoring $\rightarrow$ Structured output (`matched_attributes`, `failed_conditions`, `important_conditions`).
+5. **Grounded AI Explanations:**
+   - Groq + Llama explain why the citizen qualifies based strictly on ChromaDB-retrieved facts without altering deterministic eligibility conclusions.
 
 ---
 
@@ -115,4 +117,14 @@ pytest -v
 - [Matching Engine](docs/matching-engine.md)
 - [RAG & Vector Retrieval](docs/rag.md)
 - [Data Pipeline](docs/data-pipeline.md)
->>>>>>> 88a3400 (feat: initialize yojana sahayak architecture)
+
+---
+
+## 🧭 Project Status
+- [x] **Core Architecture:** FastAPI backend, SQLite/PostgreSQL, ChromaDB, Sentence Transformers, Groq Llama
+- [x] **Intent Taxonomy & Tagging:** Extensible taxonomy with metadata tags on all curated government schemes
+- [x] **Adaptive Questionnaire:** Declarative, rule-driven progressive question flow
+- [x] **Deterministic Matching Engine:** Strict rule matching, missing info vs disqualification distinction
+- [x] **Sleek Civic UI:** Minimal, warm off-white design system (`#FAFAF7`) matching modern civic portals
+- [x] **Test Suite:** 35 comprehensive unit and integration tests passing (`pytest backend/tests/ -v`)
+

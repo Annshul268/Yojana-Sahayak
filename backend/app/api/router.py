@@ -16,8 +16,8 @@ api_router = APIRouter()
 
 # Register routes
 api_router.include_router(health.router, tags=["Health"])
-api_router.include_router(schemes.router)
 api_router.include_router(matching.router)
+api_router.include_router(schemes.router)
 api_router.include_router(profile.router)
 api_router.include_router(saved.router)
 api_router.include_router(tracking.router)

@@ -1,58 +1,333 @@
-/* Yojana Sahayak Design System - Warm Civic / Public-Service Theme */
+/* Yojana Sahayak - Sleek Civic Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary-navy: #1A365D;
-  --primary-indigo: #2A4365;
-  --saffron-accent: #DD6B20;
-  --saffron-light: #FEEBC8;
-  --civic-green: #22543D;
-  --civic-green-light: #C6F6D5;
-  --bg-warm: #FAF9F6;
-  --text-dark: #2D3748;
-  --text-muted: #718096;
-  --border-light: #E2E8F0;
+  --primary-navy: #1E3A8A;
+  --navy-dark: #0F172A;
+  --navy-button: #243c7c;
+  --navy-button-hover: #172554;
+  --accent-amber: #D97706;
+  --bg-warm: #FAFAF7;
   --card-bg: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+  --border-light: #E2E8F0;
+  --border-card: #E5E7EB;
+  --tag-bg: #F4EBE3;
+  --tag-text: #6B3F1D;
+  --icon-box-bg: #EFF6FF;
+  --icon-box-color: #2563EB;
 }
 
-.main-title {
-  color: var(--primary-navy);
-  font-weight: 800;
-  font-size: 2.2rem;
-  margin-bottom: 0.2rem;
+/* Base resets & typography */
+html, body, [data-testid="stAppViewContainer"], .main {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: var(--text-main);
+  background-color: var(--bg-warm) !important;
 }
 
-.sub-title {
-  color: var(--saffron-accent);
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+/* Hide default streamlit clutter */
+header[data-testid="stHeader"] {
+  background: transparent !important;
+  height: 0px !important;
 }
 
-.civic-card {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-light);
+div[data-testid="stToolbar"] {
+  visibility: hidden;
+  display: none;
+}
+
+footer {
+  display: none !important;
+}
+
+/* Main Container Sizing */
+.main .block-container {
+  max-width: 1040px !important;
+  margin: 0 auto !important;
+  padding-top: 1rem !important;
+  padding-bottom: 3.5rem !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+/* Navbar container */
+.civic-nav-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0 1.25rem 0;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 2rem;
+}
+
+.civic-logo-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  text-decoration: none;
+}
+
+.civic-logo-badge span.logo-shield {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #1E3A8A;
+  color: white;
   border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-size: 18px;
+}
+
+/* Hero Pill Badge */
+.hero-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  margin-bottom: 1.25rem;
+}
+
+/* Hero Headline */
+.hero-headline {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
   margin-bottom: 1.2rem;
 }
 
-.badge-verified {
-  background-color: var(--civic-green-light);
-  color: var(--civic-green);
-  padding: 0.25rem 0.6rem;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  display: inline-block;
+.hero-subhead {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
 }
 
-.badge-saffron {
-  background-color: var(--saffron-light);
-  color: var(--saffron-accent);
-  padding: 0.25rem 0.6rem;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.85rem;
+.hero-footnote {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+}
+
+/* Clean White Container Cards */
+.civic-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.civic-card-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1rem;
+}
+
+/* Category Pill Chips */
+.cat-chip {
   display: inline-block;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  margin: 3px 3px;
+  transition: all 0.15s ease;
+}
+
+.cat-chip.selected {
+  background: var(--primary-navy) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary-navy) !important;
+}
+
+/* 3-Step Process Grid Cards */
+.step-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  padding: 1.5rem;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.step-icon-box {
+  width: 40px;
+  height: 40px;
+  background: #EFF6FF;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748B;
+  margin-bottom: 0.35rem;
+}
+
+.step-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-bottom: 0.5rem;
+}
+
+.step-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Form Styles */
+.form-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-bottom: 0.25rem;
+}
+
+.form-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+.form-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-top: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.form-section-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.stButton > button {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  padding: 0.55rem 1.25rem !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.stButton > button[kind="primary"] {
+  background-color: var(--navy-button) !important;
+  border-color: var(--navy-button) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+  background-color: var(--navy-button-hover) !important;
+  border-color: var(--navy-button-hover) !important;
+}
+
+.stButton > button[kind="secondary"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--border-light) !important;
+  color: #1E293B !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* Inputs & Selectboxes styling */
+div[data-baseweb="select"] > div {
+  border-radius: 8px !important;
+  border-color: var(--border-light) !important;
+  background-color: #FFFFFF !important;
+}
+
+input[type="text"], input[type="number"] {
+  border-radius: 8px !important;
+  border-color: var(--border-light) !important;
+  background-color: #FFFFFF !important;
+}
+
+/* Footer note */
+.civic-footer-note {
+  text-align: center;
+  color: #64748B;
+  font-size: 0.85rem;
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Status pills */
+.status-pill-eligible {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ECFDF5;
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-pill-potential {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFFBEB;
+  color: #B45309;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.category-badge-pill {
+  display: inline-block;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .hero-headline {
+    font-size: 2rem;
+  }
+  .main .block-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
 }

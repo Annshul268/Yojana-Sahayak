@@ -1,104 +1,168 @@
-"""Home page for Yojana Sahayak."""
+"""Home page matching the Lovable civic UI reference screenshots."""
 
+from typing import Callable
 import streamlit as st
-from frontend.services.api_client import api_client
-from frontend.utils.i18n import get_current_language, t
+from frontend.utils.i18n import get_current_language
+
+CATEGORIES_COVERED = [
+    ("Education & scholarships", "शिक्षा एवं छात्रवृत्ति"),
+    ("Health", "स्वास्थ्य"),
+    ("Housing", "आवास"),
+    ("Agriculture", "कृषि"),
+    ("Business & loans", "व्यवसाय एवं ऋण"),
+    ("Employment & skills", "रोजगार एवं कौशल"),
+    ("Pension", "पेंशन"),
+    ("Insurance", "बीमा"),
+    ("Women & child", "महिला एवं बाल विकास"),
+    ("Disability support", "दिव्यांगजन सहायता"),
+]
 
 
-def render_home(navigate_to) -> None:
+def render_home(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
 
-    # Hero Banner
-    st.markdown(
-        """
-        <div style="background: linear-gradient(135deg, #1A365D 0%, #2A4365 50%, #1A202C 100%); color: white; padding: 2.5rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="display: inline-block; background: #DD6B20; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
-                🇮🇳 Official Citizen Welfare Navigator
+    # Top Section: Two Columns (Left Hero, Right Categories Covered)
+    col_hero, col_spacer, col_cat = st.columns([5.5, 0.5, 4.5])
+
+    with col_hero:
+        # Pill Tag
+        st.markdown(
+            f"""
+            <div class="hero-tag-pill">
+                <span>✓</span>
+                <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
             </div>
-            <h1 style="color: white; margin-top: 0; font-size: 2.3rem; font-weight: 800; line-height: 1.2;">
-                Find Government Schemes & Benefits Designed for You
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Big bold headline
+        st.markdown(
+            f"""
+            <h1 class="hero-headline">
+                {"सरकारी लाभ,<br>सरल भाषा में समझें" if lang == "hi" else "Government benefits,<br>explained in plain<br>language"}
             </h1>
-            <p style="font-size: 1.15rem; opacity: 0.9; max-width: 820px; line-height: 1.6; margin-bottom: 1.8rem;">
-                Discover central and state government welfare initiatives tailored to your age, income, state, and occupation. Backed by verified government records and deterministic eligibility checking.
+            <p class="hero-subhead">
+                {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
             </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    col_btn1, col_btn2, col_btn3, col_space = st.columns([3, 3, 3, 2])
-    with col_btn1:
-        if st.button("🚀 " + t("btn_find_schemes", "Find Schemes for Me"), type="primary", use_container_width=True):
-            navigate_to("finder")
-    with col_btn2:
-        if st.button("📚 " + t("btn_browse_schemes", "Browse Scheme Directory"), use_container_width=True):
-            navigate_to("schemes")
-    with col_btn3:
-        if st.button("🤖 Ask AI Scheme Assistant", use_container_width=True):
-            navigate_to("assistant")
+        # Action Buttons
+        col_btn1, col_btn2 = st.columns([1.3, 1.1])
+        with col_btn1:
+            if st.button(
+                "पात्रता जांचें →" if lang == "hi" else "Check my eligibility →",
+                type="primary",
+                use_container_width=True,
+                key="hero_check_eligibility_btn",
+            ):
+                navigate_to("finder")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        with col_btn2:
+            if st.button(
+                "सभी योजनाएं" if lang == "hi" else "Browse all schemes",
+                type="secondary",
+                use_container_width=True,
+                key="hero_browse_schemes_btn",
+            ):
+                navigate_to("schemes")
 
-    # Core Trust & Accuracy Guarantee Banner
+        # Fine print footnote
+        st.markdown(
+            f"""
+            <div class="hero-footnote">
+                {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_cat:
+        # Categories Covered Card
+        st.markdown(
+            f"""
+            <div class="civic-card">
+                <div class="civic-card-header">
+                    {"शामिल श्रेणियां" if lang == "hi" else "CATEGORIES COVERED"}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Render clickable category chips
+        st.markdown("<div style='margin-top: -12px; margin-bottom: 8px;'>", unsafe_allow_html=True)
+        # Render chips in a compact flow grid
+        c_row1 = st.columns(2)
+        for idx, (cat_en, cat_hi) in enumerate(CATEGORIES_COVERED):
+            label = cat_hi if lang == "hi" else cat_en
+            with c_row1[idx % 2]:
+                if st.button(label, key=f"cat_chip_{idx}", use_container_width=True):
+                    # Pre-select category and jump to finder
+                    if "finder_answers" not in st.session_state:
+                        st.session_state.finder_answers = {}
+                    st.session_state.finder_answers["needs"] = [cat_en]
+                    navigate_to("finder")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 3rem;'></div>", unsafe_allow_html=True)
+
+    # 3-Step Process Cards Grid
+    col_s1, col_s2, col_s3 = st.columns(3, gap="medium")
+
+    with col_s1:
+        st.markdown(
+            f"""
+            <div class="step-card">
+                <div class="step-icon-box">📋</div>
+                <div class="step-label">{"चरण 1" if lang == "hi" else "Step 1"}</div>
+                <div class="step-title">{"अपने बारे में बताएं" if lang == "hi" else "Tell us about yourself"}</div>
+                <div class="step-desc">
+                    {"एक मार्गदर्शित प्रपत्र: राज्य, आयु, कार्य, आय, सामाजिक श्रेणी और आवश्यक सहायता।" if lang == "hi" else "A guided form: state, age, work, income, category and what you need help with."}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_s2:
+        st.markdown(
+            f"""
+            <div class="step-card">
+                <div class="step-icon-box">🔍</div>
+                <div class="step-label">{"चरण 2" if lang == "hi" else "Step 2"}</div>
+                <div class="step-title">{"हम आधिकारिक नियमों से मिलाते हैं" if lang == "hi" else "We match official rules"}</div>
+                <div class="step-desc">
+                    {"आपके उत्तर प्रत्येक योजना के वास्तविक पात्रता मानदंडों के विरुद्ध जाँचे जाते हैं — कोई अनुमान नहीं।" if lang == "hi" else "Your answers are checked against each scheme's real eligibility criteria — no guesswork."}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_s3:
+        st.markdown(
+            f"""
+            <div class="step-card">
+                <div class="step-icon-box">📄</div>
+                <div class="step-label">{"चरण 3" if lang == "hi" else "Step 3"}</div>
+                <div class="step-title">{"स्पष्ट कार्य योजना प्राप्त करें" if lang == "hi" else "Get a clear action plan"}</div>
+                <div class="step-desc">
+                    {"पात्रता के कारण, आवश्यक दस्तावेज, चरणबद्ध आवेदन प्रक्रिया और आधिकारिक सरकारी लिंक।" if lang == "hi" else "Reasons, documents, step-by-step application process and the official government link."}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Independent Information Tool Disclaimer
     st.markdown(
         f"""
-        <div style="background: #F7FAFC; border: 1px solid #CBD5E0; border-left: 5px solid #DD6B20; border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                <span style="font-size: 24px;">🛡️</span>
-                <h4 style="margin: 0; color: #1A365D; font-size: 1.1rem; font-weight: 700;">
-                    {t('trust_banner_title', 'Verified Government Sources First')}
-                </h4>
-            </div>
-            <p style="color: #4A5568; font-size: 0.92rem; line-height: 1.5; margin: 0;">
-                {t('trust_banner_desc', 'All information is verified against official government portals. The LLM acts as an explanatory layer and never hallucinates government benefits or eligibility criteria.')}
-            </p>
+        <div class="civic-footer-note">
+            {"योजना सहायक एक स्वतंत्र सूचना उपकरण है। कृपया प्रत्येक योजना से जुड़े आधिकारिक सरकारी पोर्टल पर विवरण सत्यापित करें।" if lang == "hi" else "Yojana Sahayak is an independent information tool. Always verify details on the official government portal linked with each scheme."}
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-    # Key Pillars
-    st.markdown("### 🏛️ Why Yojana Sahayak?")
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown(
-            """
-            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem; height: 100%;">
-                <div style="font-size: 26px; margin-bottom: 8px;">🎯</div>
-                <h4 style="color: #1A365D; margin-top: 0;">Deterministic Rules</h4>
-                <p style="color: #4A5568; font-size: 0.9rem; line-height: 1.5;">
-                    Your eligibility is calculated using transparent rule evaluation across state, income ceilings, age brackets, and social categories—not subjective LLM guesses.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        st.markdown(
-            """
-            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem; height: 100%;">
-                <div style="font-size: 26px; margin-bottom: 8px;">🔗</div>
-                <h4 style="color: #1A365D; margin-top: 0;">Traceable Portals</h4>
-                <p style="color: #4A5568; font-size: 0.9rem; line-height: 1.5;">
-                    Every scheme includes verified official government links, documentation checklists, and step-by-step application guidance.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col3:
-        st.markdown(
-            """
-            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem; height: 100%;">
-                <div style="font-size: 26px; margin-bottom: 8px;">🗣️</div>
-                <h4 style="color: #1A365D; margin-top: 0;">Bilingual & Accessible</h4>
-                <p style="color: #4A5568; font-size: 0.9rem; line-height: 1.5;">
-                    Full localization in both हिन्दी and English, paired with grounded Groq Llama explanations to simplify bureaucratic guidelines.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )

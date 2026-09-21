@@ -1,9 +1,9 @@
-"""Yojana Sahayak - Main Streamlit Application."""
+"""Yojana Sahayak - Minimal, Sleek Citizen Service Application."""
 
 import sys
 from pathlib import Path
 
-# Add project root to sys.path to ensure modules can be imported
+# Add project root to sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -11,7 +11,6 @@ if str(ROOT_DIR) not in sys.path:
 import streamlit as st
 from frontend.components.navbar import render_navbar
 from frontend.pages.admin import render_admin_dashboard
-from frontend.pages.assistant import render_ai_assistant
 from frontend.pages.home import render_home
 from frontend.pages.profile import render_citizen_profile
 from frontend.pages.results import render_results
@@ -20,18 +19,17 @@ from frontend.pages.scheme_details import render_scheme_details
 from frontend.pages.scheme_finder import render_scheme_finder
 from frontend.pages.schemes import render_schemes_directory
 from frontend.pages.tracker import render_application_tracker
-from frontend.services.api_client import api_client
-from frontend.utils.i18n import t
+from frontend.utils.i18n import get_current_language
 
-# Streamlit Page Configuration
+# Streamlit Page Configuration - Minimal & Clean
 st.set_page_config(
-    page_title="Yojana Sahayak | योजना सहायक",
-    page_icon="🏛️",
+    page_title="Yojana Sahayak | Government Scheme Finder",
+    page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-# Apply Custom CSS styling
+# Load Custom Minimalist CSS
 css_path = ROOT_DIR / "frontend" / "styles" / "main.css"
 if css_path.exists():
     with open(css_path, "r", encoding="utf-8") as f:
@@ -43,9 +41,11 @@ if "current_page" not in st.session_state:
 if "user_id" not in st.session_state:
     st.session_state.user_id = "citizen_user_1"
 if "user_name" not in st.session_state:
-    st.session_state.user_name = "Aadhaar Citizen"
+    st.session_state.user_name = "Citizen"
 if "lang" not in st.session_state:
     st.session_state.lang = "en"
+if "is_admin" not in st.session_state:
+    st.session_state.is_admin = False
 
 
 def navigate_to(page_name: str) -> None:
@@ -53,45 +53,10 @@ def navigate_to(page_name: str) -> None:
     st.rerun()
 
 
-# Top Navbar
-render_navbar()
+# Render Clean Top Header with Navigation Tabs
+render_navbar(navigate_to)
 
-# Navigation Mapping
-NAV_ITEMS = {
-    "home": ("🏠", t("nav_home", "Home")),
-    "finder": ("🎯", t("nav_finder", "Find Schemes")),
-    "results": ("📊", "My Results"),
-    "schemes": ("📚", t("nav_schemes", "Browse Schemes")),
-    "saved": ("⭐", t("nav_saved", "Saved Schemes")),
-    "tracker": ("📈", t("nav_tracker", "Application Tracker")),
-    "assistant": ("🤖", t("nav_assistant", "AI Assistant")),
-    "profile": ("👤", t("nav_profile", "My Profile")),
-    "admin": ("⚙️", t("nav_admin", "Admin Dashboard")),
-}
-
-# Sidebar Navigation
-with st.sidebar:
-    st.markdown("### 🇮🇳 Navigation")
-    current_key = st.session_state.current_page
-    if current_key == "scheme_details":
-        current_key = "schemes"
-
-    for page_key, (icon, label) in NAV_ITEMS.items():
-        is_active = st.session_state.current_page == page_key
-        button_type = "primary" if is_active else "secondary"
-        if st.button(f"{icon} {label}", key=f"nav_btn_{page_key}", type=button_type, use_container_width=True):
-            navigate_to(page_key)
-
-    st.divider()
-    st.markdown("#### ⚡ System Status")
-    health = api_client.check_health()
-    if health["ok"]:
-        st.success("🟢 Backend: Healthy")
-    else:
-        st.error("🔴 Backend: Disconnected")
-    st.caption(f"Backend URL: `{api_client.base_url}`")
-
-# Route Page Rendering
+# Route to Current Page
 page = st.session_state.current_page
 
 if page == "home":
@@ -108,11 +73,15 @@ elif page == "saved":
     render_saved_schemes(navigate_to)
 elif page == "tracker":
     render_application_tracker(navigate_to)
-elif page == "assistant":
-    render_ai_assistant(navigate_to)
 elif page == "profile":
     render_citizen_profile(navigate_to)
 elif page == "admin":
-    render_admin_dashboard(navigate_to)
+    # Protected: Only accessible if is_admin is True
+    if st.session_state.get("is_admin", False):
+        render_admin_dashboard(navigate_to)
+    else:
+        st.warning("Staff login required to access Admin Dashboard.")
+        if st.button("← Back to Home"):
+            navigate_to("home")
 else:
     render_home(navigate_to)

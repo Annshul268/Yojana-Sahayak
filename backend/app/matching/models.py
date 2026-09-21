@@ -21,6 +21,9 @@ class CitizenProfileInput(BaseModel):
     area: Optional[str] = Field(None, description="Area of residence ('Rural' or 'Urban')")
     disability: Optional[bool] = Field(False, description="Whether person has a documented disability")
     requirement: Optional[str] = Field(None, description="Specific need or assistance requested")
+    intent: Optional[str] = Field(None, description="Citizen's primary goal or intent")
+    needs: Optional[List[str]] = Field(default_factory=list, description="Selected need/category tags")
+    dynamic_answers: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Contextual dynamic question answers")
 
 
 class RuleResult(BaseModel):
@@ -40,11 +43,18 @@ class SchemeMatchResult(BaseModel):
     ministry: str
     status: EligibilityStatus
     score: int
+    relevance: str = "medium"
     matched_rules: List[RuleResult] = []
     failed_rules: List[RuleResult] = []
     missing_information: List[Dict[str, str]] = []
+    matched_attributes: List[str] = []
+    failed_conditions: List[str] = []
+    important_conditions: List[str] = []
+    reason: str = ""
     benefits: List[str] = []
     official_url: str
+    tags: List[str] = []
+    scheme: Optional[Dict[str, Any]] = None
 
 
 class MatchResponse(BaseModel):

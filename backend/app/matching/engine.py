@@ -118,13 +118,45 @@ class MatchingEngine:
         else:
             status = EligibilityStatus.ELIGIBLE
 
-        # Keyword relevancy check for user requirement
+        # Keyword relevancy check for user requirement or intent
         keyword_boost = False
+        text_queries = []
         if profile.requirement:
-            req_words = profile.requirement.lower().split()
-            combined_text = f"{scheme.name} {scheme.category} {scheme.description}".lower()
-            if any(w in combined_text for w in req_words if len(w) > 3):
-                keyword_boost = True
+            text_queries.extend(profile.requirement.lower().split())
+        if profile.intent:
+            text_queries.extend(profile.intent.lower().split())
+
+        combined_text = f"{scheme.name} {scheme.category} {scheme.description or ''}".lower()
+        if any(w in combined_text for w in text_queries if len(w) > 3):
+            keyword_boost = True
+
+        # Need / Category Intent Matching
+        needs_boost = False
+        if profile.needs:
+            # Map user-friendly labels to potential category substrings
+            need_keywords = {
+                "Education & scholarships": ["education", "scholarship", "learning", "student"],
+                "Health": ["health", "medical", "hospital", "ayushman"],
+                "Housing": ["housing", "awas", "shelter", "home"],
+                "Agriculture": ["agriculture", "agri", "farmer", "kisan", "crop", "rural"],
+                "Business & loans": ["business", "loan", "mudra", "svanidhi", "micro", "enterprise"],
+                "Employment & skills": ["employment", "skill", "job", "training", "work"],
+                "Pension": ["pension", "atal", "nsap", "senior", "retirement"],
+                "Insurance": ["insurance", "bima", "security", "cover"],
+                "Women & child": ["women", "child", "girl", "sukanya", "mahila", "mother"],
+                "Disability support": ["disability", "differently abled", "divyangjan", "handicapped", "nhfdc"],
+            }
+            scheme_cat_lower = (scheme.category or "").lower()
+            for need in profile.needs:
+                # Direct match
+                if need.lower() in scheme_cat_lower:
+                    needs_boost = True
+                    break
+                # Keyword mapping match
+                keywords = need_keywords.get(need, [need.lower()])
+                if any(kw in scheme_cat_lower or kw in combined_text for kw in keywords):
+                    needs_boost = True
+                    break
 
         score = self.scorer.calculate_score(
             status=status,
@@ -132,7 +164,58 @@ class MatchingEngine:
             failed_rules=failed_rules,
             missing_count=len(missing_info),
             keyword_boost=keyword_boost,
+            needs_boost=needs_boost,
         )
+
+        # Extract important conditions for citizen awareness
+        important_conditions = []
+        if "income" in rules:
+            inc_rule_def = rules["income"]
+            if isinstance(inc_rule_def, dict) and "max" in inc_rule_def:
+                important_conditions.append(f"Family income must be below ₹{inc_rule_def['max']:,}")
+        if "age" in rules:
+            age_def = rules["age"]
+            if isinstance(age_def, dict):
+                if "min" in age_def and "max" in age_def:
+                    important_conditions.append(f"Age must be between {age_def['min']} and {age_def['max']} years")
+                elif "min" in age_def:
+                    important_conditions.append(f"Minimum age is {age_def['min']} years")
+        if "occupation" in rules:
+            important_conditions.append(f"Restricted to: {', '.join(rules['occupation']).title()}")
+        if "category" in rules and isinstance(rules["category"], list):
+            important_conditions.append(f"Eligible categories: {', '.join(rules['category'])}")
+        if scheme.states and "ALL" not in scheme.states:
+            important_conditions.append(f"Valid only in: {', '.join(scheme.states)}")
+
+        # Build matched & failed attribute descriptions
+        matched_attributes = [r.reason for r in matched_rules]
+        failed_conditions = [r.reason for r in failed_rules]
+
+        # Calculate human-friendly match reason
+        if status == EligibilityStatus.ELIGIBLE:
+            reason = "You satisfy all core eligibility rules for this scheme."
+            relevance = "high" if (needs_boost or keyword_boost or score >= 90) else "medium"
+        elif status == EligibilityStatus.POTENTIALLY_ELIGIBLE:
+            reason = f"Your details match, but {len(missing_info)} item(s) need verification."
+            relevance = "high" if needs_boost else "medium"
+        else:
+            reason = f"Ineligible due to: {failed_rules[0].reason if failed_rules else 'criteria requirements'}."
+            relevance = "low"
+
+        scheme_summary = {
+            "id": scheme.id,
+            "slug": scheme.slug,
+            "name": scheme.name,
+            "name_hi": scheme.name_hi,
+            "category": scheme.category,
+            "ministry": scheme.ministry,
+            "level": scheme.level,
+            "benefits": scheme.benefits or [],
+            "documents": scheme.documents or [],
+            "application_steps": scheme.application_steps or [],
+            "official_url": scheme.official_url,
+            "tags": getattr(scheme, "tags", []) or [],
+        }
 
         return SchemeMatchResult(
             scheme_id=scheme.id,
@@ -143,11 +226,18 @@ class MatchingEngine:
             ministry=scheme.ministry,
             status=status,
             score=score,
+            relevance=relevance,
             matched_rules=matched_rules,
             failed_rules=failed_rules,
             missing_information=missing_info,
+            matched_attributes=matched_attributes,
+            failed_conditions=failed_conditions,
+            important_conditions=important_conditions,
+            reason=reason,
             benefits=scheme.benefits or [],
             official_url=scheme.official_url,
+            tags=getattr(scheme, "tags", []) or [],
+            scheme=scheme_summary,
         )
 
     def match_all(
@@ -155,10 +245,49 @@ class MatchingEngine:
         schemes: List[Scheme],
         profile: CitizenProfileInput,
     ) -> MatchResponse:
+        # Step 1: Normalize user answers
+        normalized_profile = CitizenProfileInput(
+            state=profile.state.strip() if profile.state else None,
+            age=profile.age,
+            gender=profile.gender.strip().lower() if profile.gender else None,
+            annual_income=profile.annual_income,
+            occupation=profile.occupation.strip().lower() if profile.occupation else None,
+            category=profile.category.strip() if profile.category else None,
+            area=profile.area.strip().capitalize() if profile.area else None,
+            disability=profile.disability,
+            requirement=profile.requirement.strip() if profile.requirement else None,
+            intent=profile.intent.strip().lower() if profile.intent else None,
+            needs=list(profile.needs or []),
+            dynamic_answers=dict(profile.dynamic_answers or {}),
+        )
+
+        # Step 2 & 3: Intent determination & Candidate retrieval
+        intent_id = normalized_profile.intent
+        # Deduce intent from needs if not explicitly provided
+        if not intent_id and normalized_profile.needs:
+            need_first = normalized_profile.needs[0].lower()
+            if "education" in need_first or "scholarship" in need_first:
+                intent_id = "education"
+            elif "business" in need_first or "loan" in need_first:
+                intent_id = "business"
+            elif "agri" in need_first or "farm" in need_first:
+                intent_id = "agriculture"
+            elif "job" in need_first or "employ" in need_first:
+                intent_id = "jobs"
+            elif "pension" in need_first or "senior" in need_first:
+                intent_id = "pension"
+            elif "health" in need_first:
+                intent_id = "healthcare"
+            elif "housing" in need_first:
+                intent_id = "housing"
+            elif "disab" in need_first or "divyang" in need_first:
+                intent_id = "disability"
+
+        # Step 4-6: Evaluate candidate schemes and all active schemes
         results: List[SchemeMatchResult] = []
         for scheme in schemes:
             if scheme.active:
-                result = self.evaluate_scheme(scheme, profile)
+                result = self.evaluate_scheme(scheme, normalized_profile)
                 results.append(result)
 
         # Sort results: Eligible first, then Potentially Eligible, then Not Eligible; then descending by score

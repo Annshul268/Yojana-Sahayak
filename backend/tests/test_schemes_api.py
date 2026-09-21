@@ -146,3 +146,14 @@ async def test_ai_ask_endpoint():
         data = response.json()
         assert "answer" in data
         assert len(data["answer"]) > 10
+
+
+@pytest.mark.asyncio
+async def test_get_intents_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/schemes/intents")
+        assert response.status_code == 200
+        intents = response.json()
+        assert len(intents) >= 10
+        assert any(i["id"] == "education" for i in intents)

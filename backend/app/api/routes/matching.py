@@ -22,3 +22,10 @@ async def match_citizen_schemes(
     schemes = list(result.scalars().all())
 
     return matching_engine.match_all(schemes=schemes, profile=profile)
+
+
+@router.get("/intents", summary="List Available Top-Level Intent Taxonomy")
+async def list_intents():
+    """Returns top-level intent categories and candidate tags for dynamic questionnaires."""
+    from backend.app.matching.taxonomy import get_all_intents
+    return get_all_intents()

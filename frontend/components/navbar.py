@@ -1,58 +1,90 @@
-"""Top navigation and branding banner with language switch."""
+"""Top navigation bar matching Lovable civic design system."""
 
+from typing import Callable, Optional
 import streamlit as st
 from frontend.utils.i18n import get_current_language, t
 
 
-def render_navbar() -> None:
-    """Renders the top civic navigation banner with language toggle."""
-    col1, col2, col3 = st.columns([5, 2, 2])
+def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
+    """Renders a sleek top bar: Logo | Home | Check eligibility | All schemes | Language | Sign in."""
+    lang = get_current_language()
+    cur_page = st.session_state.get("current_page", "home")
 
-    with col1:
+    # Single-line header columns
+    col_brand, col_home, col_check, col_schemes, col_lang, col_auth = st.columns(
+        [3.6, 1.0, 1.7, 1.3, 1.2, 1.2],
+        gap="small",
+        vertical_alignment="center",
+    )
+
+    with col_brand:
+        # Logo with shield icon
         st.markdown(
-            f"""
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 5px;">
-                <span style="font-size: 32px;">🏛️</span>
-                <div>
-                    <h2 style="margin: 0; color: #1A365D; font-weight: 800; font-size: 1.7rem; letter-spacing: -0.5px;">
-                        {t('app_title', 'योजना सहायक')}
-                    </h2>
-                    <p style="margin: 0; color: #718096; font-size: 0.88rem; font-weight: 500;">
-                        {t('app_subtitle', 'AI Government Scheme & Benefits Navigator')}
-                    </p>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        # Language Selector
-        current_lang = get_current_language()
-        lang_choice = st.selectbox(
-            "🌐 भाषा / Language",
-            options=["English", "हिन्दी (Hindi)"],
-            index=0 if current_lang == "en" else 1,
-            key="lang_selector",
-            label_visibility="collapsed",
-        )
-        new_lang = "en" if "English" in lang_choice else "hi"
-        if new_lang != current_lang:
-            st.session_state.lang = new_lang
-            st.rerun()
-
-    with col3:
-        # User Profile Status Pill
-        user_name = st.session_state.get("user_name", "Citizen Guest")
-        st.markdown(
-            f"""
-            <div style="text-align: right; padding-top: 5px;">
-                <span style="background-color: #EDF2F7; color: #2D3748; padding: 6px 12px; border-radius: 16px; font-size: 0.82rem; font-weight: 600; border: 1px solid #CBD5E0;">
-                    👤 {user_name}
+            """
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #1E3A8A; color: white; border-radius: 8px; font-size: 16px;">
+                    🛡️
+                </span>
+                <span style="font-size: 1.2rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em;">
+                    Yojana Sahayak
                 </span>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown("<hr style='margin: 8px 0 16px 0; border: none; border-top: 2px solid #E2E8F0;' />", unsafe_allow_html=True)
+    with col_home:
+        is_active = (cur_page == "home")
+        label = "होम" if lang == "hi" else "Home"
+        if st.button(
+            label,
+            key="nav_home_btn",
+            type="primary" if is_active else "secondary",
+            use_container_width=True,
+        ):
+            if navigate_to:
+                navigate_to("home")
+
+    with col_check:
+        is_active = (cur_page in ("finder", "results"))
+        label = "पात्रता जांचें" if lang == "hi" else "Check eligibility"
+        if st.button(
+            label,
+            key="nav_check_btn",
+            type="primary" if is_active else "secondary",
+            use_container_width=True,
+        ):
+            if navigate_to:
+                navigate_to("finder")
+
+    with col_schemes:
+        is_active = (cur_page in ("schemes", "scheme_details"))
+        label = "सभी योजनाएं" if lang == "hi" else "All schemes"
+        if st.button(
+            label,
+            key="nav_schemes_btn",
+            type="primary" if is_active else "secondary",
+            use_container_width=True,
+        ):
+            if navigate_to:
+                navigate_to("schemes")
+
+    with col_lang:
+        # Language Switcher Pill [ EN | हि ]
+        pill_label = "हि" if lang == "en" else "EN"
+        btn_label = f"🌐 {pill_label}"
+        help_text = "हिंदी में बदलें" if lang == "en" else "Switch to English"
+        if st.button(btn_label, key="nav_lang_toggle_btn", help=help_text, use_container_width=True):
+            st.session_state.lang = "hi" if lang == "en" else "en"
+            st.rerun()
+
+    with col_auth:
+        user_name = st.session_state.get("user_name")
+        is_logged_in = bool(st.session_state.get("is_authenticated", False))
+        auth_label = f"👤 {user_name[:7]}" if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign in")
+        btn_type = "primary" if not is_logged_in else "secondary"
+        if st.button(auth_label, key="nav_auth_btn", type=btn_type, use_container_width=True):
+            if navigate_to:
+                navigate_to("profile")
+
+    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.75rem 0 2rem 0;' />", unsafe_allow_html=True)

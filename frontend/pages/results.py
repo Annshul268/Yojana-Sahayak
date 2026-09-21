@@ -1,94 +1,103 @@
-"""Results page displaying evaluated scheme matches."""
+"""Clean, human-centric Results page matching the civic design system."""
 
-from typing import Any, Callable, Dict
+from typing import Callable
 import streamlit as st
 from frontend.components.eligibility_card import render_eligibility_card
 from frontend.services.api_client import api_client
-from frontend.utils.i18n import get_current_language, t
+from frontend.utils.i18n import get_current_language
 
 
 def render_results(navigate_to: Callable[[str], None]) -> None:
-    st.markdown("## 📊 Your Scheme Eligibility Results")
+    lang = get_current_language()
 
     match_data = st.session_state.get("match_results")
     if not match_data:
-        st.info("No active evaluation found. Please fill in your profile via the Scheme Finder.")
-        if st.button("🚀 Go to Scheme Finder", type="primary"):
+        st.info("No active search yet. Fill out the quick form to discover schemes matching your profile.")
+        if st.button("🚀 " + ("पात्रता जांचें" if lang == "hi" else "Check Eligibility"), type="primary"):
             navigate_to("finder")
         return
 
     results = match_data.get("results", [])
-    eligible_count = match_data.get("eligible_count", 0)
-    pot_count = match_data.get("potentially_eligible_count", 0)
-    not_count = match_data.get("not_eligible_count", 0)
+    user_id = st.session_state.get("user_id", "citizen_user_1")
 
-    # Metric Cards
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Total Evaluated", match_data.get("total_schemes_evaluated", 0))
-    with col2:
-        st.metric("✅ Fully Eligible", eligible_count)
-    with col3:
-        st.metric("⚠️ Potentially Eligible", pot_count)
-    with col4:
-        st.metric("❌ Not Eligible", not_count)
+    # Fetch saved schemes
+    saved_res = api_client.list_saved(user_id=user_id)
+    saved_ids = set()
+    if saved_res["ok"]:
+        saved_ids = {s.get("scheme_id") for s in saved_res["data"]}
 
-    st.markdown("<hr style='margin: 12px 0 20px 0; border: none; border-top: 1px solid #E2E8F0;' />", unsafe_allow_html=True)
+    # Clean Heading
+    eligible_count = sum(1 for r in results if r.get("status") == "eligible")
+    total_matches = len(results)
 
-    # Filter by Status
-    status_filter = st.radio(
-        "Filter results by status:",
-        options=["All Schemes", "Eligible Only", "Potentially Eligible", "Not Eligible"],
-        horizontal=True,
+    st.markdown(
+        f"""
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <h2 style="color: #0F172A; font-weight: 800; font-size: 1.75rem; margin-bottom: 4px;">
+                    {"आपके लिए सरकारी योजनाएं" if lang == "hi" else "Government Schemes Matching Your Profile"}
+                </h2>
+                <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;">
+                    {total_matches} {"योजनाएं उपलब्ध" if lang == "hi" else "schemes evaluated"}
+                </span>
+            </div>
+            <p style="color: #64748B; font-size: 0.95rem; margin: 0;">
+                {"आधिकारिक नियमों के आधार पर आपके विवरण से मेल खाने वाली योजनाएं और उनके लाभ नीचे दिए गए हैं।" if lang == "hi" else "Based on official eligibility rules, here are the schemes you qualify for, why they match, and how to apply."}
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
-    filtered_results = results
-    if status_filter == "Eligible Only":
-        filtered_results = [r for r in results if r.get("status") == "eligible"]
-    elif status_filter == "Potentially Eligible":
-        filtered_results = [r for r in results if r.get("status") == "potentially_eligible"]
-    elif status_filter == "Not Eligible":
-        filtered_results = [r for r in results if r.get("status") == "not_eligible"]
+    # Simplified Filter Pills
+    filter_choice = st.radio(
+        "Filter results:",
+        options=[
+            "All Schemes" if lang != "hi" else "सभी योजनाएं",
+            "Likely Eligible" if lang != "hi" else "पात्र योजनाएं",
+            "Needs Verification" if lang != "hi" else "सत्यापन आवश्यक",
+        ],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
 
-    # Active AI Explanation Dialog
-    if "active_explanation" in st.session_state and st.session_state.active_explanation:
-        expl_data = st.session_state.active_explanation
-        st.info(f"### 🤖 AI Grounded Explanation: {expl_data['scheme_name']}")
-        st.markdown(expl_data["text"])
-        if st.button("✖️ Close Explanation"):
-            st.session_state.active_explanation = None
-            st.rerun()
-        st.divider()
-
-    def handle_explain(match_item: Dict[str, Any]):
-        user_prof = st.session_state.get("matched_profile", {})
-        lang = get_current_language()
-        with st.spinner("Generating grounded explanation from verified records..."):
-            res = api_client.explain_eligibility(
-                match_result=match_item,
-                user_profile=user_prof,
-                language=lang,
-            )
-            if res["ok"]:
-                st.session_state.active_explanation = {
-                    "scheme_name": match_item.get("scheme_name"),
-                    "text": res["data"]["explanation"],
-                }
-                st.rerun()
-            else:
-                st.error(f"Could not generate explanation: {res['error']}")
+    filtered = results
+    if "Likely" in filter_choice or "पात्र" in filter_choice:
+        filtered = [r for r in results if r.get("status") == "eligible"]
+    elif "Needs" in filter_choice or "सत्यापन" in filter_choice:
+        filtered = [r for r in results if r.get("status") == "potentially_eligible"]
 
     def handle_details(slug: str):
         st.session_state.selected_scheme_slug = slug
         navigate_to("scheme_details")
 
-    # Render Scheme Results Cards
-    if not filtered_results:
-        st.warning("No schemes match the selected filter.")
+    def handle_save(scheme_id: str):
+        if scheme_id in saved_ids:
+            api_client.remove_saved_scheme(scheme_id=scheme_id, user_id=user_id)
+            st.toast("Removed from bookmarks")
+        else:
+            api_client.save_scheme(scheme_id=scheme_id, user_id=user_id)
+            st.toast("Saved to bookmarks ⭐")
+        st.rerun()
+
+    # Render Cards
+    if not filtered:
+        st.info("No schemes found under this filter.")
     else:
-        for match in filtered_results:
+        for match in filtered:
+            is_saved = match.get("scheme_id") in saved_ids
             render_eligibility_card(
                 match=match,
-                on_explain=handle_explain,
                 on_view_details=handle_details,
+                on_save=handle_save,
+                is_saved=is_saved,
             )
+
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    c_btn1, c_btn2 = st.columns([1.5, 2])
+    with c_btn1:
+        if st.button("🔄 " + ("विवरण संशोधित करें" if lang == "hi" else "Edit Your Answers"), use_container_width=True):
+            navigate_to("finder")
+    with c_btn2:
+        if st.button("📚 " + ("सभी योजनाएं ब्राउज़ करें" if lang == "hi" else "Browse All Schemes Directory"), use_container_width=True):
+            navigate_to("schemes")

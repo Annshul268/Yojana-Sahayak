@@ -1,69 +1,155 @@
-"""Eligibility breakdown component."""
+"""Human-friendly scheme eligibility match card with structured reasons and AI explanation."""
 
 from typing import Any, Callable, Dict, Optional
 import streamlit as st
-from frontend.utils.i18n import t
+from frontend.services.api_client import api_client
+from frontend.utils.i18n import get_current_language
 
 
 def render_eligibility_card(
     match: Dict[str, Any],
-    on_explain: Optional[Callable[[Dict[str, Any]], None]] = None,
     on_view_details: Optional[Callable[[str], None]] = None,
+    on_save: Optional[Callable[[str], None]] = None,
+    is_saved: bool = False,
 ) -> None:
-    """Renders a visual breakdown of deterministic match criteria."""
+    """Renders a sleek, human-first scheme match card without technical algorithmic scores."""
+    lang = get_current_language()
     status = match.get("status", "potentially_eligible")
-    score = match.get("score", 70)
-    scheme_name = match.get("scheme_name", "")
+    scheme_name = match.get("scheme_name_hi") if (lang == "hi" and match.get("scheme_name_hi")) else match.get("scheme_name", "")
     slug = match.get("slug", "")
-    matched_rules = match.get("matched_rules", [])
-    failed_rules = match.get("failed_rules", [])
+    scheme_id = match.get("scheme_id", slug)
+    category = match.get("category", "")
+    ministry = match.get("ministry", "")
+    benefits = match.get("benefits", [])
+    benefit_highlight = benefits[0] if benefits else ""
+    matched_attrs = match.get("matched_attributes", []) or [r.get("reason", "") for r in match.get("matched_rules", [])]
+    failed_conds = match.get("failed_conditions", []) or [r.get("reason", "") for r in match.get("failed_rules", [])]
+    important_conds = match.get("important_conditions", [])
     missing_info = match.get("missing_information", [])
+    reason = match.get("reason", "")
+    official_url = match.get("official_url", "#")
 
-    status_color = "#38A169" if status == "eligible" else ("#D69E2E" if status == "potentially_eligible" else "#E53E3E")
-    status_label = t(f"status_{status}", status.replace("_", " ").title())
+    # Status Pill
+    if status == "eligible":
+        status_html = (
+            '<span class="status-pill-eligible">✓ '
+            + ("आप पात्र हो सकते हैं" if lang == "hi" else "Likely eligible based on your details")
+            + "</span>"
+        )
+    elif status == "potentially_eligible":
+        status_html = (
+            '<span class="status-pill-potential">ℹ '
+            + ("अतिरिक्त सत्यापन आवश्यक" if lang == "hi" else "Verification required")
+            + "</span>"
+        )
+    else:
+        status_html = (
+            '<span style="background: #FEE2E2; color: #991B1B; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 20px;">'
+            + ("अपात्र" if lang == "hi" else "Criteria not matching")
+            + "</span>"
+        )
 
-    st.markdown(
-        f"""
-        <div style="border: 2px solid {status_color}; border-radius: 8px; background: white; padding: 1.25rem; margin-bottom: 1.2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <h3 style="margin: 0; color: #1A365D; font-size: 1.2rem;">{scheme_name}</h3>
-                <span style="background: {status_color}22; color: {status_color}; border: 1px solid {status_color}; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem;">
-                    {status_label} ({score}%)
-                </span>
+    # Clean Card container
+    with st.container():
+        st.markdown(
+            f"""
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.5rem; margin-bottom: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="category-badge-pill">{category}</span>
+                        <span style="font-size: 0.8rem; color: #94A3B8;">• {ministry}</span>
+                    </div>
+                    <div>{status_html}</div>
+                </div>
+                <h3 style="color: #0F172A; margin: 6px 0 8px 0; font-size: 1.25rem; font-weight: 700;">
+                    {scheme_name}
+                </h3>
+                {f'<div style="display: inline-block; background: #FEF3C7; color: #92400E; font-size: 0.82rem; font-weight: 600; padding: 3px 10px; border-radius: 6px; margin-bottom: 10px;">🎁 {benefit_highlight}</div>' if benefit_highlight else ''}
             </div>
-            <p style="color: #718096; font-size: 0.88rem; margin-bottom: 12px;">Ministry: {match.get('ministry', 'Government of India')}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if matched_rules:
-            st.markdown("##### ✅ Matched Criteria")
-            for r in matched_rules:
-                st.markdown(f"- **{r.get('rule_name', '').title()}**: {r.get('reason', '')}")
-        if failed_rules:
-            st.markdown("##### ❌ Disqualifying Criteria")
-            for r in failed_rules:
-                st.markdown(f"- **{r.get('rule_name', '').title()}**: {r.get('reason', '')}")
+        # "Why this matches" and "Important conditions" section
+        if matched_attrs or missing_info or important_conds:
+            reasons_html = []
+            for a in matched_attrs[:3]:
+                if a:
+                    reasons_html.append(f"<div style='color: #047857; font-size: 0.86rem; margin-bottom: 3px;'>✓ {a}</div>")
+            for m in missing_info[:2]:
+                m_reason = m.get("reason") if isinstance(m, dict) else str(m)
+                reasons_html.append(f"<div style='color: #B45309; font-size: 0.86rem; margin-bottom: 3px;'>ℹ Verification required: {m_reason}</div>")
 
-    with col2:
-        if missing_info:
-            st.markdown("##### ⚠️ Information Needed to Confirm")
-            for m in missing_info:
-                st.markdown(f"- **{m.get('field', '').title()}**: {m.get('reason', '')}")
+            important_html = ""
+            if important_conds:
+                cond_bullets = "".join([f"<li style='margin-bottom: 2px;'>{c}</li>" for c in important_conds[:2]])
+                important_html = f"""
+                <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #E2E8F0; font-size: 0.82rem; color: #64748B;">
+                    <strong>Important conditions:</strong>
+                    <ul style="margin: 4px 0 0 16px; padding: 0;">{cond_bullets}</ul>
+                </div>
+                """
 
-    col_b1, col_b2, col_b3 = st.columns([3, 3, 3])
-    with col_b1:
-        if st.button("🤖 Explain My Eligibility", key=f"btn_expl_{slug}", use_container_width=True):
-            if on_explain:
-                on_explain(match)
-    with col_b2:
-        if st.button("📋 Scheme Details", key=f"btn_vd_{slug}", use_container_width=True):
-            if on_view_details:
-                on_view_details(slug)
-    with col_b3:
-        st.link_button("🔗 Official Portal", match.get("official_url", "#"), use_container_width=True)
+            st.markdown(
+                f"""
+                <div style="background: #F8FAFC; border: 1px solid #F1F5F9; border-radius: 10px; padding: 12px 14px; margin-top: -12px; margin-bottom: 12px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">
+                        {"यह योजना आपके लिए क्यों उपयुक्त है:" if lang == "hi" else "Why this scheme matches your profile:"}
+                    </div>
+                    {''.join(reasons_html)}
+                    {important_html}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    st.markdown("<hr style='margin: 10px 0 16px 0; border: none; border-top: 1px dashed #E2E8F0;' />", unsafe_allow_html=True)
+        # Action Buttons row
+        col_act1, col_act2, col_act3, col_ai = st.columns([1.5, 0.9, 1.4, 1.4], gap="small")
+        with col_act1:
+            if st.button(
+                "योजना देखें →" if lang == "hi" else "View Scheme →",
+                key=f"card_view_{slug}",
+                type="primary",
+                use_container_width=True,
+            ):
+                if on_view_details:
+                    on_view_details(slug)
+
+        with col_act2:
+            save_lbl = "⭐ " + ("सहेजा" if lang == "hi" else "Saved") if is_saved else "☆ " + ("सहेजें" if lang == "hi" else "Save")
+            if st.button(save_lbl, key=f"card_save_{slug}", use_container_width=True):
+                if on_save:
+                    on_save(scheme_id)
+
+        with col_act3:
+            st.link_button(
+                "🔗 " + ("आधिकारिक पोर्टल" if lang == "hi" else "Official Portal"),
+                official_url,
+                use_container_width=True,
+            )
+
+        with col_ai:
+            if st.button("💡 " + ("एआई व्याख्या" if lang == "hi" else "AI Explain"), key=f"card_ai_{slug}", use_container_width=True):
+                st.session_state[f"show_ai_explain_{slug}"] = not st.session_state.get(f"show_ai_explain_{slug}", False)
+
+        # Expandable Grounded AI Explanation
+        if st.session_state.get(f"show_ai_explain_{slug}", False):
+            with st.spinner("Generating grounded AI explanation..."):
+                query = f"Explain in simple plain language why an applicant qualifies for {scheme_name} and what documents are required."
+                ai_res = api_client.ask_ai(question=query, language=lang)
+                if ai_res["ok"]:
+                    st.markdown(
+                        f"""
+                        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 12px 14px; margin-top: 8px; margin-bottom: 12px;">
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #166534; margin-bottom: 4px;">
+                                🤖 {"आधिकारिक तथ्यों पर आधारित एआई व्याख्या:" if lang == "hi" else "Grounded AI Explanation:"}
+                            </div>
+                            <div style="font-size: 0.9rem; color: #14532D; line-height: 1.5;">
+                                {ai_res["data"]["answer"]}
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
