@@ -1,0 +1,58 @@
+/* Yojana Sahayak Design System - Warm Civic / Public-Service Theme */
+
+:root {
+  --primary-navy: #1A365D;
+  --primary-indigo: #2A4365;
+  --saffron-accent: #DD6B20;
+  --saffron-light: #FEEBC8;
+  --civic-green: #22543D;
+  --civic-green-light: #C6F6D5;
+  --bg-warm: #FAF9F6;
+  --text-dark: #2D3748;
+  --text-muted: #718096;
+  --border-light: #E2E8F0;
+  --card-bg: #FFFFFF;
+}
+
+.main-title {
+  color: var(--primary-navy);
+  font-weight: 800;
+  font-size: 2.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.sub-title {
+  color: var(--saffron-accent);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.civic-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.2rem;
+}
+
+.badge-verified {
+  background-color: var(--civic-green-light);
+  color: var(--civic-green);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.badge-saffron {
+  background-color: var(--saffron-light);
+  color: var(--saffron-accent);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
