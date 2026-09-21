@@ -4,12 +4,24 @@ uvicorn[standard]>=0.34.0
 pydantic>=2.10.0
 pydantic-settings>=2.7.0
 
+# Database & ORM
+sqlalchemy>=2.0.0
+aiosqlite>=0.20.0
+greenlet>=3.0.0
+
+# Vector Database & Embeddings
+chromadb>=1.5.0
+
+# AI Provider
+groq>=1.7.0
+
 # HTTP Clients
 httpx>=0.28.0
 requests>=2.32.0
 
-# Frontend
+# Frontend & Data
 streamlit>=1.41.0
+pandas>=2.2.0
 
 # Utilities
 python-dotenv>=1.0.0

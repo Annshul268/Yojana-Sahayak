@@ -10,7 +10,18 @@ if str(ROOT_DIR) not in sys.path:
 
 import streamlit as st
 from frontend.components.navbar import render_navbar
+from frontend.pages.admin import render_admin_dashboard
+from frontend.pages.assistant import render_ai_assistant
+from frontend.pages.home import render_home
+from frontend.pages.profile import render_citizen_profile
+from frontend.pages.results import render_results
+from frontend.pages.saved import render_saved_schemes
+from frontend.pages.scheme_details import render_scheme_details
+from frontend.pages.scheme_finder import render_scheme_finder
+from frontend.pages.schemes import render_schemes_directory
+from frontend.pages.tracker import render_application_tracker
 from frontend.services.api_client import api_client
+from frontend.utils.i18n import t
 
 # Streamlit Page Configuration
 st.set_page_config(
@@ -20,108 +31,88 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Render Global Navigation Bar
+# Apply Custom CSS styling
+css_path = ROOT_DIR / "frontend" / "styles" / "main.css"
+if css_path.exists():
+    with open(css_path, "r", encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Session state initialization
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "home"
+if "user_id" not in st.session_state:
+    st.session_state.user_id = "citizen_user_1"
+if "user_name" not in st.session_state:
+    st.session_state.user_name = "Aadhaar Citizen"
+if "lang" not in st.session_state:
+    st.session_state.lang = "en"
+
+
+def navigate_to(page_name: str) -> None:
+    st.session_state.current_page = page_name
+    st.rerun()
+
+
+# Top Navbar
 render_navbar()
 
-# Sidebar: System Information & Status
+# Navigation Mapping
+NAV_ITEMS = {
+    "home": ("🏠", t("nav_home", "Home")),
+    "finder": ("🎯", t("nav_finder", "Find Schemes")),
+    "results": ("📊", "My Results"),
+    "schemes": ("📚", t("nav_schemes", "Browse Schemes")),
+    "saved": ("⭐", t("nav_saved", "Saved Schemes")),
+    "tracker": ("📈", t("nav_tracker", "Application Tracker")),
+    "assistant": ("🤖", t("nav_assistant", "AI Assistant")),
+    "profile": ("👤", t("nav_profile", "My Profile")),
+    "admin": ("⚙️", t("nav_admin", "Admin Dashboard")),
+}
+
+# Sidebar Navigation
 with st.sidebar:
-    st.markdown("### 🇮🇳 योजना सहायक")
-    st.markdown("**AI Government Scheme & Benefits Navigator**")
-    st.caption("A trustworthy civic public-service platform for Indian citizens.")
+    st.markdown("### 🇮🇳 Navigation")
+    current_key = st.session_state.current_page
+    if current_key == "scheme_details":
+        current_key = "schemes"
+
+    for page_key, (icon, label) in NAV_ITEMS.items():
+        is_active = st.session_state.current_page == page_key
+        button_type = "primary" if is_active else "secondary"
+        if st.button(f"{icon} {label}", key=f"nav_btn_{page_key}", type=button_type, use_container_width=True):
+            navigate_to(page_key)
+
     st.divider()
+    st.markdown("#### ⚡ System Status")
+    health = api_client.check_health()
+    if health["ok"]:
+        st.success("🟢 Backend: Healthy")
+    else:
+        st.error("🔴 Backend: Disconnected")
+    st.caption(f"Backend URL: `{api_client.base_url}`")
 
-    st.markdown("#### ⚙️ System Environment")
-    st.info(f"**Backend URL:**\n`{api_client.base_url}`")
+# Route Page Rendering
+page = st.session_state.current_page
 
-    st.divider()
-    st.markdown("#### 🧭 Architecture Roadmap")
-    st.markdown("""
-    - ✅ **Phase 0:** Project Foundation *(Active)*
-    - ⏳ **Phase 1:** Streamlit UI Foundation
-    - ⏳ **Phase 2:** Database & Supabase Auth
-    - ⏳ **Phase 3:** Scheme Data Model
-    - ⏳ **Phase 4:** Government Data Pipeline
-    - ⏳ **Phase 5:** Deterministic Matching Engine
-    - ⏳ **Phase 6:** Search & Filters
-    - ⏳ **Phase 7:** ChromaDB & RAG Retrieval
-    - ⏳ **Phase 8:** Groq / Llama Integration
-    """)
-
-# Main Content Area
-st.markdown(
-    """
-    <div style="background: linear-gradient(135deg, #1A365D 0%, #2B6CB0 100%); color: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
-        <h1 style="color: white; margin-top: 0; font-size: 2rem;">Welcome to Yojana Sahayak (योजना सहायक)</h1>
-        <p style="font-size: 1.1rem; opacity: 0.95; max-width: 800px; margin-bottom: 0;">
-            Empowering Indian citizens to discover welfare schemes and benefits tailored to their eligibility—backed by verified government data, deterministic rule-matching, and grounded AI explanations.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Backend Connectivity Verification Card (Phase 0 Core Requirement)
-st.subheader("🔌 Backend Service Connectivity")
-st.write("Verifying live communication: **Streamlit Frontend ➔ FastAPI Backend ➔ /api/health**")
-
-col_action, col_spacer = st.columns([2, 4])
-with col_action:
-    refresh = st.button("🔄 Test Backend Connection", use_container_width=True)
-
-# Query backend health
-health_result = api_client.check_health()
-
-if health_result["ok"]:
-    data = health_result["data"]
-    st.success("✅ **FastAPI Backend is Connected & Healthy!**")
-
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(label="Backend Status", value=data.get("status", "unknown").upper())
-    with col2:
-        st.metric(label="Service Name", value=data.get("service", "N/A"))
-    with col3:
-        st.metric(label="API Version", value=f"v{data.get('version', '0.1.0')}")
-    with col4:
-        st.metric(label="Environment", value=data.get("environment", "development"))
-
-    with st.expander("🔍 View Raw Health API Response payload", expanded=False):
-        st.json(data)
+if page == "home":
+    render_home(navigate_to)
+elif page == "finder":
+    render_scheme_finder(navigate_to)
+elif page == "results":
+    render_results(navigate_to)
+elif page == "schemes":
+    render_schemes_directory(navigate_to)
+elif page == "scheme_details":
+    render_scheme_details(navigate_to)
+elif page == "saved":
+    render_saved_schemes(navigate_to)
+elif page == "tracker":
+    render_application_tracker(navigate_to)
+elif page == "assistant":
+    render_ai_assistant(navigate_to)
+elif page == "profile":
+    render_citizen_profile(navigate_to)
+elif page == "admin":
+    render_admin_dashboard(navigate_to)
 else:
-    st.error(f"❌ **Backend Communication Error:** {health_result['error']}")
-    st.warning(
-        "To start the FastAPI backend server locally:\n"
-        "```bash\n"
-        "uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000\n"
-        "```"
-    )
-
-st.divider()
-
-# Core Architecture & Principles Summary
-st.subheader("🏛️ Core Principles & Architecture")
-
-col_a, col_b = st.columns(2)
-
-with col_a:
-    st.markdown(
-        """
-        ### ⚖️ The Core Principle: Accuracy First
-        - **Source of Truth:** Verified government datasets, structured PostgreSQL records, and deterministic eligibility rules.
-        - **Role of AI:** The LLM is **never** the source of truth for government rules or benefit amounts. It serves as an interaction, translation, and grounded explanation layer.
-        - **Grounding:** Every recommendation is backed by traceable government sources and official application links.
-        """
-    )
-
-with col_b:
-    st.markdown(
-        """
-        ### 🏗️ Technology Stack
-        - **Frontend:** Streamlit (Python, responsive civic design, bilingual UI)
-        - **Backend:** FastAPI (REST endpoints, business logic, matching engine)
-        - **Database:** PostgreSQL (structured profile and scheme storage)
-        - **Authentication:** Supabase Auth
-        - **Vector Store & RAG:** ChromaDB + Sentence Transformers
-        - **LLM Engine:** Groq API (Llama models via modular provider)
-        """
-    )
+    render_home(navigate_to)

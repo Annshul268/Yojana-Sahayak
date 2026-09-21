@@ -13,6 +13,15 @@ from backend.app.core.logging import logger
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan context manager for startup and shutdown events."""
     logger.info("Starting %s in %s mode (v%s)", settings.PROJECT_NAME, settings.APP_ENV, settings.VERSION)
+    from backend.app.database.connection import init_db
+    from backend.app.ingestion.seed import seed_database_if_empty
+
+    try:
+        await init_db()
+        await seed_database_if_empty()
+    except Exception as exc:
+        logger.error("Startup database initialization error: %s", exc)
+
     yield
     logger.info("Shutting down %s", settings.PROJECT_NAME)
 
