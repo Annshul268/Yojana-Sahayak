@@ -37,11 +37,15 @@ class Question:
 
 
 INDIAN_STATES = [
+    "All India",
+    "Andaman and Nicobar Islands",
     "Andhra Pradesh",
     "Arunachal Pradesh",
     "Assam",
     "Bihar",
+    "Chandigarh",
     "Chhattisgarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
     "Delhi",
     "Goa",
     "Gujarat",
@@ -52,6 +56,7 @@ INDIAN_STATES = [
     "Karnataka",
     "Kerala",
     "Ladakh",
+    "Lakshadweep",
     "Madhya Pradesh",
     "Maharashtra",
     "Manipur",
@@ -59,6 +64,7 @@ INDIAN_STATES = [
     "Mizoram",
     "Nagaland",
     "Odisha",
+    "Puducherry",
     "Punjab",
     "Rajasthan",
     "Sikkim",

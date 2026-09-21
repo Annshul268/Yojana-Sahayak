@@ -268,8 +268,13 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     with col_next:
         next_label = ("योजनाएं खोजें →" if lang == "hi" else "Find My Schemes →") if is_last else ("आगे बढ़ें →" if lang == "hi" else "Continue →")
         if st.button(next_label, type="primary", use_container_width=True, key="adaptive_next_btn"):
-            # Step 1: Read current value
+            # Step 1: Read current value with fallback to widget session key
             current_ans = answers.get(current_q.id)
+            if (current_ans is None or current_ans == "") and widget_key in st.session_state:
+                w_val = st.session_state.get(widget_key)
+                if w_val is not None:
+                    current_ans = w_val
+                    answers[current_q.id] = w_val
 
             # Step 2: Validate against question definition
             is_valid, err_msg = questionnaire_engine.validate_answer(current_q, current_ans, lang=lang)
