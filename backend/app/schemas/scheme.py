@@ -25,6 +25,9 @@ class SchemeBase(BaseModel):
     source_url: Optional[str] = None
     source_name: str = "Government Portal"
     verification_status: str = "Verified"
+    is_featured: bool = False
+    featured_priority: int = 0
+    image_url: Optional[str] = None
     active: bool = True
 
 

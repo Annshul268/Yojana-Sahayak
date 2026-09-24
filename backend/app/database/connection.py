@@ -46,10 +46,22 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Initializes database tables."""
+    """Initializes database tables and ensures new columns exist."""
+    from sqlalchemy import text
     logger.info("Initializing database schema on %s...", "SQLite" if is_sqlite else "PostgreSQL")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe column additions for existing tables
+        columns_to_add = [
+            ("is_featured", "BOOLEAN DEFAULT 0"),
+            ("featured_priority", "INTEGER DEFAULT 0"),
+            ("image_url", "VARCHAR(500) DEFAULT NULL"),
+        ]
+        for col_name, typedef in columns_to_add:
+            try:
+                await conn.execute(text(f"ALTER TABLE schemes ADD COLUMN {col_name} {typedef}"))
+            except Exception:
+                pass  # column already exists
     logger.info("Database schema initialized successfully.")
 
 

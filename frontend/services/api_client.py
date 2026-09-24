@@ -87,6 +87,18 @@ class APIClient:
             params["level"] = level
         return self._request("GET", "/api/schemes", params=params)
 
+    def get_featured_schemes(self, limit: int = 5) -> Dict[str, Any]:
+        return self._request("GET", "/api/schemes/featured", params={"limit": limit})
+
+    def get_scheme_stats(self) -> Dict[str, Any]:
+        return self._request("GET", "/api/schemes/stats")
+
+    def get_scheme_categories(self) -> Dict[str, Any]:
+        return self._request("GET", "/api/schemes/categories")
+
+    def get_scheme_states(self) -> Dict[str, Any]:
+        return self._request("GET", "/api/schemes/states")
+
     def get_scheme(self, slug_or_id: str) -> Dict[str, Any]:
         return self._request("GET", f"/api/schemes/{slug_or_id}")
 
