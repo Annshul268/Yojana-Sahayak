@@ -284,105 +284,10 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 36px 0 28px 0;' />", unsafe_allow_html=True)
 
-
-    # =========================================================================
-    # STATE / UT STATISTICS: Explore by State / UT
-    # =========================================================================
-    st.markdown(
-        f"""
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-            <h3 style="font-size: 1.5rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
-                {"राज्य / केंद्रशासित प्रदेश अनुसार योजनाएं" if lang == "hi" else "Explore by State / UT"}
-            </h3>
-            <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
-                {"राज्य-विशिष्ट सरकारी कल्याणकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore state-specific welfare programs currently available in our database"}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    states_res = api_client.get_scheme_states()
-    states_list = states_res.get("data", []) if states_res.get("ok") else stats.get("states", [])
-
-    all_state_names = [s["state"] for s in states_list]
-
-    # Quick interactive dropdown selector
-    col_sel1, col_sel2 = st.columns([5, 5])
-    with col_sel1:
-        chosen_state = st.selectbox(
-            "Select State / UT" if lang != "hi" else "राज्य / केंद्रशासित प्रदेश चुनें",
-            options=["All States"] + all_state_names,
-            index=0,
-            key="home_state_select_dropdown",
-        )
-
-    with col_sel2:
-        if chosen_state != "All States":
-            st_data = next((s for s in states_list if s["state"] == chosen_state), None)
-            st_count = st_data["state_count"] if st_data else 0
-            central_cnt = stats.get("central", 109)
-            total_app = st_count + central_cnt
-
-            st.markdown(
-                f"""
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
-                    <strong>{chosen_state}</strong>: {st_count} {"राज्य योजनाएं" if lang == "hi" else "State Schemes"} + {central_cnt} {"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"} = <strong>{total_app} {"कुल उपलब्ध" if lang == "hi" else "Total Available"}</strong>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            btn_state_text = f"Browse {total_app} Schemes for {chosen_state} →" if lang != "hi" else f"{chosen_state} की सभी {total_app} योजनाएं देखें →"
-            if st.button(btn_state_text, type="primary", use_container_width=True, key="btn_explore_state_selected"):
-                st.session_state.selected_state_filter = chosen_state
-                navigate_to("schemes")
-        else:
-            st.markdown(
-                f"""
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
-                    {"केंद्रीय योजनाएं संपूर्ण भारत में मान्य हैं।" if lang == "hi" else "Central government schemes are applicable across all States & UTs."}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Browse All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", type="secondary", use_container_width=True, key="btn_explore_all_states"):
-                navigate_to("schemes")
-
-    # Render Clean State Schemes Grid
-    if states_list:
-        st.markdown("<div style='height: 1.25rem;'></div>", unsafe_allow_html=True)
-        # Display states in 2 columns
-        num_state_cols = 2
-        half = (len(states_list) + 1) // 2
-        col_st_left, col_st_right = st.columns(num_state_cols, gap="medium")
-
-        for idx, item in enumerate(states_list):
-            st_name = item["state"]
-            st_count = item["state_count"]
-            target_col = col_st_left if idx < half else col_st_right
-
-            with target_col:
-                col_info, col_btn = st.columns([7, 3])
-                with col_info:
-                    st.markdown(
-                        f"""
-                        <div class="state-stat-card">
-                            <span class="state-stat-name">{st_name}</span>
-                            <span class="state-stat-pill">{st_count} {"योजनाएं" if lang == "hi" else "Schemes"}</span>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-                with col_btn:
-                    if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_state_card_{idx}", use_container_width=True):
-                        st.session_state.selected_state_filter = st_name
-                        navigate_to("schemes")
-
-    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 40px 0 28px 0;' />", unsafe_allow_html=True)
-
     # =========================================================================
     # 3-STEP PROCESS CARDS GRID
     # =========================================================================
+
     col_s1, col_s2, col_s3 = st.columns(3, gap="medium")
 
     with col_s1:
