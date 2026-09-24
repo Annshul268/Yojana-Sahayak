@@ -95,65 +95,212 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 36px 0 28px 0;' />", unsafe_allow_html=True)
 
     # =========================================================================
-    # 3. CATEGORY SCHEME COUNTS (10 Verified Categories with Live DB Counts)
+    # 3. SCHEME COUNTERS (Total Schemes | Central Schemes | State/UT Schemes)
     # =========================================================================
     stats = get_live_db_statistics()
-    category_counts = stats.get("categories", {})
+    total_schemes = stats.get("total", 438)
+    central_schemes = stats.get("central", 109)
+    state_schemes = stats.get("state", 329)
 
-    st.markdown(
-        f"""
-        <div style="margin-top: 10px; margin-bottom: 18px;">
-            <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
-                {"श्रेणी अनुसार योजनाएं" if lang == "hi" else "Scheme Counts by Category"}
-            </h3>
-            <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
-                {"प्रत्येक प्रमुख श्रेणी के लिए उपलब्ध योजनाओं की वास्तविक संख्या (डेटाबेस से सीधे सत्यापित)" if lang == "hi" else "Real-time scheme counts for every primary sector, directly queried from the database"}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    col_c1, col_c2, col_c3 = st.columns(3, gap="medium")
+
+    with col_c1:
+        st.markdown(
+            f"""
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{total_schemes}+</div>
+                <div class="stat-label-hero">
+                    <span>{"कुल योजनाएं" if lang == "hi" else "Total Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", key="btn_ctr_total", use_container_width=True):
+            navigate_to("schemes")
+
+    with col_c2:
+        st.markdown(
+            f"""
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{central_schemes}+</div>
+                <div class="stat-label-hero">
+                    <span>{"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →", key="btn_ctr_central", use_container_width=True):
+            st.session_state.selected_level_filter = "Central"
+            navigate_to("schemes")
+
+    with col_c3:
+        st.markdown(
+            f"""
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{state_schemes}+</div>
+                <div class="stat-label-hero">
+                    <span>{"राज्य / केंद्रशासित योजनाएं" if lang == "hi" else "State/UT Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →", key="btn_ctr_state", use_container_width=True):
+            st.session_state.selected_level_filter = "State"
+            navigate_to("schemes")
+
+    st.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
+
+    # =========================================================================
+    # 4. DISCOVERY TABS: Categories | States/UTs | Central Ministries
+    # =========================================================================
+    tab_cat, tab_states, tab_min = st.tabs(
+        ["Categories", "States/UTs", "Central Ministries"]
+        if lang != "hi"
+        else ["श्रेणियां", "राज्य / केंद्रशासित प्रदेश", "केंद्रीय मंत्रालय"]
     )
 
-    ordered_categories = [
-        ("Education & Scholarships", "Education & Learning", "🎓", "शिक्षा एवं छात्रवृत्ति"),
-        ("Health", "Healthcare", "🏥", "स्वास्थ्य"),
-        ("Housing", "Housing & Shelter", "🏠", "आवास"),
-        ("Agriculture", "Agriculture & Rural Development", "🌾", "कृषि"),
-        ("Business & Loans", "Business & Self Employment", "📈", "व्यवसाय एवं ऋण"),
-        ("Employment & Skills", "Employment & Skills", "💼", "रोजगार एवं कौशल"),
-        ("Pension", "Social Security & Pension", "👴", "पेंशन"),
-        ("Insurance", "Financial Assistance", "💳", "बीमा / वित्तीय"),
-        ("Women & Child", "Women & Child Development", "👩‍👧", "महिला एवं बाल विकास"),
-        ("Disability Support", "Differently Abled Support", "♿", "दिव्यांगजन सहायता"),
-    ]
+    # TAB 1: Categories
+    with tab_cat:
+        st.markdown(
+            f"""
+            <div style="margin-top: 10px; margin-bottom: 20px;">
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 3px;">
+                    {"श्रेणियों के आधार पर योजनाएं खोजें" if lang == "hi" else "Find schemes based on categories"}
+                </h3>
+                <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
+                    {"विभिन्न श्रेणियों में उपलब्ध सरकारी योजनाओं की संख्या देखें" if lang == "hi" else "Explore welfare programs curated by key sectors in our database"}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    col_cat_l, col_cat_r = st.columns(2, gap="medium")
-    half_cat = len(ordered_categories) // 2
+        category_items = stats.get("category_items", [])
+        if category_items:
+            num_cols = 4
+            cat_rows = [category_items[i : i + num_cols] for i in range(0, len(category_items), num_cols)]
 
-    for idx, (display_name, db_cat_name, icon, hindi_name) in enumerate(ordered_categories):
-        count_val = category_counts.get(display_name, 0)
-        target_column = col_cat_l if idx < half_cat else col_cat_r
-        disp_title = hindi_name if lang == "hi" else display_name
+            for r_idx, row in enumerate(cat_rows):
+                cols = st.columns(num_cols, gap="small")
+                for c_idx, item in enumerate(row):
+                    with cols[c_idx]:
+                        cat_name = item["name"]
+                        disp_name = item["name_hi"] if lang == "hi" and item.get("name_hi") else cat_name
+                        icon = item.get("icon", "📋")
+                        count = item.get("count", 0)
 
-        with target_column:
-            c_info, c_btn = st.columns([7, 3])
-            with c_info:
-                st.markdown(
-                    f"""
-                    <div class="category-stat-bar">
-                        <span class="cat-stat-name">{icon} {disp_title}</span>
-                        <span class="cat-stat-count">{count_val}</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with c_btn:
-                btn_cat_label = f"देखें ({count_val})" if lang == "hi" else f"View ({count_val})"
-                if st.button(btn_cat_label, key=f"btn_cat_direct_{idx}", use_container_width=True):
-                    st.session_state.selected_category_filter = db_cat_name
-                    navigate_to("schemes")
+                        st.markdown(
+                            f"""
+                            <div class="cat-card-modern">
+                                <div class="cat-icon-badge">{icon}</div>
+                                <div class="cat-schemes-count">{count} {"योजनाएं" if lang == "hi" else "Schemes"}</div>
+                                <div class="cat-card-title">{disp_name}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        btn_label = f"देखें ({count})" if lang == "hi" else f"Explore ({count}) →"
+                        if st.button(btn_label, key=f"btn_tab_cat_{r_idx}_{c_idx}", use_container_width=True):
+                            st.session_state.selected_category_filter = item["db_category"]
+                            navigate_to("schemes")
+                st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+
+    # TAB 2: States/UTs
+    with tab_states:
+        st.markdown(
+            f"""
+            <div style="margin-top: 10px; margin-bottom: 20px;">
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 3px;">
+                    {"राज्यों और केंद्रशासित प्रदेशों के आधार पर योजनाएं खोजें" if lang == "hi" else "Find schemes based on states and union territories"}
+                </h3>
+                <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
+                    {"राज्य-विशिष्ट सरकारी कल्याणकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore state-specific welfare programs currently available in our database"}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        states_list = stats.get("states", [])
+        if states_list:
+            num_cols = 2
+            half = (len(states_list) + 1) // 2
+            col_st_left, col_st_right = st.columns(num_cols, gap="medium")
+
+            for idx, item in enumerate(states_list):
+                st_name = item["state"]
+                st_count = item["state_count"]
+                target_col = col_st_left if idx < half else col_st_right
+
+                with target_col:
+                    c_info, c_btn = st.columns([7, 3])
+                    with c_info:
+                        st.markdown(
+                            f"""
+                            <div class="state-stat-card">
+                                <span class="state-stat-name">{st_name}</span>
+                                <span class="state-stat-pill">{st_count} {"योजनाएं" if lang == "hi" else "Schemes"}</span>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    with c_btn:
+                        if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_tab_state_{idx}", use_container_width=True):
+                            st.session_state.selected_state_filter = st_name
+                            navigate_to("schemes")
+
+    # TAB 3: Central Ministries
+    with tab_min:
+        st.markdown(
+            f"""
+            <div style="margin-top: 10px; margin-bottom: 20px;">
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 3px;">
+                    {"केंद्रीय मंत्रालयों और विभागों के आधार पर योजनाएं खोजें" if lang == "hi" else "Find schemes based on central government ministries"}
+                </h3>
+                <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
+                    {"विभिन्न केंद्रीय मंत्रालयों द्वारा संचालित राष्ट्रीय कल्याणकारी योजनाएं" if lang == "hi" else "Central schemes organized by implementing ministries and departments"}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        ministries_list = stats.get("ministries", [])
+        if ministries_list:
+            num_cols = 2
+            half = (len(ministries_list) + 1) // 2
+            col_min_left, col_min_right = st.columns(num_cols, gap="medium")
+
+            for idx, item in enumerate(ministries_list):
+                m_name = item["ministry"]
+                m_count = item["count"]
+                target_col = col_min_left if idx < half else col_min_right
+
+                with target_col:
+                    c_info, c_btn = st.columns([7, 3])
+                    with c_info:
+                        st.markdown(
+                            f"""
+                            <div class="state-stat-card">
+                                <span class="state-stat-name">{m_name}</span>
+                                <span class="state-stat-pill">{m_count} {"योजनाएं" if lang == "hi" else "Schemes"}</span>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    with c_btn:
+                        if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_tab_min_{idx}", use_container_width=True):
+                            st.session_state.selected_level_filter = "Central"
+                            navigate_to("schemes")
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 40px 0 28px 0;' />", unsafe_allow_html=True)
+
 
     # =========================================================================
     # 5. HOW YOJANA SAHAYAK WORKS (3-STEP GUIDED PROCESS)

@@ -33,7 +33,7 @@ def get_live_db_statistics() -> Dict[str, Any]:
     """Retrieve verified scheme statistics directly from the SQLite database.
 
     Returns:
-        dict with total, central, state, category counts, and state counts.
+        dict with total, central, state, category list, state list, and ministry list.
     """
     db_path = find_db_path()
     if not db_path:
@@ -44,7 +44,9 @@ def get_live_db_statistics() -> Dict[str, Any]:
             "state": 0,
             "categories": {},
             "raw_categories": {},
+            "category_items": [],
             "states": [],
+            "ministries": [],
             "error": "Database file yojana_sahayak.db not found",
             "db_source": "None",
         }
@@ -69,8 +71,58 @@ def get_live_db_statistics() -> Dict[str, Any]:
         cursor.execute("SELECT category, COUNT(*) FROM schemes GROUP BY category ORDER BY COUNT(*) DESC")
         raw_cat_counts = dict(cursor.fetchall())
 
-        # 5. Map to the 10 standard category names requested
-        categories_10 = {
+        # 5. Structured categories for the Category Explorer
+        category_catalog = [
+            ("Education & Learning", "Education & Learning", "🎓", "शिक्षा एवं ज्ञान", raw_cat_counts.get("Education & Learning", 0)),
+            ("Health & Wellness", "Healthcare", "🏥", "स्वास्थ्य एवं कल्याण", raw_cat_counts.get("Healthcare", 0)),
+            ("Agriculture, Rural & Environment", "Agriculture & Rural Development", "🌾", "कृषि, ग्रामीण एवं पर्यावरण", raw_cat_counts.get("Agriculture & Rural Development", 0)),
+            ("Business & Entrepreneurship", "Business & Self Employment", "📈", "व्यवसाय एवं उद्यमिता", raw_cat_counts.get("Business & Self Employment", 0)),
+            ("Skills & Employment", "Employment & Skills", "💼", "कौशल एवं रोजगार", raw_cat_counts.get("Employment & Skills", 0)),
+            ("Housing & Shelter", "Housing & Shelter", "🏠", "आवास एवं आश्रय", raw_cat_counts.get("Housing & Shelter", 0)),
+            ("Social Welfare & Empowerment", "Social Security & Pension", "👴", "सामाजिक कल्याण एवं पेंशन", raw_cat_counts.get("Social Security & Pension", 0)),
+            ("Women & Child Development", "Women & Child Development", "👩‍👧", "महिला एवं बाल विकास", raw_cat_counts.get("Women & Child Development", 0)),
+            ("Differently Abled Support", "Differently Abled Support", "♿", "दिव्यांगजन सहायता", raw_cat_counts.get("Differently Abled Support", 0)),
+            ("Banking, Financial Services and Insurance", "Financial Assistance", "💳", "बैंकिंग, वित्तीय सेवाएं एवं बीमा", raw_cat_counts.get("Financial Assistance", 0)),
+        ]
+
+        category_items = [
+            {
+                "name": item[0],
+                "db_category": item[1],
+                "icon": item[2],
+                "name_hi": item[3],
+                "count": item[4],
+            }
+            for item in category_catalog
+        ]
+
+        # 6. Top states counts
+        cursor.execute("""
+            SELECT s.value as state_name, COUNT(DISTINCT schemes.id) as scheme_count
+            FROM schemes, json_each(schemes.states) as s
+            WHERE s.value != 'ALL' AND s.value != ''
+            GROUP BY s.value
+            ORDER BY scheme_count DESC
+        """)
+        state_rows = cursor.fetchall()
+        states = [{"state": r[0], "state_count": r[1], "count": r[1]} for r in state_rows]
+
+        # 7. Central Ministries counts
+        cursor.execute("""
+            SELECT ministry, COUNT(*) as ministry_count
+            FROM schemes
+            WHERE level = 'Central' AND ministry IS NOT NULL AND ministry != ''
+            GROUP BY ministry
+            ORDER BY ministry_count DESC
+        """)
+        ministry_rows = cursor.fetchall()
+        ministries = [{"ministry": r[0], "count": r[1]} for r in ministry_rows]
+
+        conn.close()
+
+        # Map to standard category names plus shorthand aliases
+        categories_map = {item["name"]: item["count"] for item in category_items}
+        shorthands = {
             "Education & Scholarships": raw_cat_counts.get("Education & Learning", 0),
             "Health": raw_cat_counts.get("Healthcare", 0),
             "Housing": raw_cat_counts.get("Housing & Shelter", 0),
@@ -82,27 +134,18 @@ def get_live_db_statistics() -> Dict[str, Any]:
             "Women & Child": raw_cat_counts.get("Women & Child Development", 0),
             "Disability Support": raw_cat_counts.get("Differently Abled Support", 0),
         }
-
-        # 6. Top states counts
-        cursor.execute("""
-            SELECT s.value as state_name, COUNT(DISTINCT schemes.id) as scheme_count
-            FROM schemes, json_each(schemes.states) as s
-            WHERE s.value != 'ALL' AND s.value != ''
-            GROUP BY s.value
-            ORDER BY scheme_count DESC
-        """)
-        state_rows = cursor.fetchall()
-
-        conn.close()
+        categories_map.update(shorthands)
 
         return {
             "ok": True,
             "total": total,
             "central": central,
             "state": state,
-            "categories": categories_10,
+            "categories": categories_map,
+            "category_items": category_items,
             "raw_categories": raw_cat_counts,
-            "states": [{"state": r[0], "state_count": r[1], "count": r[1]} for r in state_rows],
+            "states": states,
+            "ministries": ministries,
             "db_source": f"SQLite ({db_path})",
             "error": None,
         }
@@ -113,8 +156,10 @@ def get_live_db_statistics() -> Dict[str, Any]:
             "central": 0,
             "state": 0,
             "categories": {},
+            "category_items": [],
             "raw_categories": {},
             "states": [],
+            "ministries": [],
             "error": str(exc),
             "db_source": f"Error: {exc}",
         }
