@@ -2116,21 +2116,29 @@ SCHEMES = [
 ]
 
 def main():
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from scripts.catalog_data.builder import build_complete_catalog
+    from scripts.normalize_schemes import normalize_dataset
+
+    catalog = build_complete_catalog()
+    normalized = normalize_dataset(catalog)
+
     processed_path = Path("data/processed/schemes.json")
     seed_path = Path("data/seed/schemes.json")
     
     processed_path.parent.mkdir(parents=True, exist_ok=True)
     seed_path.parent.mkdir(parents=True, exist_ok=True)
     
-    print(f"Writing {len(SCHEMES)} comprehensive schemes to {processed_path} and {seed_path}...")
+    print(f"Writing {len(normalized)} comprehensive schemes to {processed_path} and {seed_path}...")
     
     with open(processed_path, "w", encoding="utf-8") as f:
-        json.dump(SCHEMES, f, indent=2, ensure_ascii=False)
+        json.dump(normalized, f, indent=2, ensure_ascii=False)
         
     with open(seed_path, "w", encoding="utf-8") as f:
-        json.dump(SCHEMES, f, indent=2, ensure_ascii=False)
+        json.dump(normalized, f, indent=2, ensure_ascii=False)
         
-    print("Dataset generation complete!")
+    print(f"Dataset generation complete! Generated {len(normalized)} schemes.")
 
 if __name__ == "__main__":
     main()

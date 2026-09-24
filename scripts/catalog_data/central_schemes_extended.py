@@ -1,0 +1,356 @@
+"""Extended Verified Central Government Schemes for Yojana Sahayak."""
+
+from typing import Any, Dict, List
+
+CENTRAL_SCHEMES_EXTENDED: List[Dict[str, Any]] = [
+    # -------------------------------------------------------------
+    # RENEWABLE ENERGY & SUSTAINABILITY (Central)
+    # -------------------------------------------------------------
+    {
+        "slug": "pm-surya-ghar-muft-bijli-yojana",
+        "scheme_code": "SCH-CENTRAL-ENG-001",
+        "name": "PM Surya Ghar: Muft Bijli Yojana (Rooftop Solar)",
+        "name_hi": "पीएम सूर्य घर: मुफ्त बिजली योजना (रूफटॉप सोलर)",
+        "description": "National rooftop solar initiative providing capital subsidy up to ₹78,000 directly to residential households to install solar systems and get up to 300 units of free electricity every month.",
+        "description_hi": "आवासीय घरों की छतों पर सोलर पैनल लगाने हेतु ₹78,000 तक की सीधी सरकारी सब्सिडी तथा प्रतिमाह 300 यूनिट तक निःशुल्क बिजली।",
+        "primary_category": "Housing & Shelter",
+        "category": "Housing & Shelter",
+        "ministry": "Ministry of New and Renewable Energy",
+        "department": "National Programme Implementation Agency (REC)",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["housing", "financial"],
+        "target_beneficiaries": ["Residential households with an independent roof or suitable terrace with an active domestic electricity connection"],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 90}
+        },
+        "benefits": ["Direct central capital subsidy: ₹30,000 for 1 kW system; ₹60,000 for 2 kW; ₹78,000 for 3 kW and above", "Free electricity up to 300 units per month and surplus power sold back to DISCOM via net metering", "Collateral-free low-interest bank loans at 7% through national banks"],
+        "documents": ["Electricity Bill of last month", "Aadhaar Card", "Roof Ownership / Possession Proof", "Bank Account Details (Aadhaar linked)"],
+        "application_steps": ["Register on national portal pmsuryaghar.gov.in", "Choose state DISCOM and consumer account number", "Select registered solar vendor, install system, net-metering inspection, and subsidy credit"],
+        "official_url": "https://pmsuryaghar.gov.in/",
+        "source_url": "https://mnre.gov.in/",
+        "source_name": "Ministry of New and Renewable Energy",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["solar", "rooftop-solar", "muft-bijli", "free-electricity", "pm-surya-ghar", "subsidy", "renewable-energy"]
+    },
+    {
+        "slug": "pm-kusum-scheme-solar-pumps",
+        "scheme_code": "SCH-CENTRAL-ENG-002",
+        "name": "PM-KUSUM Scheme (Solar Agriculture Pumps & Solarization)",
+        "name_hi": "पीएम-कुसुम योजना (सौर कृषि पंप एवं सौरीकरण)",
+        "description": "Subsidizes installation of standalone solar agriculture pumps (Component B) and solarization of existing grid-connected agricultural pumps (Component C) with up to 60% government subsidy.",
+        "description_hi": "किसानों को सिंचाई हेतु डीजल एवं पारंपरिक बिजली पंपों के स्थान पर 60% सरकारी अनुदान (सब्सिडी) पर सोलर वाटर पंप उपलब्ध कराना।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of New and Renewable Energy",
+        "department": "Department of Renewable Energy",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture"],
+        "target_beneficiaries": ["Individual farmers, groups of farmers, Water User Associations (WUAs), and FPOs with cultivable agricultural land"],
+        "eligibility_rules": {
+            "occupation": ["farmer"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 75}
+        },
+        "benefits": ["Up to 60% total subsidy (30% Central + 30% State Government) on capital cost of solar pump systems", "Farmer pays only 10% upfront; remaining 30% available via low-interest bank loan", "Zero recurring electricity or diesel bills for irrigation"],
+        "documents": ["Land Ownership Certificate (Khasra/Khatauni)", "Aadhaar Card", "Bank Account Passbook", "Proof of source of water (borewell/open well)"],
+        "application_steps": ["Apply online via State Renewable Energy Development Agency (e.g. UPNEDA, MEDA, RREC) portal", "Pay 10% farmer share", "Vendor installs solar pump with remote monitoring system"],
+        "official_url": "https://pmkusum.mnre.gov.in/",
+        "source_url": "https://mnre.gov.in/",
+        "source_name": "Ministry of New and Renewable Energy",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "solar-pump", "pm-kusum", "irrigation", "farmer", "subsidy", "green-energy"]
+    },
+
+    # -------------------------------------------------------------
+    # TRIBAL AFFAIRS & INDIGENOUS WELFARE (Central)
+    # -------------------------------------------------------------
+    {
+        "slug": "eklavya-model-residential-schools-emrs",
+        "scheme_code": "SCH-CENTRAL-TRI-001",
+        "name": "Eklavya Model Residential Schools (EMRS)",
+        "name_hi": "एकलव्य आदर्श आवासीय विद्यालय (EMRS)",
+        "description": "Provides completely free high-quality CBSE middle and higher secondary education (Class 6 to 12) along with free residential boarding, lodging, uniform, and books to Scheduled Tribe children.",
+        "description_hi": "अनुसूचित जनजाति (ST) के मेधावी छात्र-छात्राओं को कक्षा 6 से 12वीं तक सीबीएसई माध्यम से निःशुल्क गुणवत्तापूर्ण आवासीय शिक्षा, भोजन, आवास व वस्त्र।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Tribal Affairs",
+        "department": "National Education Society for Tribal Students (NESTS)",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": ["Scheduled Tribe (ST) boys and girls residing in tribal-dominated blocks and remote regions"],
+        "eligibility_rules": {
+            "category": ["ST"],
+            "occupation": ["student"],
+            "states": ["ALL"],
+            "age": {"min": 10, "max": 18}
+        },
+        "benefits": ["100% free residential education from Class 6 to 12 in state-of-the-art CBSE schools", "Free boarding, lodging, uniforms, stationery, computer labs, sports training, and medical care", "Special coaching for competitive examinations (JEE, NEET, CUET)"],
+        "documents": ["ST Caste Certificate", "Aadhaar Card of student", "Class 5 passing marksheet for admission to Class 6", "Domicile Certificate"],
+        "application_steps": ["Apply for Eklavya Model Residential School Selection Test (EMRSST) conducted in Class 5", "Entrance exam merit list published", "Admission counseling and seat allotment"],
+        "official_url": "https://emrs.tribal.gov.in/",
+        "source_url": "https://tribal.nic.in/",
+        "source_name": "Ministry of Tribal Affairs / NESTS",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "st", "tribal", "emrs", "cbse", "residential-school", "free-education"]
+    },
+    {
+        "slug": "national-overseas-scholarship-st",
+        "scheme_code": "SCH-CENTRAL-TRI-002",
+        "name": "National Overseas Scholarship for ST Candidates",
+        "name_hi": "अनुसूचित जनजाति हेतु राष्ट्रीय विदेशी छात्रवृत्ति",
+        "description": "Full financial support covering 100% tuition fees, maintenance allowance, travel, and health insurance for meritorious ST students pursuing Master's, Ph.D., and Post-Doctoral studies abroad.",
+        "description_hi": "अनुसूचित जनजाति (ST) के मेधावी विद्यार्थियों को विश्व के शीर्ष विश्वविद्यालयों से स्नातकोत्तर (मास्टर्स) एवं डॉक्टरेट (पीएचडी) की पढ़ाई हेतु 100% सरकारी वित्तीय सहायता।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Ministry of Tribal Affairs",
+        "department": "Department of Tribal Affairs",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["education"],
+        "target_beneficiaries": ["ST students holding confirmed admission offer in top 500 QS/Times Higher Education ranked foreign universities with family income under ₹6 Lakh"],
+        "eligibility_rules": {
+            "category": ["ST"],
+            "occupation": ["student"],
+            "income": {"max": 600000},
+            "states": ["ALL"],
+            "age": {"min": 20, "max": 35}
+        },
+        "benefits": ["Full tuition fees paid directly to foreign university", "Annual maintenance allowance of US $15,400 (or £9,900 in UK)", "Economy class return airfare, visa fees, and health insurance allowance"],
+        "documents": ["ST Caste Certificate", "Unconditional Admission Offer from Foreign University", "Undergraduate/PG marksheets (≥55% marks)", "Family Income Certificate (≤ ₹6 Lakh/yr)", "Valid Indian Passport"],
+        "application_steps": ["Apply online on overseas.tribal.gov.in portal", "Selection committee scrutinizes applications based on QS rank of university", "Issue of provisional award letter and visa facilitation"],
+        "official_url": "https://overseas.tribal.gov.in/",
+        "source_url": "https://tribal.nic.in/",
+        "source_name": "Ministry of Tribal Affairs",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "overseas", "study-abroad", "st", "tribal", "masters", "phd"]
+    },
+    {
+        "slug": "pm-janman-pradhan-mantri-jan-jati-adivasi-nyaya-maha-abhiyan",
+        "scheme_code": "SCH-CENTRAL-TRI-003",
+        "name": "PM-JANMAN (Pradhan Mantri Janjati Adivasi Nyaya Maha Abhiyan)",
+        "name_hi": "पीएम-जनमन (प्रधानमंत्री जनजाति आदिवासी न्याय महा अभियान)",
+        "description": "Comprehensive mission with budget outlay of ₹24,104 crore aimed at socio-economic development of Particularly Vulnerable Tribal Groups (PVTGs) through housing, electricity, clean water, road connectivity, and health.",
+        "description_hi": "विशेष रूप से कमजोर जनजातीय समूहों (PVTG) के सामाजिक-आर्थिक विकास हेतु पक्के मकान, स्वच्छ पेयजल, बिजली, सड़क एवं आजीविका का समग्र महा-अभियान।",
+        "primary_category": "Social Welfare",
+        "category": "Social Welfare",
+        "ministry": "Ministry of Tribal Affairs",
+        "department": "National Tribal Welfare Commission",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["social_welfare", "housing", "healthcare"],
+        "target_beneficiaries": ["Particularly Vulnerable Tribal Group (PVTG) households across 18 States and Andaman & Nicobar Islands"],
+        "eligibility_rules": {
+            "category": ["ST"],
+            "states": ["ALL"],
+            "age": {"min": 0, "max": 100}
+        },
+        "benefits": ["PMAY-G pucca house grant of ₹2.39 Lakh per PVTG family", "All-weather road connectivity to PVTG habitations under PMGSY", "Dedicated Mobile Medical Units (MMUs) and Ayushman cards", "Off-grid solar electricity for un-electrified remote households"],
+        "documents": ["PVTG Community Certificate", "Aadhaar Card", "Janman Household Survey ID"],
+        "application_steps": ["Saturation door-to-door survey by District Administration", "Direct enrollment and sanction of multi-sector welfare benefits"],
+        "official_url": "https://pmjanman.tribal.gov.in/",
+        "source_url": "https://tribal.nic.in/",
+        "source_name": "Ministry of Tribal Affairs",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["social_welfare", "tribal", "pvtg", "pm-janman", "housing", "roads", "drinking-water"]
+    },
+
+    # -------------------------------------------------------------
+    # TEXTILES, HANDLOOM & ARTISANS (Central)
+    # -------------------------------------------------------------
+    {
+        "slug": "national-handloom-development-programme-nhdp",
+        "scheme_code": "SCH-CENTRAL-TEX-001",
+        "name": "National Handloom Development Programme (NHDP)",
+        "name_hi": "राष्ट्रीय हथकरघा विकास कार्यक्रम (NHDP)",
+        "description": "Holistic support program providing handloom weavers with raw material subsidies (yarn), modern looms and accessories, design innovations, solar lighting, and marketing exhibitions.",
+        "description_hi": "हथकरघा बुनकरों को धागा (यार्न) पर 15% सरकारी सब्सिडी, आधुनिक करघा एवं उपकरण, सौर प्रकाश व्यवस्था तथा सीधे हाट/मेलों में विपणन सुविधा।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Ministry of Textiles",
+        "department": "Office of the Development Commissioner for Handlooms",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["business", "skills"],
+        "target_beneficiaries": ["Handloom weavers, master weavers, handloom cooperatives, and weaver Self Help Groups (SHGs)"],
+        "eligibility_rules": {
+            "occupation": ["artisan", "self_employed", "entrepreneur"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 75}
+        },
+        "benefits": ["15% price subsidy on hank yarn (cotton, wool, silk) through Raw Material Supply Scheme (RMSS)", "90% to 100% financial assistance for upgrading looms, jacquards, and dobby mechanisms", "₹10,000 to ₹25,000 for setting up individual solar lighting units in weaver workstations"],
+        "documents": ["Weaver Pehchan Identity Card issued by DC (Handlooms)", "Aadhaar Card", "Bank Account Passbook (Aadhaar linked)"],
+        "application_steps": ["Apply through local Weavers' Service Centre (WSC) or Weavers Cooperative Society", "Inspection and technical recommendation by WSC officials", "Subsidy and equipment release"],
+        "official_url": "http://handlooms.nic.in/",
+        "source_url": "https://texmin.nic.in/",
+        "source_name": "Ministry of Textiles",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "handloom", "weaver", "artisan", "textiles", "yarn-subsidy", "traditional-craft"]
+    },
+    {
+        "slug": "samarth-scheme-for-capacity-building-in-textiles",
+        "scheme_code": "SCH-CENTRAL-TEX-002",
+        "name": "SAMARTH Scheme (Scheme for Capacity Building in Textile Sector)",
+        "name_hi": "समर्थ योजना (वस्त्र क्षेत्र में क्षमता निर्माण योजना)",
+        "description": "Demand-driven placement-oriented training program providing entry-level and upskilling training in apparel, weaving, spinning, and technical textiles with guaranteed wage employment.",
+        "description_hi": "वस्त्र, परिधान एवं गारमेंट निर्माण क्षेत्र में युवाओं को आधुनिक सिलाई, बुनाई एवं डिजाइनिंग का निःशुल्क कौशल प्रशिक्षण तथा कम से कम 70% रोजगार।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Ministry of Textiles",
+        "department": "Ministry of Textiles",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["skills", "jobs"],
+        "target_beneficiaries": ["Unemployed youth, women, and traditional artisans seeking wage employment or self-employment in the organized textile industry"],
+        "eligibility_rules": {
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 45}
+        },
+        "benefits": ["100% free NSQF-aligned training with modern sewing, embroidery, and textile machinery", "Biometric attendance-linked daily allowance for trainees", "Guaranteed wage employment for at least 70% of certified trainees in textile mills and garment export houses"],
+        "documents": ["Aadhaar Card", "Age Proof", "Educational Certificate (minimum 8th/10th pass depending on job role)", "Bank Account Details"],
+        "application_steps": ["Register on samarth-textiles.gov.in portal", "Select accredited training partner center in apparel / textile cluster", "Assessment by third-party agency and industrial placement"],
+        "official_url": "https://samarth-textiles.gov.in/",
+        "source_url": "https://texmin.nic.in/",
+        "source_name": "Ministry of Textiles",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["skills", "textiles", "apparel", "garment", "samarth", "jobs", "training", "women"]
+    },
+
+    # -------------------------------------------------------------
+    # ANIMAL HUSBANDRY & DAIRY (Central)
+    # -------------------------------------------------------------
+    {
+        "slug": "rashtriya-gokul-mission",
+        "scheme_code": "SCH-CENTRAL-ANI-001",
+        "name": "Rashtriya Gokul Mission (Development and Conservation of Indigenous Breeds)",
+        "name_hi": "राष्ट्रीय गोकुल मिशन (स्वदेशी नस्ल सुधार एवं डेयरी विकास)",
+        "description": "Aims to enhance milk production and productivity of bovine population through sex-sorted semen, artificial insemination, and 50% capital subsidy up to ₹4 Crores for breed multiplication farms.",
+        "description_hi": "स्वदेशी गाय-भैंसों की नस्ल सुधार, सेक्स-सॉर्टेड सीमेन तकनीक, दुग्ध उत्पादन वृद्धि तथा डेयरी फार्म स्थापना हेतु 50% तक सरकारी पूंजीगत अनुदान।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Fisheries, Animal Husbandry and Dairying",
+        "department": "Department of Animal Husbandry and Dairying (DAHD)",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture", "business"],
+        "target_beneficiaries": ["Dairy farmers, rural youth, private entrepreneurs, FPOs, and cooperatives establishing breed multiplication farms"],
+        "eligibility_rules": {
+            "occupation": ["farmer", "entrepreneur"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 70}
+        },
+        "benefits": ["50% capital subsidy up to ₹2 Crores for setting up Breed Multiplication Farms (minimum 200 indigenous cows/buffaloes)", "Sex-sorted semen doses made available to small farmers at heavily subsidized rate of only ₹100 per dose (guaranteeing >90% female calves)", "Free Artificial Insemination (AI) service at farmer's doorstep"],
+        "documents": ["Detailed Project Report (DPR)", "Land Ownership / Lease Documents for dairy farm", "Bank Sanction Letter", "Aadhaar Card and PAN Card"],
+        "application_steps": ["Submit proposal online on dahd.nic.in or breedmultiplicationfarm portal", "State Level Project Screening Committee reviews project", "Central Project Approval Committee sanctions subsidy directly to lending bank"],
+        "official_url": "https://dahd.nic.in/",
+        "source_url": "https://dahd.nic.in/schemes/programmes/rashtriya_gokul_mission",
+        "source_name": "Department of Animal Husbandry and Dairying",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "dairy", "cattle", "cows", "rashtriya-gokul-mission", "animal-husbandry", "subsidy"]
+    },
+    {
+        "slug": "national-livestock-mission-nlm",
+        "scheme_code": "SCH-CENTRAL-ANI-002",
+        "name": "National Livestock Mission (NLM) - Entrepreneurship Development",
+        "name_hi": "राष्ट्रीय पशुधन मिशन (NLM) - उद्यमिता विकास कार्यक्रम",
+        "description": "Provides 50% capital subsidy up to ₹50 Lakhs directly to individuals, SHGs, and entrepreneurs for establishing commercial poultry, sheep, goat, and pig breeding units and fodder seed production.",
+        "description_hi": "बकरी पालन, भेड़ पालन, कुक्कुट (मुर्गी) पालन, सुअर पालन एवं चारा उत्पादन इकाइयों की स्थापना हेतु 50% तक सीधा सरकारी अनुदान (अधिकतम ₹50 लाख)।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Fisheries, Animal Husbandry and Dairying",
+        "department": "Department of Animal Husbandry and Dairying",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture", "business"],
+        "target_beneficiaries": ["Farmers, individual entrepreneurs, Cooperatives, FPOs, and SHGs setting up commercial livestock breeding farms"],
+        "eligibility_rules": {
+            "occupation": ["farmer", "entrepreneur"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 65}
+        },
+        "benefits": ["50% back-ended capital subsidy: Up to ₹50 Lakhs for Sheep & Goat breeding (500 females + 25 males); up to ₹25 Lakhs for Poultry parent farm (1,000 birds); up to ₹30 Lakhs for Pig breeding", "Subsidized term loans available from scheduled commercial banks with interest subvention under AHIDF"],
+        "documents": ["Detailed Project Report (DPR)", "Land document / registered lease deed", "Bank Sanction Letter / in-principle appraisal", "Training certificate in animal husbandry / poultry", "Aadhaar & PAN"],
+        "application_steps": ["Submit project online on nlm.udyamimitra.in portal", "State Implementing Agency (SIA) examines DPR", "Direct subsidy release into borrower's bank loan account"],
+        "official_url": "https://nlm.udyamimitra.in/",
+        "source_url": "https://dahd.nic.in/",
+        "source_name": "Department of Animal Husbandry and Dairying",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "goat-farming", "poultry", "livestock", "nlm", "subsidy", "animal-husbandry"]
+    },
+
+    # -------------------------------------------------------------
+    # FOOD PROCESSING & AGRI-BUSINESS (Central)
+    # -------------------------------------------------------------
+    {
+        "slug": "pm-formalisation-of-micro-food-processing-enterprises-pmfme",
+        "scheme_code": "SCH-CENTRAL-FOO-001",
+        "name": "PM Formalisation of Micro food processing Enterprises (PMFME Scheme)",
+        "name_hi": "प्रधानमंत्री सूक्ष्म खाद्य उद्योग उन्नयन योजना (PMFME)",
+        "description": "Centrally sponsored scheme providing 35% credit-linked capital subsidy up to ₹10 Lakhs to individual micro-food processing units (pickles, spices, bakery, flour mills, oil expellers, snacks).",
+        "description_hi": "सूक्ष्म खाद्य प्रसंस्करण इकाइयों (आटा चक्की, तेल मिल, मसाला पिसाई, बेकरी, अचार-मुरब्बा) के आधुनिकीकरण एवं नए प्लांट हेतु 35% तक का सरकारी अनुदान (अधिकतम ₹10 लाख)।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Ministry of Food Processing Industries",
+        "department": "Ministry of Food Processing Industries",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["business"],
+        "target_beneficiaries": ["Existing micro-food processing entrepreneurs, Farmer Producer Organizations (FPOs), Self Help Groups (SHGs), and Producer Cooperatives"],
+        "eligibility_rules": {
+            "occupation": ["entrepreneur", "self_employed", "farmer"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 70}
+        },
+        "benefits": ["Credit-linked capital subsidy of 35% of eligible project cost with a maximum ceiling of ₹10,00,000 per unit", "Seed capital financial assistance of ₹40,000 per SHG member for working capital and minor tools", "Support for FSSAI food licensing, packaging design, and quality lab testing"],
+        "documents": ["Udyam Registration Certificate", "Detailed Project Report (DPR) with machinery quotations", "FSSAI License / Registration (if existing)", "Bank Statement for last 6 months", "Aadhaar Card and PAN Card"],
+        "application_steps": ["Apply online on pmfme.mofpi.gov.in portal", "District Resource Person (DRP) assists in preparing DPR and bank loan application", "District Level Committee (DLC) recommends to financing bank for loan sanction and subsidy"],
+        "official_url": "https://pmfme.mofpi.gov.in/",
+        "source_url": "https://mofpi.gov.in/",
+        "source_name": "Ministry of Food Processing Industries",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "food-processing", "pmfme", "fssai", "bakery", "spice-mill", "subsidy", "msme"]
+    },
+    {
+        "slug": "pradhan-mantri-kisan-sampada-yojana-pmksy",
+        "scheme_code": "SCH-CENTRAL-FOO-002",
+        "name": "Pradhan Mantri Kisan SAMPADA Yojana (Mega Food Parks & Cold Chain)",
+        "name_hi": "प्रधानमंत्री किसान संपदा योजना (मेगा फूड पार्क एवं कोल्ड चेन)",
+        "description": "Comprehensive umbrella package providing financial grants up to 50% for creating modern post-harvest agro-processing clusters, integrated cold chains, and preservation infrastructure.",
+        "description_hi": "कृषि उपज के मूल्य संवर्धन एवं बर्बादी रोकने हेतु मेगा फूड पार्क, एकीकृत कोल्ड चेन और प्रसंस्करण क्लस्टरों के निर्माण हेतु 35% से 50% तक पूंजीगत अनुदान।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Ministry of Food Processing Industries",
+        "department": "Ministry of Food Processing Industries",
+        "level": "Central",
+        "states": ["ALL"],
+        "intents": ["agriculture", "business"],
+        "target_beneficiaries": ["Agro-entrepreneurs, food processors, FPOs, and cooperative societies establishing commercial cold chains and value addition centers"],
+        "eligibility_rules": {
+            "occupation": ["entrepreneur"],
+            "states": ["ALL"],
+            "age": {"min": 18, "max": 75}
+        },
+        "benefits": ["Financial grant-in-aid of 35% for general areas and 50% for North-Eastern / Himalayan / ITDP states up to ₹10 Crores for integrated cold chains", "Reduces agricultural post-harvest wastage and guarantees fair remuneration to farmers"],
+        "documents": ["Detailed Project Report (DPR)", "Land Ownership / Lease Documents for industrial site", "Bank Loan Appraisal Report", "Audited Financials for last 3 years", "Statutory clearances"],
+        "application_steps": ["Submit Expression of Interest (EoI) on mofpi.gov.in portal during open calls", "Technical Evaluation Committee and Inter-Ministerial Approval Committee (IMAC) review", "Milestone-based grant release directly into bank escrow account"],
+        "official_url": "https://mofpi.gov.in/pmksy",
+        "source_url": "https://mofpi.gov.in/",
+        "source_name": "Ministry of Food Processing Industries",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "food-processing", "cold-chain", "warehouse", "kisan-sampada", "grant", "agri-business"]
+    }
+]

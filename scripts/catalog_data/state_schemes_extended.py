@@ -1,0 +1,456 @@
+"""Extended State Government Schemes across all 20 Focus States for complete coverage."""
+
+from typing import Any, Dict, List
+
+STATE_SCHEMES_EXTENDED: List[Dict[str, Any]] = [
+    # -------------------------------------------------------------
+    # MAHARASHTRA (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "maharashtra-namo-shetkari-mahasanman-nidhi",
+        "scheme_code": "SCH-MH-AGRI-001",
+        "name": "Namo Shetkari Mahasanman Nidhi Yojana (Maharashtra)",
+        "name_hi": "नमो शेतकरी महासन्मान निधी योजना (महाराष्ट्र)",
+        "description": "Maharashtra state top-up providing additional ₹6,000 per year directly to PM-KISAN beneficiary farmers in the state, bringing total farmer income support to ₹12,000 per year.",
+        "description_hi": "महाराष्ट्र के पीएम-किसान लाभार्थी किसानों को राज्य सरकार द्वारा अतिरिक्त ₹6,000 प्रति वर्ष की नकद सहायता (कुल वार्षिक सहायता ₹12,000)।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Agriculture Department, Maharashtra",
+        "department": "Directorate of Agriculture",
+        "level": "State",
+        "states": ["Maharashtra"],
+        "intents": ["agriculture", "financial"],
+        "target_beneficiaries": ["All farmers domiciled in Maharashtra registered as active eligible beneficiaries under PM-KISAN"],
+        "eligibility_rules": {
+            "states": ["Maharashtra"],
+            "occupation": ["farmer"],
+            "age": {"min": 18, "max": 90}
+        },
+        "benefits": ["Direct financial transfer of ₹6,000 per year in three installments of ₹2,000 credited alongside PM-KISAN tranches via DBT"],
+        "documents": ["PM-KISAN Registration ID", "Land 7/12 & 8A extract", "Aadhaar Card with active NPCI mapping"],
+        "application_steps": ["Auto-enrolled through PM-KISAN database verification on mahadbt.maharashtra.gov.in", "Direct electronic payment into bank account"],
+        "official_url": "https://krishi.maharashtra.gov.in/",
+        "source_url": "https://mahadbt.maharashtra.gov.in/",
+        "source_name": "Government of Maharashtra",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "farmer", "maharashtra", "namo-shetkari", "pm-kisan", "dbt", "income-support"]
+    },
+    {
+        "slug": "maharashtra-sanjay-gandhi-niradhar-anudan",
+        "scheme_code": "SCH-MH-PEN-001",
+        "name": "Sanjay Gandhi Niradhar Anudan Yojana (Maharashtra)",
+        "name_hi": "संजय गांधी निराधार अनुदान योजना (महाराष्ट्र)",
+        "description": "State social security pension of ₹1,500 per month for destitute senior citizens, widows, abandoned women, persons with severe disability, and patients of critical illnesses.",
+        "description_hi": "महाराष्ट्र के निराधार वृद्ध, विधवा, तलाकशुदा महिला एवं 40% से अधिक दिव्यांग नागरिकों को ₹1,500 प्रतिमाह की सामाजिक सुरक्षा पेंशन।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Social Justice and Special Assistance Department, Maharashtra",
+        "department": "Directorate of Social Welfare",
+        "level": "State",
+        "states": ["Maharashtra"],
+        "intents": ["pension", "social_welfare"],
+        "target_beneficiaries": ["Destitute individuals aged 65 or above, widows, orphan children, or disabled citizens domiciled in Maharashtra with family income up to ₹21,000/yr"],
+        "eligibility_rules": {
+            "states": ["Maharashtra"],
+            "income": {"max": 21000},
+            "age": {"min": 18, "max": 100}
+        },
+        "benefits": ["Monthly pension of ₹1,500 per beneficiary (up to ₹2,500 if family has 2 or more beneficiaries)", "Direct credit via PFMS DBT into bank account"],
+        "documents": ["Maharashtra Domicile Certificate (living in state for 15+ years)", "Income Certificate (≤ ₹21,000/yr)", "Age Certificate / Disability Certificate", "Aadhaar Card & Bank Passbook"],
+        "application_steps": ["Apply at Tahsildar office or Aaple Sarkar portal (aaplesarkar.mahaonline.gov.in)", "Sanction by Taluka Sanjay Gandhi Niradhar Committee"],
+        "official_url": "https://aaplesarkar.mahaonline.gov.in/",
+        "source_url": "https://sjsa.maharashtra.gov.in/",
+        "source_name": "Government of Maharashtra",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["pension", "maharashtra", "sanjay-gandhi-niradhar", "destitute", "widow", "disability", "dbt"]
+    },
+
+    # -------------------------------------------------------------
+    # RAJASTHAN (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "rajasthan-mukhyamantri-kisan-mitra-urja-yojana",
+        "scheme_code": "SCH-RJ-AGRI-001",
+        "name": "Mukhyamantri Kisan Mitra Urja Yojana (Rajasthan)",
+        "name_hi": "मुख्यमंत्री किसान मित्र ऊर्जा योजना (राजस्थान)",
+        "description": "Provides electricity bill subsidy of up to ₹1,000 per month (up to ₹12,000 per year) directly on metered agricultural connections for farmers in Rajasthan.",
+        "description_hi": "राजस्थान के कृषि विद्युत उपभोक्ताओं (मीटर वाले कृषि कनेक्शन) को बिजली बिल में प्रतिमाह ₹1,000 (वार्षिक ₹12,000) तक का सीधा सरकारी अनुदान।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Energy Department, Rajasthan",
+        "department": "Rajasthan DISCOMs (JVVNL, AVVNL, JdVVNL)",
+        "level": "State",
+        "states": ["Rajasthan"],
+        "intents": ["agriculture", "financial"],
+        "target_beneficiaries": ["Farmers in Rajasthan having metered agricultural power connections in their name"],
+        "eligibility_rules": {
+            "states": ["Rajasthan"],
+            "occupation": ["farmer"],
+            "age": {"min": 18, "max": 85}
+        },
+        "benefits": ["Monthly electricity bill subsidy of ₹1,000 (maximum ₹12,000/year) adjusted directly in the electricity bill, effectively making power free for small farmers", "Excess subsidy credited to bank account"],
+        "documents": ["Agriculture Electricity Connection K-Number", "Jan Aadhaar Card", "Aadhaar Card", "Bank Account Details"],
+        "application_steps": ["Link Jan Aadhaar and Aadhaar with agricultural electricity account on energy.rajasthan.gov.in or e-Mitra", "Subsidy deducted automatically from monthly power bills"],
+        "official_url": "https://energy.rajasthan.gov.in/",
+        "source_url": "https://sso.rajasthan.gov.in/",
+        "source_name": "Government of Rajasthan",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "electricity-subsidy", "rajasthan", "farmer", "kisan-mitra", "energy"]
+    },
+    {
+        "slug": "rajasthan-mukhyamantri-rajshree-yojana",
+        "scheme_code": "SCH-RJ-WOM-001",
+        "name": "Mukhyamantri Rajshree Yojana (Rajasthan)",
+        "name_hi": "मुख्यमंत्री राजश्री योजना (राजस्थान)",
+        "description": "Financial incentive program providing ₹50,000 in six installments to girl children from birth until passing Class 12 to promote female survival, health, and secondary education.",
+        "description_hi": "राजस्थान में बालिकाओं के संस्थागत जन्म से लेकर कक्षा 12वीं उत्तीर्ण करने तक 6 चरणों में कुल ₹50,000 की वित्तीय सहायता।",
+        "primary_category": "Women & Child Development",
+        "category": "Women & Child Development",
+        "ministry": "Women and Child Development Department, Rajasthan",
+        "department": "Directorate of Women Empowerment",
+        "level": "State",
+        "states": ["Rajasthan"],
+        "intents": ["women_child", "education"],
+        "target_beneficiaries": ["Girl children born in institutional health centers in Rajasthan possessing Jan Aadhaar card"],
+        "eligibility_rules": {
+            "states": ["Rajasthan"],
+            "gender": ["female"],
+            "age": {"min": 0, "max": 20}
+        },
+        "benefits": ["Total financial assistance of ₹50,000: ₹2,500 at birth; ₹2,500 at 1-year immunization; ₹4,000 upon Class 1 admission; ₹5,000 upon Class 6; ₹11,000 upon Class 10; ₹25,000 upon passing Class 12"],
+        "documents": ["Jan Aadhaar Card / Bhamashah ID", "Birth Certificate / Delivery slip of government hospital", "Aadhaar Card of mother", "School Admission Certificate"],
+        "application_steps": ["Registration through hospital upon institutional delivery", "Subsequent installments applied via school through Shaladarpan and Jan Aadhaar portal", "DBT credit to mother's account"],
+        "official_url": "https://wcd.rajasthan.gov.in/",
+        "source_url": "https://rajshree.rajasthan.gov.in/",
+        "source_name": "Government of Rajasthan",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["women_child", "girl-child", "rajasthan", "rajshree", "education", "financial-grant"]
+    },
+
+    # -------------------------------------------------------------
+    # MADHYA PRADESH (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "mp-mukhya-mantri-kisan-kalyan-yojana",
+        "scheme_code": "SCH-MP-AGRI-001",
+        "name": "Mukhya Mantri Kisan Kalyan Yojana (Madhya Pradesh)",
+        "name_hi": "मुख्यमंत्री किसान कल्याण योजना (मध्य प्रदेश)",
+        "description": "State income support scheme providing ₹6,000 per year directly to PM-KISAN beneficiary farmers in MP (in two equal installments), doubling total annual farmer assistance to ₹12,000.",
+        "description_hi": "मध्य प्रदेश के पीएम-किसान लाभार्थी किसानों को राज्य सरकार द्वारा ₹6,000 प्रति वर्ष की अतिरिक्त वित्तीय सहायता (कुल ₹12,000 वार्षिक)।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Revenue Department, Madhya Pradesh",
+        "department": "Land Records and Settlement",
+        "level": "State",
+        "states": ["Madhya Pradesh"],
+        "intents": ["agriculture", "financial"],
+        "target_beneficiaries": ["All landholding farmer families in MP receiving Central PM-KISAN benefits"],
+        "eligibility_rules": {
+            "states": ["Madhya Pradesh"],
+            "occupation": ["farmer"],
+            "age": {"min": 18, "max": 90}
+        },
+        "benefits": ["Direct financial grant of ₹6,000 per year in two installments credited directly into farmer's bank account via SAARA portal", "Total farmer support of ₹12,000/yr including central PM-KISAN"],
+        "documents": ["Samagra Member ID", "Aadhaar Card", "Khasra-Khatauni Land Record", "Bank Passbook with active DBT"],
+        "application_steps": ["Patwari verifies land ownership on saara.mp.gov.in portal", "Sanction by Tehsildar and electronic payment credit"],
+        "official_url": "https://saara.mp.gov.in/",
+        "source_url": "https://mp.gov.in/",
+        "source_name": "Government of Madhya Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "farmer", "madhya-pradesh", "kisan-kalyan", "pm-kisan", "dbt", "income-support"]
+    },
+    {
+        "slug": "mp-seekho-kamao-yojana",
+        "scheme_code": "SCH-MP-JOB-001",
+        "name": "Mukhya Mantri Seekho Kamao Yojana (MMSKY Madhya Pradesh)",
+        "name_hi": "मुख्यमंत्री सीखो-कमाओ योजना (मध्य प्रदेश)",
+        "description": "On-the-job training scheme for youth aged 18-29 offering vocational apprenticeships across 700+ industrial sectors with monthly stipends of ₹8,000 to ₹10,000.",
+        "description_hi": "18 से 29 वर्ष के युवाओं को उद्योगों में व्यावसायिक कौशल प्रशिक्षण तथा ₹8,000 से ₹10,000 प्रतिमाह का सरकारी वजीफा (स्टाइपेंड)।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Technical Education, Skill Development and Employment Department, Madhya Pradesh",
+        "department": "MP Skills Development Mission",
+        "level": "State",
+        "states": ["Madhya Pradesh"],
+        "intents": ["skills", "internships", "jobs"],
+        "target_beneficiaries": ["Youth aged 18-29 domiciled in MP who have passed Class 12, ITI, Diploma, or Graduation"],
+        "eligibility_rules": {
+            "states": ["Madhya Pradesh"],
+            "age": {"min": 18, "max": 29}
+        },
+        "benefits": ["Monthly stipend during training: ₹8,000 for 12th pass; ₹8,500 for ITI; ₹9,000 for Diploma; ₹10,000 for Degree/Postgraduates (75% paid by Government via DBT)", "State Council for Vocational Training (SCVT) certification"],
+        "documents": ["Samagra ID", "Aadhaar Card", "Educational Marksheets (12th/ITI/Diploma/Degree)", "Bank Account with DBT activation"],
+        "application_steps": ["Register on mmsky.mp.gov.in portal", "Apply to posted apprenticeship vacancies in preferred establishments", "Complete digital contract and commence on-the-job training"],
+        "official_url": "https://mmsky.mp.gov.in/",
+        "source_url": "https://mp.gov.in/",
+        "source_name": "Government of Madhya Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["skills", "apprenticeship", "stipend", "madhya-pradesh", "seekho-kamao", "jobs", "youth"]
+    },
+
+    # -------------------------------------------------------------
+    # GUJARAT (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "gujarat-manav-garima-yojana",
+        "scheme_code": "SCH-GJ-BIZ-001",
+        "name": "Manav Garima Yojana (Gujarat Self-Employment Toolkits)",
+        "name_hi": "मानव गरिमा योजना (गुजरात स्वरोजगार टूलकिट)",
+        "description": "Provides completely free modern toolkits and equipment worth up to ₹25,000 across 28 vocational trades (tailoring, carpentry, masonry, beauty parlor, plumbing) for self-employment.",
+        "description_hi": "गुजरात के अनुसूचित जाति, सामाजिक एवं शैक्षणिक पिछड़ा वर्ग (SEBC) के कारीगरों को स्वरोजगार हेतु 28 व्यवसायों में निःशुल्क आधुनिक टूलकिट एवं उपकरण।",
+        "primary_category": "Business & Self Employment",
+        "category": "Business & Self Employment",
+        "ministry": "Social Justice and Empowerment Department, Gujarat",
+        "department": "Directorate of Developing Castes Welfare",
+        "level": "State",
+        "states": ["Gujarat"],
+        "intents": ["business", "skills"],
+        "target_beneficiaries": ["Artisans and unemployed persons in Gujarat belonging to SC, SEBC, or Economically Backward Classes with annual income up to ₹6,00,000"],
+        "eligibility_rules": {
+            "states": ["Gujarat"],
+            "occupation": ["artisan", "self_employed", "unemployed"],
+            "income": {"max": 600000},
+            "age": {"min": 18, "max": 60}
+        },
+        "benefits": ["100% free physical toolkits and machinery: Sewing machines, carpentry tool sets, masonry kits, beauty parlor kits, plumber toolkits, electrical repair kits", "No loan repayment, completely free capital asset grant"],
+        "documents": ["Gujarat Domicile Proof", "Caste Certificate", "Income Certificate (≤ ₹6 Lakh/yr)", "Trade Training Certificate or Self-experience proof", "Aadhaar Card & Ration Card"],
+        "application_steps": ["Apply online on e-Kutir portal (esamajkalyan.gujarat.gov.in)", "Choose vocational trade kit", "District Social Welfare Officer verification and physical toolkit distribution at Taluka level"],
+        "official_url": "https://esamajkalyan.gujarat.gov.in/",
+        "source_url": "https://sje.gujarat.gov.in/",
+        "source_name": "Government of Gujarat",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["business", "toolkit", "gujarat", "manav-garima", "self-employment", "artisan", "free-equipment"]
+    },
+    {
+        "slug": "gujarat-kisan-suryodaya-yojana",
+        "scheme_code": "SCH-GJ-AGRI-001",
+        "name": "Kisan Suryodaya Yojana (Daytime Agricultural Power Gujarat)",
+        "name_hi": "किसान सूर्योदय योजना (गुजरात दिन में बिजली)",
+        "description": "Supplies 8 hours of reliable, high-voltage daytime power (between 5 AM to 9 PM) to farmers for agricultural tubewell irrigation, eliminating the hazards of nighttime farming.",
+        "description_hi": "गुजरात के किसानों को रात्रि के समय जंगली जानवरों और दुर्घटनाओं के जोखिम से बचाने हेतु दिन के समय (सुबह 5 से रात 9 बजे) 8 घंटे की अबाधित कृषि बिजली आपूर्ति।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Energy and Petrochemicals Department, Gujarat",
+        "department": "Gujarat Urja Vikas Nigam Limited (GUVNL)",
+        "level": "State",
+        "states": ["Gujarat"],
+        "intents": ["agriculture"],
+        "target_beneficiaries": ["All agricultural electricity consumers and farmers possessing farm pump connections in Gujarat"],
+        "eligibility_rules": {
+            "states": ["Gujarat"],
+            "occupation": ["farmer"],
+            "age": {"min": 18, "max": 90}
+        },
+        "benefits": ["8 hours guaranteed daytime agricultural electricity supply", "Prevents night-time snakebites and wild animal attacks during irrigation", "Enhanced irrigation efficiency and crop yield"],
+        "documents": ["Agricultural Electricity Consumer Number (K-Number)", "Land 7/12 & 8A Records", "Aadhaar Card"],
+        "application_steps": ["Automatic rollout village by village through GUVNL and local DISCOMs (DGVCL, MGVCL, PGVCL, UGVCL)", "No individual application fee"],
+        "official_url": "https://gujaratindia.gov.in/",
+        "source_url": "https://guvnl.com/",
+        "source_name": "Government of Gujarat",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "electricity", "irrigation", "gujarat", "kisan-suryodaya", "farmer", "power"]
+    },
+
+    # -------------------------------------------------------------
+    # BIHAR (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "bihar-mukhyamantri-nishchay-swayam-sahayata-bhatta",
+        "scheme_code": "SCH-BR-JOB-001",
+        "name": "Mukhyamantri Nishchay Swayam Sahayata Bhatta Yojana (MNSSBY Bihar)",
+        "name_hi": "मुख्यमंत्री निश्चय स्वयं सहायता भत्ता योजना (बिहार)",
+        "description": "Monthly allowance of ₹1,000 for up to 2 years provided to unemployed 12th pass youth aged 20-25 years in Bihar to support their job search and competitive preparation.",
+        "description_hi": "बिहार के 12वीं पास 20 से 25 वर्ष के बेरोजगार युवाओं को रोजगार की तलाश एवं तैयारी हेतु ₹1,000 प्रतिमाह का स्वयं सहायता भत्ता (2 वर्षों तक)।",
+        "primary_category": "Employment & Skills",
+        "category": "Employment & Skills",
+        "ministry": "Planning and Development Department, Bihar",
+        "department": "Bihar Vikas Mission",
+        "level": "State",
+        "states": ["Bihar"],
+        "intents": ["jobs", "financial"],
+        "target_beneficiaries": ["Unemployed youth aged 20-25 domiciled in Bihar who have passed Class 12 and not enrolled in regular higher education"],
+        "eligibility_rules": {
+            "states": ["Bihar"],
+            "occupation": ["unemployed"],
+            "age": {"min": 20, "max": 25}
+        },
+        "benefits": ["Monthly financial stipend of ₹1,000 for up to 24 months (total ₹24,000) directly into bank account", "Mandatory free training in Basic Computer Skills, Communication, and Soft Skills through Kushal Yuva Program (KYP)"],
+        "documents": ["Bihar Domicile Certificate", "Class 12 Marksheet and Passing Certificate", "Aadhaar Card", "Bank Account Passbook (Aadhaar linked)", "Self-declaration of not being employed or studying in regular college"],
+        "application_steps": ["Apply online on 7nishchay-yuvaupmission.bihar.gov.in", "Visit District Registration and Counseling Centre (DRCC) with original documents", "Monthly credit via DBT"],
+        "official_url": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+        "source_url": "https://state.bihar.gov.in/",
+        "source_name": "Government of Bihar",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["jobs", "unemployment-allowance", "bihar", "saat-nischay", "kyp", "youth", "stipend"]
+    },
+    {
+        "slug": "bihar-post-matric-scholarship-pms",
+        "scheme_code": "SCH-BR-EDU-002",
+        "name": "Bihar Post-Matric Scholarship Scheme (PMS Bihar - SC/ST/BC/EBC)",
+        "name_hi": "बिहार पोस्ट-मैट्रिक छात्रवृत्ति योजना (PMS बिहार)",
+        "description": "Dedicated state portal scheme providing 100% course fee reimbursement and maintenance allowances for SC, ST, BC, and EBC students in post-matric institutions.",
+        "description_hi": "बिहार के अनुसूचित जाति, जनजाति, पिछड़ा वर्ग एवं अत्यंत पिछड़ा वर्ग के विद्यार्थियों हेतु दशमोत्तर कक्षाओं में सम्पूर्ण शिक्षण शुल्क प्रतिपूर्ति एवं छात्रवृत्ति।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Education Department, Bihar",
+        "department": "Directorate of Higher Education",
+        "level": "State",
+        "states": ["Bihar"],
+        "intents": ["education"],
+        "target_beneficiaries": ["SC, ST, BC, and EBC students domiciled in Bihar pursuing Class 11, 12, ITI, Diploma, Graduation, and Post-graduation with family income up to ₹3 Lakh"],
+        "eligibility_rules": {
+            "states": ["Bihar"],
+            "category": ["SC", "ST", "OBC"],
+            "occupation": ["student"],
+            "income": {"max": 300000},
+            "age": {"min": 15, "max": 35}
+        },
+        "benefits": ["Complete reimbursement of non-refundable tuition and institutional fees", "Maintenance stipend directly credited into student's Aadhaar-linked bank account"],
+        "documents": ["Bihar Domicile Certificate", "Caste Certificate (SC/ST/BC/EBC)", "Income Certificate (≤ ₹3 Lakh/yr)", "Previous Year Marksheet", "College Fee Structure and Receipt", "Aadhaar Card"],
+        "application_steps": ["Register on pmsonline.bih.nic.in portal", "Institution verifies student enrollment and fee structure", "District Welfare Officer approves and releases payment directly via DBT"],
+        "official_url": "http://pmsonline.bih.nic.in/",
+        "source_url": "https://state.bihar.gov.in/educationbihar/",
+        "source_name": "Government of Bihar",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "scholarship", "bihar", "post-matric", "pms-bihar", "bc", "ebc", "sc", "st"]
+    },
+
+    # -------------------------------------------------------------
+    # WEST BENGAL (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "west-bengal-krishak-bandhu",
+        "scheme_code": "SCH-WB-AGRI-001",
+        "name": "Krishak Bandhu (Natun) Scheme (West Bengal)",
+        "name_hi": "कृषक बंधु योजना (पश्चिम बंगाल)",
+        "description": "Assured agricultural financial assistance up to ₹10,000 per year per acre in two installments (Kharif and Rabi) along with ₹2,00,000 accidental death insurance for farmers aged 18-60.",
+        "description_hi": "पश्चिम बंगाल के किसानों को ₹10,000 प्रति एकड़ प्रति वर्ष की सुनिश्चित वित्तीय सहायता तथा किसान की आकस्मिक मृत्यु पर परिवार को ₹2,00,000 का निःशुल्क बीमा।",
+        "primary_category": "Agriculture & Rural Development",
+        "category": "Agriculture & Rural Development",
+        "ministry": "Department of Agriculture, West Bengal",
+        "department": "Directorate of Agriculture",
+        "level": "State",
+        "states": ["West Bengal"],
+        "intents": ["agriculture", "financial"],
+        "target_beneficiaries": ["All farmers and registered bargadars (sharecroppers) possessing cultivable land in West Bengal"],
+        "eligibility_rules": {
+            "states": ["West Bengal"],
+            "occupation": ["farmer"],
+            "age": {"min": 18, "max": 75}
+        },
+        "benefits": ["Financial assistance of ₹10,000 per year (₹5,000 in Kharif + ₹5,000 in Rabi) for land of 1 acre or more; pro-rata minimum of ₹4,000/year for small/marginal holdings", "₹2,00,000 death benefit paid to nominee in case of farmer's death between age 18-60"],
+        "documents": ["RoR (Record of Rights / Parcha)", "Aadhaar Card", "Voter ID Card", "Bank Passbook with active IFSC"],
+        "application_steps": ["Submit application at local Assistant Director of Agriculture (ADA) office or Duare Sarkar camps", "Krishak Bandhu Smart Card issued", "Direct bank credit per season"],
+        "official_url": "https://krishakbandhu.wb.gov.in/",
+        "source_url": "https://wb.gov.in/",
+        "source_name": "Government of West Bengal",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["agriculture", "farmer", "west-bengal", "krishak-bandhu", "dbt", "death-benefit", "crop-assistance"]
+    },
+    {
+        "slug": "west-bengal-student-credit-card",
+        "scheme_code": "SCH-WB-EDU-001",
+        "name": "West Bengal Student Credit Card Scheme (WBSCC)",
+        "name_hi": "पश्चिम बंगाल स्टूडेंट क्रेडिट कार्ड योजना",
+        "description": "Collateral-free soft education loan up to ₹10,00,000 with nominal simple interest of 4% backed by 100% guarantee from West Bengal Government for pursuing higher studies in India or abroad.",
+        "description_hi": "कक्षा 10वीं पास विद्यार्थियों को भारत या विदेश में उच्च शिक्षा (डिग्री, मेडिकल, इंजीनियरिंग) हेतु राज्य सरकार की गारंटी पर ₹10 लाख तक का शिक्षा ऋण मात्र 4% साधारण ब्याज पर।",
+        "primary_category": "Education & Learning",
+        "category": "Education & Learning",
+        "ministry": "Higher Education Department, West Bengal",
+        "department": "Higher Education Directorate",
+        "level": "State",
+        "states": ["West Bengal"],
+        "intents": ["education", "financial"],
+        "target_beneficiaries": ["Students who have resided in West Bengal for at least 10 years aged up to 40 years admitted to higher education or competitive coaching institutes"],
+        "eligibility_rules": {
+            "states": ["West Bengal"],
+            "occupation": ["student"],
+            "age": {"min": 15, "max": 40}
+        },
+        "benefits": ["Collateral-free education loan up to ₹10 Lakhs with 1% interest concession for full repayment during study period", "Moratorium period covers course duration plus 1 year; repayment tenure up to 15 years", "Covers tuition fees, hostel, laptop, books, and living expenses"],
+        "documents": ["Color photograph of student and co-borrower", "Class 10 Board Registration / Passing Marksheet", "Admission Fee Structure from College", "Aadhaar Card / PAN Card", "Proof of 10 years residence in WB"],
+        "application_steps": ["Register on wbscc.wb.gov.in portal", "Institution head verifies and forwards to Higher Education Department", "Department approves and forwards to partner bank for loan sanction and credit card issue"],
+        "official_url": "https://wbscc.wb.gov.in/",
+        "source_url": "https://wb.gov.in/",
+        "source_name": "Government of West Bengal",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["education", "loan", "west-bengal", "student-credit-card", "higher-education", "collateral-free"]
+    },
+
+    # -------------------------------------------------------------
+    # TELANGANA & ANDHRA PRADESH (Extended)
+    # -------------------------------------------------------------
+    {
+        "slug": "telangana-aasara-pensions",
+        "scheme_code": "SCH-TS-PEN-001",
+        "name": "Telangana Aasara Pension Scheme",
+        "name_hi": "तेलंगाना आसरा पेंशन योजना",
+        "description": "Comprehensive social safety pension providing monthly financial support of ₹2,016 for elderly, widows, beedi workers, weavers, and toddy tappers, and ₹4,016 for disabled citizens.",
+        "description_hi": "तेलंगाना के वृद्धों, विधवाओं, बीड़ी श्रमिकों एवं बुनकरों को ₹2,016 प्रतिमाह तथा दिव्यांगजनों को ₹4,016 प्रतिमाह की सामाजिक सुरक्षा पेंशन।",
+        "primary_category": "Social Security & Pension",
+        "category": "Social Security & Pension",
+        "ministry": "Panchayat Raj and Rural Development Department, Telangana",
+        "department": "Society for Elimination of Rural Poverty (SERP)",
+        "level": "State",
+        "states": ["Telangana"],
+        "intents": ["pension", "social_welfare"],
+        "target_beneficiaries": ["Senior citizens aged 57+, widows, AIDS patients, elephantiasis patients, beedi workers, and disabled persons domiciled in Telangana"],
+        "eligibility_rules": {
+            "states": ["Telangana"],
+            "income": {"max": 150000},
+            "age": {"min": 18, "max": 110}
+        },
+        "benefits": ["Monthly pension of ₹2,016 for elderly, widows, and occupational workers", "Enhanced monthly pension of ₹4,016 for persons with benchmark disability", "Direct monthly disbursement via biometric authentication at Post Office or Bank"],
+        "documents": ["Food Security Card (BPL Ration Card)", "Aadhaar Card", "Age Proof (Voter ID showing age ≥57)", "SADAREM Disability Certificate (for Divyang pension)", "Bank / Post Office Account"],
+        "application_steps": ["Submit application at MeeSeva centre or Gram Panchayat", "Mandal Parishad Development Officer (MPDO) / Municipal Commissioner verification", "District Collector issues sanction order"],
+        "official_url": "https://aasara.telangana.gov.in/",
+        "source_url": "https://telangana.gov.in/",
+        "source_name": "Government of Telangana",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["pension", "senior-citizens", "telangana", "aasara", "widow", "disability", "social-security"]
+    },
+    {
+        "slug": "andhra-pradesh-ysr-cheyutha",
+        "scheme_code": "SCH-AP-WOM-001",
+        "name": "YSR Cheyutha Scheme (Andhra Pradesh)",
+        "name_hi": "वाईएसआर चेयुथा योजना (आंध्र प्रदेश)",
+        "description": "Financial empowerment program granting ₹75,000 in four equal annual tranches of ₹18,750 to women aged 45-60 years belonging to SC, ST, BC, and Minority communities to establish sustainable livelihood enterprises.",
+        "description_hi": "आंध्र प्रदेश की एससी, एसटी, बीसी एवं अल्पसंख्यक समुदायों की 45 से 60 वर्ष की महिलाओं को किराना, डेयरी व पोल्ट्री व्यवसाय हेतु ₹18,750 प्रतिवर्ष (कुल ₹75,000) की सहायता।",
+        "primary_category": "Women & Child Development",
+        "category": "Women & Child Development",
+        "ministry": "Social Welfare Department, Andhra Pradesh",
+        "department": "SERP Andhra Pradesh",
+        "level": "State",
+        "states": ["Andhra Pradesh"],
+        "intents": ["women_child", "business"],
+        "target_beneficiaries": ["Women aged 45-60 belonging to SC, ST, BC, or Minority communities domiciled in AP holding Rice Cards with family income under ₹1.2 Lakh (rural) / ₹1.44 Lakh (urban)"],
+        "eligibility_rules": {
+            "states": ["Andhra Pradesh"],
+            "gender": ["female"],
+            "income": {"max": 144000},
+            "age": {"min": 45, "max": 60}
+        },
+        "benefits": ["Annual financial transfer of ₹18,750 for four consecutive years (total ₹75,000)", "Partnership with corporate giants (Amul, ITC, P&G, Reliance) providing wholesale supply and technical training for setting up grocery shops, buffalo units, and goat rearing"],
+        "documents": ["White Ration Card / Rice Card", "Integrated Caste Certificate", "Aadhaar Card proving age 45-60", "Unencumbered Bank Account Details"],
+        "application_steps": ["Volunteer surveys and enrolls eligible women through Grama / Ward Sachivalayam mobile app", "Social audit published in Sachivalayam notice board", "Direct DBT disbursement into woman's bank account"],
+        "official_url": "https://navasakam2.apcfss.in/",
+        "source_url": "https://ap.gov.in/",
+        "source_name": "Government of Andhra Pradesh",
+        "verification_status": "Verified",
+        "active": True,
+        "tags": ["women_child", "ysr-cheyutha", "andhra-pradesh", "livelihood", "dairy", "sc", "st", "bc", "minority"]
+    }
+]
