@@ -618,3 +618,42 @@ div[data-testid="stCustomComponentV1"]:has(> iframe[height="0"]) {
   border-radius: 9999px;
   border: 1px solid #DBEAFE;
 }
+
+/* Category Counts List & Badges */
+.category-stat-bar {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+}
+
+.category-stat-bar:hover {
+  border-color: #2563EB;
+  background: #F8FAFC;
+}
+
+.cat-stat-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-stat-count {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1D4ED8;
+  background: #EFF6FF;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid #DBEAFE;
+}
+
