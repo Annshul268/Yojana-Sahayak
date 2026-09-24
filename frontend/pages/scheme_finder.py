@@ -11,6 +11,7 @@ from frontend.services.questionnaire_engine import (
     questionnaire_engine,
 )
 from frontend.utils.i18n import get_current_language
+from frontend.utils.ui import inject_scroll_to_top
 
 
 def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
@@ -65,8 +66,21 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     current_step = max(0, current_step)
     st.session_state.questionnaire_step = current_step
 
-    # Center card container
-    st.markdown("<div style='max-width: 720px; margin: 0 auto;'>", unsafe_allow_html=True)
+    # Determine if viewport scroll to top is needed
+    last_step = st.session_state.get("_last_questionnaire_step")
+    explicit_scroll = st.session_state.get("_scroll_to_top_needed", False)
+    step_changed = (last_step is not None and last_step != current_step)
+    initial_entry = (last_step is None)
+    should_scroll = explicit_scroll or step_changed or initial_entry
+
+    # Center card container with anchor element for viewport positioning
+    st.markdown(
+        """
+        <div id="questionnaire-top" style="max-width: 720px; margin: 0 auto; position: relative;">
+            <div id="questionnaire-top-anchor" style="position: absolute; top: -20px; left: 0; height: 1px; width: 1px; opacity: 0; pointer-events: none;"></div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # -----------------------------------------------------------------
     # Step 0: Goal / Intent Selection Screen
@@ -121,7 +135,13 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
                     answers["intent"] = opt.key
                     st.session_state.validation_error = None
                     st.session_state.questionnaire_step = 1
+                    st.session_state["_scroll_to_top_needed"] = True
                     st.rerun()
+
+        if should_scroll:
+            st.session_state["_scroll_to_top_needed"] = False
+            st.session_state["_last_questionnaire_step"] = 0
+            inject_scroll_to_top(anchor_id="questionnaire-top")
 
         st.markdown("</div>", unsafe_allow_html=True)
         return
@@ -148,6 +168,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         if st.button("🔄 " + ("उद्देश्य बदलें" if lang == "hi" else "Change Goal"), key="change_intent_btn"):
             st.session_state.validation_error = None
             st.session_state.questionnaire_step = 0
+            st.session_state["_scroll_to_top_needed"] = True
             st.rerun()
 
     progress_val = display_step / float(max(1, total_steps))
@@ -284,6 +305,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         if st.button("← " + ("पीछे" if lang == "hi" else "Back"), use_container_width=True):
             st.session_state.validation_error = None
             st.session_state.questionnaire_step = max(0, current_step - 1)
+            st.session_state["_scroll_to_top_needed"] = True
             st.rerun()
 
     with col_next:
@@ -300,12 +322,14 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
 
             if not is_valid:
                 st.session_state.validation_error = err_msg
+                st.session_state["_scroll_to_top_needed"] = True
                 st.rerun()
             else:
                 st.session_state.validation_error = None
 
                 if not is_last:
                     st.session_state.questionnaire_step += 1
+                    st.session_state["_scroll_to_top_needed"] = True
                     st.rerun()
                 else:
                     # Final Submission: build normalized profile payload
@@ -317,9 +341,16 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
                         if res["ok"]:
                             st.session_state.match_results = res["data"]
                             st.session_state.matched_profile = payload
+                            st.session_state["_scroll_to_top_needed"] = True
                             navigate_to("results")
                         else:
                             st.session_state.validation_error = f"API Error: {res.get('error', 'Unable to evaluate schemes')}"
+                            st.session_state["_scroll_to_top_needed"] = True
                             st.rerun()
+
+    if should_scroll:
+        st.session_state["_scroll_to_top_needed"] = False
+        st.session_state["_last_questionnaire_step"] = current_step
+        inject_scroll_to_top(anchor_id="questionnaire-top")
 
     st.markdown("</div>", unsafe_allow_html=True)

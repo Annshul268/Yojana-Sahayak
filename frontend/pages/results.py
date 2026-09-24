@@ -5,15 +5,22 @@ import streamlit as st
 from frontend.components.eligibility_card import render_eligibility_card
 from frontend.services.api_client import api_client
 from frontend.utils.i18n import get_current_language
+from frontend.utils.ui import inject_scroll_to_top
 
 
 def render_results(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
 
+    # Reset scroll to top if flagged
+    if st.session_state.get("_scroll_to_top_needed", False):
+        st.session_state["_scroll_to_top_needed"] = False
+        inject_scroll_to_top(anchor_id="results-top")
+
     match_data = st.session_state.get("match_results")
     if not match_data:
         st.info("No active search yet. Fill out the quick form to discover schemes matching your profile.")
         if st.button("🚀 " + ("पात्रता जांचें" if lang == "hi" else "Check Eligibility"), type="primary"):
+            st.session_state["_scroll_to_top_needed"] = True
             navigate_to("finder")
         return
 
@@ -33,6 +40,9 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
 
     st.markdown(
         f"""
+        <div id="results-top" style="position: relative;">
+            <div id="results-top-anchor" style="position: absolute; top: -20px; left: 0; height: 1px; width: 1px; opacity: 0; pointer-events: none;"></div>
+        </div>
         <div style="margin-bottom: 1.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
                 <h2 style="color: #0F172A; font-weight: 800; font-size: 1.75rem; margin-bottom: 4px;">
@@ -98,7 +108,9 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
     c_btn1, c_btn2 = st.columns([1.5, 2])
     with c_btn1:
         if st.button("🔄 " + ("विवरण संशोधित करें" if lang == "hi" else "Edit Your Answers"), use_container_width=True):
+            st.session_state["_scroll_to_top_needed"] = True
             navigate_to("finder")
     with c_btn2:
         if st.button("📚 " + ("सभी योजनाएं ब्राउज़ करें" if lang == "hi" else "Browse All Schemes Directory"), use_container_width=True):
+            st.session_state["_scroll_to_top_needed"] = True
             navigate_to("schemes")

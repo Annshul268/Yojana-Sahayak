@@ -386,3 +386,24 @@ input[type="text"], input[type="number"] {
     padding-right: 1rem !important;
   }
 }
+
+/* Headless utility iframes & script components */
+iframe[height="0"] {
+  display: block !important;
+  height: 0px !important;
+  min-height: 0px !important;
+  max-height: 0px !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+div[data-testid="stCustomComponentV1"]:has(> iframe[height="0"]) {
+  height: 0px !important;
+  min-height: 0px !important;
+  max-height: 0px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
