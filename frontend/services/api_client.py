@@ -93,6 +93,9 @@ class APIClient:
     def get_scheme_stats(self) -> Dict[str, Any]:
         return self._request("GET", "/api/schemes/stats")
 
+    def get_scheme_statistics(self) -> Dict[str, Any]:
+        return self._request("GET", "/api/schemes/statistics")
+
     def get_scheme_categories(self) -> Dict[str, Any]:
         return self._request("GET", "/api/schemes/categories")
 

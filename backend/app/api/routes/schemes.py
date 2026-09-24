@@ -97,6 +97,7 @@ async def get_featured_schemes(
 
 
 @router.get("/stats", summary="Actual Database Scheme Statistics")
+@router.get("/statistics", summary="Actual Database Scheme Statistics")
 async def get_scheme_stats(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
     """Calculate aggregated scheme metrics dynamically from PostgreSQL / SQLite."""
     stmt = select(Scheme).where(Scheme.active == True)

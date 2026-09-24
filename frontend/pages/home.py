@@ -136,16 +136,16 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 32px 0 28px 0;' />", unsafe_allow_html=True)
 
     # =========================================================================
-    # SECTION 5 & 6: SCHEMES AVAILABLE ON YOJANA SAHAYAK (ACTUAL DB STATS)
+    # SCHEME STATISTICS SECTION: Government Schemes Available
     # =========================================================================
     st.markdown(
         f"""
         <div class="discovery-section-header">
             <h2 class="discovery-title">
-                {"योजना सहायक पर उपलब्ध सरकारी योजनाएं" if lang == "hi" else "Government Schemes Available on Yojana Sahayak"}
+                {"उपलब्ध सरकारी योजनाएं" if lang == "hi" else "Government Schemes Available"}
             </h2>
             <p class="discovery-subtitle">
-                {"हमारे सत्यापित डेटाबेस में उपलब्ध योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore schemes available in our verified database"}
+                {"योजना सहायक पर वर्तमान में उपलब्ध सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore the government schemes currently available on Yojana Sahayak"}
             </p>
         </div>
         """,
@@ -161,55 +161,72 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
         "states": {},
     }
 
-    # 3 Top Statistics Cards
+    # 3 Large Statistic Cards at top
     col_t1, col_t2, col_t3 = st.columns(3, gap="medium")
 
     with col_t1:
         st.markdown(
             f"""
-            <div class="stat-box">
-                <div class="stat-num">{stats.get('total', 438)}</div>
-                <div class="stat-label">{"कुल योजनाएं" if lang == "hi" else "Total Schemes"}</div>
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{stats.get('total', 438)}</div>
+                <div class="stat-label-hero">
+                    <span>{"कुल योजनाएं" if lang == "hi" else "Total Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
+        if st.button("Total Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", key="btn_hero_stat_total", use_container_width=True):
+            navigate_to("schemes")
 
     with col_t2:
         st.markdown(
             f"""
-            <div class="stat-box">
-                <div class="stat-num">{stats.get('central', 109)}</div>
-                <div class="stat-label">{"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"}</div>
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{stats.get('central', 109)}</div>
+                <div class="stat-label-hero">
+                    <span>{"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
+        if st.button("Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →", key="btn_hero_stat_central", use_container_width=True):
+            st.session_state.selected_level_filter = "Central"
+            navigate_to("schemes")
 
     with col_t3:
         st.markdown(
             f"""
-            <div class="stat-box">
-                <div class="stat-num">{stats.get('state', 329)}</div>
-                <div class="stat-label">{"राज्य योजनाएं" if lang == "hi" else "State Schemes"}</div>
+            <div class="stat-box-hero">
+                <div class="stat-num-hero">{stats.get('state', 329)}</div>
+                <div class="stat-label-hero">
+                    <span>{"राज्य / केंद्रशासित योजनाएं" if lang == "hi" else "State / UT Schemes"}</span>
+                    <span class="arrow">→</span>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
+        if st.button("State / UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →", key="btn_hero_stat_state", use_container_width=True):
+            st.session_state.selected_level_filter = "State"
+            navigate_to("schemes")
 
-    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 2.5rem;'></div>", unsafe_allow_html=True)
 
     # =========================================================================
-    # SECTION 7: EXPLORE BY CATEGORY (ACTUAL DB COUNTS)
+    # CATEGORY STATISTICS: Explore by Category
     # =========================================================================
     st.markdown(
         f"""
-        <div style="text-align: center; margin-bottom: 1.25rem;">
-            <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
                 {"श्रेणी अनुसार अन्वेषण करें" if lang == "hi" else "Explore by Category"}
             </h3>
-            <p style="font-size: 0.88rem; color: #64748B; margin: 0;">
-                {"विभिन्न क्षेत्रों में सरकारी योजनाओं की संख्या और विवरण देखें" if lang == "hi" else "Find schemes based on key sectors and target beneficiaries"}
+            <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
+                {"विभिन्न श्रेणियों में उपलब्ध सरकारी योजनाओं की संख्या देखें" if lang == "hi" else "Find schemes based on key categories in our database"}
             </p>
         </div>
         """,
@@ -220,7 +237,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     categories_list = cats_res.get("data", []) if cats_res["ok"] else []
 
     if categories_list:
-        # Render in a clean 4-column grid
+        # Render clean 4-column responsive grid
         num_cols = 4
         rows = [categories_list[i : i + num_cols] for i in range(0, len(categories_list), num_cols)]
 
@@ -235,10 +252,10 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
                     st.markdown(
                         f"""
-                        <div class="cat-tile">
-                            <div class="cat-tile-icon">{cat_icon}</div>
-                            <div class="cat-tile-name">{cat_name_disp}</div>
-                            <div class="cat-tile-count">{cat_count} {"योजनाएं" if lang == "hi" else "Schemes"}</div>
+                        <div class="cat-card-modern">
+                            <div class="cat-icon-badge">{cat_icon}</div>
+                            <div class="cat-schemes-count">{cat_count} {"योजनाएं" if lang == "hi" else "Schemes"}</div>
+                            <div class="cat-card-title">{cat_name_disp}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -247,21 +264,21 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                     if st.button(btn_label, key=f"btn_cat_view_{r_idx}_{c_idx}", use_container_width=True):
                         st.session_state.selected_category_filter = cat_name
                         navigate_to("schemes")
-            st.markdown("<div style='height: 0.6rem;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
 
-    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 32px 0 28px 0;' />", unsafe_allow_html=True)
+    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 36px 0 28px 0;' />", unsafe_allow_html=True)
 
     # =========================================================================
-    # SECTION 8 & 9: SCHEMES BY STATE / UT & DYNAMIC STATE FILTER
+    # STATE / UT STATISTICS: Explore by State / UT
     # =========================================================================
     st.markdown(
         f"""
-        <div style="text-align: center; margin-bottom: 1.25rem;">
-            <h3 style="font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
-                {"राज्य / केंद्रशासित प्रदेश अनुसार योजनाएं" if lang == "hi" else "Schemes by State / UT"}
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #0F172A; margin-bottom: 4px;">
+                {"राज्य / केंद्रशासित प्रदेश अनुसार योजनाएं" if lang == "hi" else "Explore by State / UT"}
             </h3>
-            <p style="font-size: 0.88rem; color: #64748B; margin: 0;">
-                {"केंद्रीय योजनाओं के साथ-साथ राज्य सरकार के विशेष कल्याणकारी कार्यक्रमों का अन्वेषण करें" if lang == "hi" else "Explore state welfare programs along with central government schemes"}
+            <p style="font-size: 0.92rem; color: #64748B; margin: 0;">
+                {"राज्य-विशिष्ट सरकारी कल्याणकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore state-specific welfare programs currently available in our database"}
             </p>
         </div>
         """,
@@ -273,7 +290,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
     all_state_names = [s["state"] for s in states_list]
 
-    # State Selector Container
+    # Quick interactive dropdown selector
     col_sel1, col_sel2 = st.columns([5, 5])
     with col_sel1:
         chosen_state = st.selectbox(
@@ -285,7 +302,6 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
     with col_sel2:
         if chosen_state != "All States":
-            # Find specific counts
             st_data = next((s for s in states_list if s["state"] == chosen_state), None)
             st_count = st_data["state_count"] if st_data else 0
             central_cnt = stats.get("central", 109)
@@ -293,20 +309,20 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
             st.markdown(
                 f"""
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 14px; font-size: 0.84rem; color: #334155; margin-bottom: 6px;">
-                    <strong>{chosen_state}</strong>: {st_count} {"राज्य योजनाएं" if lang == "hi" else "State Schemes"} + {central_cnt} {"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"} = <strong>{total_app} {"कुल उपलब्ध" if lang == "hi" else "Total Applicable"}</strong>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+                    <strong>{chosen_state}</strong>: {st_count} {"राज्य योजनाएं" if lang == "hi" else "State Schemes"} + {central_cnt} {"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"} = <strong>{total_app} {"कुल उपलब्ध" if lang == "hi" else "Total Available"}</strong>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            btn_state_text = f"सभी {total_app} योजनाएं देखें →" if lang == "hi" else f"Browse all {total_app} schemes for {chosen_state} →"
+            btn_state_text = f"Browse {total_app} Schemes for {chosen_state} →" if lang != "hi" else f"{chosen_state} की सभी {total_app} योजनाएं देखें →"
             if st.button(btn_state_text, type="primary", use_container_width=True, key="btn_explore_state_selected"):
                 st.session_state.selected_state_filter = chosen_state
                 navigate_to("schemes")
         else:
             st.markdown(
                 f"""
-                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 14px; font-size: 0.84rem; color: #334155; margin-bottom: 6px;">
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
                     {"केंद्रीय योजनाएं संपूर्ण भारत में मान्य हैं।" if lang == "hi" else "Central government schemes are applicable across all States & UTs."}
                 </div>
                 """,
@@ -315,21 +331,35 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             if st.button("Browse All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", type="secondary", use_container_width=True, key="btn_explore_all_states"):
                 navigate_to("schemes")
 
-    # Render Top 10 States with Counts Grid
+    # Render Clean State Schemes Grid
     if states_list:
-        st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
-        st.caption("Top States by Dedicated Welfare Programs in Database:" if lang != "hi" else "डेटाबेस में प्रमुख राज्यों की कल्याणकारी योजनाएं:")
+        st.markdown("<div style='height: 1.25rem;'></div>", unsafe_allow_html=True)
+        # Display states in 2 columns
+        num_state_cols = 2
+        half = (len(states_list) + 1) // 2
+        col_st_left, col_st_right = st.columns(num_state_cols, gap="medium")
 
-        # Show top 10 states in 5 columns x 2 rows
-        top_10 = states_list[:10]
-        c_states = st.columns(5)
-        for idx, item in enumerate(top_10):
-            with c_states[idx % 5]:
-                st_name = item["state"]
-                st_count = item["state_count"]
-                if st.button(f"{st_name}\n({st_count})", key=f"top_state_btn_{idx}", use_container_width=True):
-                    st.session_state.selected_state_filter = st_name
-                    navigate_to("schemes")
+        for idx, item in enumerate(states_list):
+            st_name = item["state"]
+            st_count = item["state_count"]
+            target_col = col_st_left if idx < half else col_st_right
+
+            with target_col:
+                col_info, col_btn = st.columns([7, 3])
+                with col_info:
+                    st.markdown(
+                        f"""
+                        <div class="state-stat-card">
+                            <span class="state-stat-name">{st_name}</span>
+                            <span class="state-stat-pill">{st_count} {"योजनाएं" if lang == "hi" else "Schemes"}</span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with col_btn:
+                    if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_state_card_{idx}", use_container_width=True):
+                        st.session_state.selected_state_filter = st_name
+                        navigate_to("schemes")
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 40px 0 28px 0;' />", unsafe_allow_html=True)
 

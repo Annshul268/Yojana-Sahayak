@@ -36,10 +36,14 @@ async def test_featured_schemes_carousel_endpoint(client):
 
 @pytest.mark.asyncio
 async def test_scheme_stats_dynamic_calculation(client):
-    """Verify /api/schemes/stats calculates actual metrics from database records."""
+    """Verify /api/schemes/stats and /api/schemes/statistics calculate actual metrics from database records."""
     res = await client.get("/api/schemes/stats")
     assert res.status_code == 200
     data = res.json()
+
+    res_alias = await client.get("/api/schemes/statistics")
+    assert res_alias.status_code == 200
+    assert res_alias.json() == data
 
     # Query DB directly to check accuracy
     async with AsyncSessionLocal() as db:

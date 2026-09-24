@@ -117,11 +117,13 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
     # Fetch schemes from backend
     user_id = st.session_state.get("user_id", "citizen_user_1")
     state_param = selected_state if selected_state != "All States" else None
+    level_param = st.session_state.pop("selected_level_filter", None)
 
     res = api_client.list_schemes(
         q=search_query.strip() if search_query else None,
         category=selected_category if selected_category != "ALL" else None,
         state=state_param,
+        level=level_param,
         page=1,
         page_size=100,
     )
