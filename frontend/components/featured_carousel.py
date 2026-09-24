@@ -1,115 +1,44 @@
-"""Featured Government Schemes auto-scrolling responsive carousel component."""
+"""Featured Government Schemes auto-scrolling responsive carousel component.
+
+Provides clean, real-image scheme cards with touch/mouse swipe, left/right arrows,
+auto-scroll, responsive 3/2/1 card layouts, and direct official scheme URLs.
+"""
 
 import json
 from typing import Any, Dict, List
 import streamlit.components.v1 as components
 
+# High-resolution, real photographic images for government sectors
+DEFAULT_BANNER_IMAGES = {
+    "pm-kisan": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=700&q=80",
+    "ayushman-bharat-pmjay": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80",
+    "up-post-matric-scholarship-obc": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80",
+    "pmay-gramin": "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=700&q=80",
+    "adip-scheme-disabled": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80",
+    "Agriculture & Rural Development": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=700&q=80",
+    "Healthcare": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80",
+    "Education & Learning": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80",
+    "Housing & Shelter": "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=700&q=80",
+    "Differently Abled Support": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80",
+    "Social Security & Pension": "https://images.unsplash.com/photo-1516307365426-bea591f05011?auto=format&fit=crop&w=700&q=80",
+    "Business & Self Employment": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=700&q=80",
+    "Employment & Skills": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=700&q=80",
+    "Women & Child Development": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=700&q=80",
+    "Financial Assistance": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=700&q=80",
+}
 
-def get_scheme_banner_svg(category: str, slug: str) -> str:
-    """Returns an inline SVG data URI representing a crisp, modern banner for the scheme."""
-    c_lower = (category or "").lower()
-    s_lower = (slug or "").lower()
+FALLBACK_IMAGE = "https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&w=700&q=80"
 
-    if "scholarship" in s_lower or "education" in c_lower:
-        # Education / Scholarship banner (Navy & Gold)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%231E3A8A" />
-              <stop offset="100%" stop-color="%232563EB" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g1)"/>
-          <circle cx="340" cy="75" r="70" fill="%23FFFFFF" opacity="0.08"/>
-          <circle cx="70" cy="130" r="50" fill="%23F59E0B" opacity="0.15"/>
-          <g transform="translate(170, 40) scale(1.4)" fill="%23FBBF24">
-            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
-            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="%23FFFFFF" opacity="0.9"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">EDUCATION &amp; SCHOLARSHIP</text>
-        </svg>"""
-    elif "awas" in s_lower or "pmay" in s_lower or "housing" in c_lower:
-        # Housing banner (Teal & Emerald)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%23065F46" />
-              <stop offset="100%" stop-color="%23059669" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g2)"/>
-          <circle cx="330" cy="40" r="60" fill="%2334D399" opacity="0.15"/>
-          <g transform="translate(175, 45) scale(1.4)" fill="%23FFFFFF">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">HOUSING FOR ALL</text>
-        </svg>"""
-    elif "adip" in s_lower or "disab" in c_lower or "divyang" in s_lower:
-        # Disability support banner (Indigo & Violet)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%234338CA" />
-              <stop offset="100%" stop-color="%236366F1" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g3)"/>
-          <circle cx="340" cy="90" r="60" fill="%23A5B4FC" opacity="0.2"/>
-          <g transform="translate(180, 42) scale(1.4)" fill="%23FFFFFF">
-            <circle cx="12" cy="4" r="2"/>
-            <path d="M19 13v-2c-1.54.02-3.09-.75-4.07-1.83l-1.29-1.43c-.17-.19-.38-.34-.61-.45-.01 0-.01-.01-.02-.01H13c-.35-.2-.75-.3-1.19-.26C10.76 7.11 10 8.04 10 9.09V15c0 1.1.9 2 2 2h5v5h2v-7h-4v-4.14c.54.34 1.15.54 1.79.54h2.21zM6.5 15.5c0 .83.67 1.5 1.5 1.5.54 0 1.01-.28 1.28-.71l1.55.9C10.3 18.23 9.24 19 8 19c-1.93 0-3.5-1.57-3.5-3.5S6.07 12 8 12c.79 0 1.53.27 2.12.72l-1.39 1.05C8.42 13.62 8.22 13.5 8 13.5c-.83 0-1.5.67-1.5 2z"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">DIVYANGJAN SUPPORT</text>
-        </svg>"""
-    elif "ayushman" in s_lower or "health" in c_lower:
-        # Healthcare banner (Crimson & Rose)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%23991B1B" />
-              <stop offset="100%" stop-color="%23DC2626" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g4)"/>
-          <circle cx="330" cy="50" r="65" fill="%23FCA5A5" opacity="0.15"/>
-          <g transform="translate(180, 45) scale(1.4)" fill="%23FFFFFF">
-            <path d="M19 10.5h-4.5V6h-5v4.5H5v5h4.5V20h5v-4.5H19z"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">HEALTHCARE &amp; PROTECTION</text>
-        </svg>"""
-    elif "kisan" in s_lower or "farm" in c_lower or "agri" in c_lower:
-        # Agriculture / Farmer banner (Amber & Forest Green)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%2314532D" />
-              <stop offset="100%" stop-color="%2316A34A" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g5)"/>
-          <circle cx="340" cy="80" r="65" fill="%23FDE047" opacity="0.15"/>
-          <g transform="translate(178, 42) scale(1.4)" fill="%23FDE047">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" opacity="0.25"/>
-            <path d="M7 17l5-5 5 5-1.41 1.41L12 14.83l-3.59 3.58z" fill="%23FFFFFF"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">AGRICULTURE &amp; FARMERS</text>
-        </svg>"""
-    else:
-        # Default Civic Emblem Banner (Slate & Blue)
-        return """data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" viewBox="0 0 400 150">
-          <defs>
-            <linearGradient id="g0" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="%231E293B" />
-              <stop offset="100%" stop-color="%23334155" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="150" fill="url(%23g0)"/>
-          <circle cx="340" cy="75" r="70" fill="%23FFFFFF" opacity="0.06"/>
-          <g transform="translate(180, 45) scale(1.4)" fill="%2394A3B8">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-          </g>
-          <text x="20" y="125" fill="%23FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14" letter-spacing="1">GOVERNMENT WELFARE SCHEME</text>
-        </svg>"""
+
+def get_scheme_banner_image(category: str, slug: str, existing_url: str = None) -> str:
+    """Returns a real, high-resolution photographic image URL for the scheme."""
+    if existing_url and existing_url.startswith("http"):
+        return existing_url
+    if slug in DEFAULT_BANNER_IMAGES:
+        return DEFAULT_BANNER_IMAGES[slug]
+    if category in DEFAULT_BANNER_IMAGES:
+        return DEFAULT_BANNER_IMAGES[category]
+    return FALLBACK_IMAGE
 
 
 def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") -> None:
@@ -117,7 +46,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
     if not schemes:
         return
 
-    # Process items with banners and safe texts
+    # Process items with real banner images and sanitized texts
     items = []
     for s in schemes:
         slug = s.get("slug", "")
@@ -128,7 +57,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         if level != "Central" and states and "ALL" not in states:
             state_label = states[0]
 
-        banner_url = s.get("image_url") or get_scheme_banner_svg(category, slug)
+        banner_url = get_scheme_banner_image(category, slug, s.get("image_url"))
         official_url = s.get("official_url", "")
 
         name = s.get("name_hi") if lang == "hi" and s.get("name_hi") else s.get("name", "")
@@ -148,9 +77,9 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         })
 
     view_btn_text = "योजना देखें →" if lang == "hi" else "View Scheme →"
-    no_url_text = "आधिकारिक लिंक अनुपलब्ध" if lang == "hi" else "Official link unavailable"
-    central_badge = "केंद्रीय सरकार" if lang == "hi" else "Central Scheme"
-    state_badge = "राज्य सरकार" if lang == "hi" else "State Scheme"
+    no_url_text = "आधिकारिक पोर्टल" if lang == "hi" else "Official Portal"
+    central_badge = "केंद्रीय योजना" if lang == "hi" else "Central Scheme"
+    state_badge = "राज्य योजना" if lang == "hi" else "State Scheme"
 
     items_json = json.dumps(items)
 
@@ -175,7 +104,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           overflow: hidden;
         }}
 
-        .carousel-wrapper {{
+        .carousel-container {{
           position: relative;
           width: 100%;
           max-width: 1180px;
@@ -209,21 +138,33 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
           text-decoration: none;
           color: inherit;
+          cursor: pointer;
         }}
 
         .scheme-card:hover {{
-          transform: translateY(-3px);
-          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
           border-color: #CBD5E1;
         }}
 
         .card-banner {{
           width: 100%;
-          height: 128px;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          border-bottom: 1px solid #F1F5F9;
+          height: 135px;
+          overflow: hidden;
+          background: #0F172A;
+          position: relative;
+        }}
+
+        .card-banner img {{
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.35s ease;
+        }}
+
+        .scheme-card:hover .card-banner img {{
+          transform: scale(1.06);
         }}
 
         .card-body {{
@@ -242,7 +183,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
 
         .badge {{
           font-size: 0.72rem;
-          font-weight: 600;
+          font-weight: 700;
           padding: 3px 8px;
           border-radius: 9999px;
           line-height: 1.2;
@@ -261,8 +202,8 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         }}
 
         .card-title {{
-          font-size: 1.02rem;
-          font-weight: 700;
+          font-size: 0.98rem;
+          font-weight: 800;
           color: #0F172A;
           line-height: 1.35;
           margin-bottom: 8px;
@@ -270,14 +211,14 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          min-height: 2.7em;
+          min-height: 2.65em;
         }}
 
         .card-desc {{
-          font-size: 0.84rem;
+          font-size: 0.83rem;
           color: #64748B;
           line-height: 1.45;
-          margin-bottom: 16px;
+          margin-bottom: 14px;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -289,7 +230,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           margin-top: auto;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-end;
           padding-top: 10px;
           border-top: 1px solid #F1F5F9;
         }}
@@ -298,67 +239,65 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 0.86rem;
-          font-weight: 600;
+          font-size: 0.82rem;
+          font-weight: 700;
           color: #2563EB;
-          text-decoration: none;
-          cursor: pointer;
-          transition: color 0.15s ease;
+          padding: 6px 14px;
+          background: #EFF6FF;
+          border-radius: 6px;
+          border: 1px solid #DBEAFE;
+          transition: all 0.15s ease;
         }}
 
-        .btn-view:hover {{
-          color: #1D4ED8;
-          text-decoration: underline;
+        .scheme-card:hover .btn-view {{
+          background: #2563EB;
+          color: #FFFFFF;
+          border-color: #2563EB;
         }}
 
         .btn-disabled {{
+          font-size: 0.82rem;
+          font-weight: 600;
           color: #94A3B8;
-          font-size: 0.8rem;
-          font-style: italic;
         }}
 
         /* Navigation Arrows */
         .nav-btn {{
           position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
+          top: calc(50% - 15px);
           width: 38px;
           height: 38px;
           border-radius: 50%;
           background: #FFFFFF;
           border: 1px solid #CBD5E1;
           color: #1E293B;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.08);
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
-          font-size: 1.15rem;
+          font-size: 1.2rem;
           font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+          transition: all 0.15s ease;
           z-index: 10;
-          transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
         }}
 
         .nav-btn:hover {{
-          background: #F8FAFC;
-          box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-          transform: translateY(-50%) scale(1.05);
+          background: #1E293B;
+          color: #FFFFFF;
+          border-color: #1E293B;
+          transform: scale(1.08);
         }}
 
-        .nav-prev {{
-          left: 4px;
-        }}
+        .nav-btn.prev {{ left: 2px; }}
+        .nav-btn.next {{ right: 2px; }}
 
-        .nav-next {{
-          right: 4px;
-        }}
-
-        /* Pagination Indicators */
+        /* Indicator Dots */
         .dots-container {{
           display: flex;
           justify-content: center;
           align-items: center;
-          gap: 6px;
+          gap: 7px;
           margin-top: 14px;
         }}
 
@@ -368,28 +307,31 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           border-radius: 50%;
           background: #CBD5E1;
           cursor: pointer;
-          transition: background 0.2s, transform 0.2s;
+          transition: all 0.2s ease;
         }}
 
         .dot.active {{
+          width: 24px;
+          border-radius: 9999px;
           background: #2563EB;
-          width: 20px;
-          border-radius: 4px;
         }}
 
-        /* Responsive Breakpoints */
-        @media (max-width: 899px) and (min-width: 600px) {{
+        /* Responsive breakpoints: 3 on desktop, 2 on tablet, 1 on mobile */
+        @media (max-width: 900px) {{
           .scheme-card {{
             flex: 0 0 calc((100% - 18px) / 2); /* Tablet: 2 cards */
           }}
+          .carousel-container {{
+            padding: 10px 42px;
+          }}
         }}
 
-        @media (max-width: 599px) {{
-          .carousel-wrapper {{
-            padding: 10px 36px;
-          }}
+        @media (max-width: 600px) {{
           .scheme-card {{
             flex: 0 0 100%; /* Mobile: 1 card */
+          }}
+          .carousel-container {{
+            padding: 10px 36px;
           }}
           .nav-btn {{
             width: 32px;
@@ -400,14 +342,12 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
       </style>
     </head>
     <body>
-      <div class="carousel-wrapper" id="carouselWrapper">
-        <button class="nav-btn nav-prev" id="prevBtn" aria-label="Previous schemes">‹</button>
-        <button class="nav-btn nav-next" id="nextBtn" aria-label="Next schemes">›</button>
-
+      <div class="carousel-container" id="carouselWrapper">
+        <button class="nav-btn prev" id="prevBtn" aria-label="Previous scheme">‹</button>
         <div class="carousel-viewport" id="viewport">
           <div class="carousel-track" id="track"></div>
         </div>
-
+        <button class="nav-btn next" id="nextBtn" aria-label="Next scheme">›</button>
         <div class="dots-container" id="dots"></div>
       </div>
 
@@ -419,17 +359,18 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         const stateBadge = "{state_badge}";
 
         const track = document.getElementById("track");
-        const dotsContainer = document.getElementById("dots");
         const prevBtn = document.getElementById("prevBtn");
         const nextBtn = document.getElementById("nextBtn");
+        const dotsContainer = document.getElementById("dots");
+        const viewport = document.getElementById("viewport");
         const wrapper = document.getElementById("carouselWrapper");
 
         let currentIndex = 0;
         let autoScrollTimer = null;
         let isHovered = false;
 
-        // Populate cards
-        schemes.forEach((s, idx) => {{
+        // Populate cards using safe DOM methods (eliminates any string escaping or syntax bugs)
+        schemes.forEach((s) => {{
           const card = document.createElement("a");
           card.className = "scheme-card";
           if (s.has_url) {{
@@ -440,34 +381,73 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
             card.href = "javascript:void(0)";
           }}
 
-          const levelLabel = s.level === "Central" 
+          // 1. Banner with Real Image
+          const banner = document.createElement("div");
+          banner.className = "card-banner";
+          const img = document.createElement("img");
+          img.src = s.banner_url;
+          img.alt = s.name;
+          img.loading = "lazy";
+          img.onerror = function() {{
+            this.src = "{FALLBACK_IMAGE}";
+          }};
+          banner.appendChild(img);
+          card.appendChild(banner);
+
+          // 2. Card Body
+          const body = document.createElement("div");
+          body.className = "card-body";
+
+          // Badges
+          const badges = document.createElement("div");
+          badges.className = "card-badges";
+
+          const badgeCat = document.createElement("span");
+          badgeCat.className = "badge badge-cat";
+          badgeCat.textContent = s.category;
+          badges.appendChild(badgeCat);
+
+          const badgeLevel = document.createElement("span");
+          badgeLevel.className = "badge badge-level";
+          badgeLevel.textContent = s.level === "Central" 
             ? centralBadge 
             : (s.state_label ? s.state_label : stateBadge);
+          badges.appendChild(badgeLevel);
 
-          card.innerHTML = `
-            <div class="card-banner" style="background-image: url('${{s.banner_url}}');"></div>
-            <div class="card-body">
-              <div class="card-badges">
-                <span class="badge badge-cat">${{s.category}}</span>
-                <span class="badge badge-level">${{levelLabel}}</span>
-              </div>
-              <div class="card-title" title="${{s.name}}">${{s.name}}</div>
-              <div class="card-desc">${{s.desc}}</div>
-              <div class="card-action">
-                ${{s.has_url 
-                  ? `<span class="btn-view">${{viewBtnText}}</span>` 
-                  : `<span class="btn-disabled">${{noUrlText}}</span>`
-                }}
-              </div>
-            </div>
-          `;
+          body.appendChild(badges);
+
+          // Title
+          const title = document.createElement("div");
+          title.className = "card-title";
+          title.title = s.name;
+          title.textContent = s.name;
+          body.appendChild(title);
+
+          // Description
+          const desc = document.createElement("div");
+          desc.className = "card-desc";
+          desc.textContent = s.desc;
+          body.appendChild(desc);
+
+          // Action Button
+          const action = document.createElement("div");
+          action.className = "card-action";
+
+          const btn = document.createElement("span");
+          btn.className = s.has_url ? "btn-view" : "btn-disabled";
+          btn.textContent = s.has_url ? viewBtnText : noUrlText;
+          action.appendChild(btn);
+
+          body.appendChild(action);
+          card.appendChild(body);
+
           track.appendChild(card);
         }});
 
         function getVisibleCount() {{
           const width = window.innerWidth;
-          if (width < 600) return 1;
-          if (width < 900) return 2;
+          if (width <= 600) return 1;
+          if (width <= 900) return 2;
           return 3;
         }}
 
@@ -484,34 +464,26 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
             dot.className = "dot" + (i === currentIndex ? " active" : "");
             dot.addEventListener("click", () => {{
               currentIndex = i;
-              updateCarousel();
-              resetTimer();
+              updatePosition();
+              resetAutoScroll();
             }});
             dotsContainer.appendChild(dot);
           }}
         }}
 
-        function updateCarousel() {{
+        function updatePosition() {{
           const maxIdx = getMaxIndex();
-          if (currentIndex > maxIdx) currentIndex = 0;
-          if (currentIndex < 0) currentIndex = maxIdx;
+          if (currentIndex > maxIdx) currentIndex = maxIdx;
+          if (currentIndex < 0) currentIndex = 0;
 
-          const visible = getVisibleCount();
-          const cardWidthPercent = 100 / visible;
-          // Approximate shift based on card fraction + gap
-          const firstCard = track.children[0];
-          if (firstCard) {{
-            const cardWidth = firstCard.getBoundingClientRect().width;
+          const cards = track.children;
+          if (cards.length > 0) {{
+            const cardWidth = cards[0].offsetWidth;
             const gap = 18;
             const offset = currentIndex * (cardWidth + gap);
             track.style.transform = `translateX(-${{offset}}px)`;
           }}
-
-          // Update active dot
-          const dots = dotsContainer.children;
-          for (let i = 0; i < dots.length; i++) {{
-            dots[i].className = "dot" + (i === currentIndex ? " active" : "");
-          }}
+          updateDots();
         }}
 
         function nextSlide() {{
@@ -521,7 +493,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           }} else {{
             currentIndex++;
           }}
-          updateCarousel();
+          updatePosition();
         }}
 
         function prevSlide() {{
@@ -531,79 +503,82 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           }} else {{
             currentIndex--;
           }}
-          updateCarousel();
+          updatePosition();
         }}
 
-        function resetTimer() {{
-          clearInterval(autoScrollTimer);
-          if (!isHovered) {{
-            autoScrollTimer = setInterval(nextSlide, 4500);
+        function startAutoScroll() {{
+          stopAutoScroll();
+          autoScrollTimer = setInterval(() => {{
+            if (!isHovered) {{
+              nextSlide();
+            }}
+          }}, 4500);
+        }}
+
+        function stopAutoScroll() {{
+          if (autoScrollTimer) {{
+            clearInterval(autoScrollTimer);
+            autoScrollTimer = null;
           }}
         }}
 
+        function resetAutoScroll() {{
+          stopAutoScroll();
+          startAutoScroll();
+        }}
+
         // Controls
-        nextBtn.addEventListener("click", (e) => {{
-          e.stopPropagation();
+        nextBtn.addEventListener("click", () => {{
           nextSlide();
-          resetTimer();
+          resetAutoScroll();
         }});
 
-        prevBtn.addEventListener("click", (e) => {{
-          e.stopPropagation();
+        prevBtn.addEventListener("click", () => {{
           prevSlide();
-          resetTimer();
+          resetAutoScroll();
         }});
 
         // Hover pause
         wrapper.addEventListener("mouseenter", () => {{
           isHovered = true;
-          clearInterval(autoScrollTimer);
         }});
-
         wrapper.addEventListener("mouseleave", () => {{
           isHovered = false;
-          resetTimer();
         }});
 
         // Touch & Swipe Support
         let startX = 0;
         let isSwiping = false;
 
-        wrapper.addEventListener("touchstart", (e) => {{
-          isHovered = true;
-          clearInterval(autoScrollTimer);
+        viewport.addEventListener("touchstart", (e) => {{
           startX = e.touches[0].clientX;
           isSwiping = true;
+          stopAutoScroll();
         }}, {{ passive: true }});
 
-        wrapper.addEventListener("touchend", (e) => {{
+        viewport.addEventListener("touchend", (e) => {{
           if (!isSwiping) return;
           const endX = e.changedTouches[0].clientX;
           const diff = startX - endX;
           if (Math.abs(diff) > 40) {{
-            if (diff > 0) {{
-              nextSlide();
-            }} else {{
-              prevSlide();
-            }}
+            if (diff > 0) nextSlide();
+            else prevSlide();
           }}
           isSwiping = false;
-          isHovered = false;
-          resetTimer();
+          startAutoScroll();
         }}, {{ passive: true }});
 
+        // Resize handler
         window.addEventListener("resize", () => {{
-          updateDots();
-          updateCarousel();
+          updatePosition();
         }});
 
-        // Initial setup
-        updateDots();
-        updateCarousel();
-        resetTimer();
+        // Init
+        updatePosition();
+        startAutoScroll();
       </script>
     </body>
     </html>
     """
 
-    components.html(html_code, height=440, scrolling=False)
+    components.html(html_code, height=430)
