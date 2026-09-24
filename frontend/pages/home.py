@@ -95,91 +95,11 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 36px 0 28px 0;' />", unsafe_allow_html=True)
 
     # =========================================================================
-    # 3. NEXT EXISTING SECTION: GOVERNMENT SCHEMES AVAILABLE (STATISTICS)
+    # 3. CATEGORY SCHEME COUNTS (10 Verified Categories with Live DB Counts)
     # =========================================================================
     stats = get_live_db_statistics()
-    total_schemes = stats.get("total", 438)
-    central_schemes = stats.get("central", 109)
-    state_schemes = stats.get("state", 329)
     category_counts = stats.get("categories", {})
 
-    st.markdown(
-        f"""
-        <div style="background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 16px; padding: 26px 24px; margin-bottom: 26px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <span style="background: #2563EB; color: #FFFFFF; font-size: 0.78rem; font-weight: 800; letter-spacing: 1px; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase;">
-                    Verified Database Counts
-                </span>
-                <h2 style="font-size: 2.2rem; font-weight: 900; color: #0F172A; margin: 10px 0 4px 0; letter-spacing: -0.5px;">
-                    {"उपलब्ध सरकारी योजनाएं" if lang == "hi" else "GOVERNMENT SCHEMES AVAILABLE"}
-                </h2>
-                <p style="font-size: 1rem; color: #475569; margin: 0;">
-                    {"योजना सहायक डेटाबेस पर वर्तमान में उपलब्ध आधिकारिक सरकारी योजनाओं के आंकड़े" if lang == "hi" else "Live scheme counts currently indexed and verified in our database"}
-                </p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # 3 Large Statistic Cards
-    col_t1, col_t2, col_t3 = st.columns(3, gap="medium")
-
-    with col_t1:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{total_schemes}</div>
-                <div class="stat-label-hero">
-                    <span>{"कुल योजनाएं" if lang == "hi" else "TOTAL SCHEMES"}</span>
-                    <span class="arrow">→</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Browse All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", key="btn_hero_stat_total", use_container_width=True):
-            navigate_to("schemes")
-
-    with col_t2:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{central_schemes}</div>
-                <div class="stat-label-hero">
-                    <span>{"केंद्रीय योजनाएं" if lang == "hi" else "CENTRAL SCHEMES"}</span>
-                    <span class="arrow">→</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →", key="btn_hero_stat_central", use_container_width=True):
-            st.session_state.selected_level_filter = "Central"
-            navigate_to("schemes")
-
-    with col_t3:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{state_schemes}</div>
-                <div class="stat-label-hero">
-                    <span>{"राज्य / केंद्रशासित योजनाएं" if lang == "hi" else "STATE / UT SCHEMES"}</span>
-                    <span class="arrow">→</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("State / UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →", key="btn_hero_stat_state", use_container_width=True):
-            st.session_state.selected_level_filter = "State"
-            navigate_to("schemes")
-
-    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
-
-    # =========================================================================
-    # 4. CATEGORY COUNTS (10 Verified Categories with Live DB Counts)
-    # =========================================================================
     st.markdown(
         f"""
         <div style="margin-top: 10px; margin-bottom: 18px;">
