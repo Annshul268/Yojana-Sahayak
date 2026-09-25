@@ -28,9 +28,12 @@ html, body, [data-testid="stAppViewContainer"], .main {
 }
 
 /* Hide default streamlit clutter */
-header[data-testid="stHeader"] {
+header[data-testid="stHeader"],
+.stAppHeader {
   background: transparent !important;
   height: 0px !important;
+  min-height: 0px !important;
+  display: none !important;
 }
 
 div[data-testid="stToolbar"] {
@@ -42,11 +45,16 @@ footer {
   display: none !important;
 }
 
-/* Main Container Sizing */
+/* Main Container Sizing - Universal selector for all Streamlit versions */
+.block-container,
+[data-testid="stMainBlockContainer"],
+.stMainBlockContainer,
+div[data-testid="stMain"] .block-container,
+section.main .block-container,
 .main .block-container {
   max-width: 1040px !important;
   margin: 0 auto !important;
-  padding-top: 1rem !important;
+  padding-top: 1.25rem !important;
   padding-bottom: 3.5rem !important;
   padding-left: 1.5rem !important;
   padding-right: 1.5rem !important;
@@ -409,10 +417,17 @@ div[data-testid="stCustomComponentV1"]:has(> iframe[height="0"]) {
 }
 
 /* Discovery Section & Statistics */
+.hero-carousel-header {
+  text-align: left;
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+  padding: 0 !important;
+}
+
 .discovery-section-header {
   text-align: center;
-  margin-top: 2.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .discovery-title {

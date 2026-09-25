@@ -87,4 +87,4 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             if navigate_to:
                 navigate_to("profile")
 
-    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.75rem 0 2rem 0;' />", unsafe_allow_html=True)
+    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.5rem 0 1rem 0;' />", unsafe_allow_html=True)

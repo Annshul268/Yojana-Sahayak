@@ -20,15 +20,15 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     with col_left:
         st.markdown(
             f"""
-            <div style="padding: 0 0 10px 0;">
-                <div class="hero-tag-pill" style="display: inline-flex; margin-bottom: 14px;">
+            <div style="padding: 0; margin: 0;">
+                <div class="hero-tag-pill" style="display: inline-flex; margin: 0 0 10px 0;">
                     <span>✓</span>
                     <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
                 </div>
-                <h1 class="hero-headline" style="font-size: 2.45rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2; text-align: left;">
+                <h1 class="hero-headline" style="font-size: 2.45rem; font-weight: 800; margin: 0 0 12px 0; line-height: 1.2; text-align: left;">
                     {"सरकारी लाभ, सरल भाषा में समझें" if lang == "hi" else "Government benefits, explained in plain language"}
                 </h1>
-                <p class="hero-subhead" style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 22px; text-align: left; max-width: 100%;">
+                <p class="hero-subhead" style="font-size: 1.05rem; line-height: 1.6; margin: 0 0 18px 0; text-align: left; max-width: 100%;">
                     {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
                 </p>
             </div>
@@ -57,7 +57,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
         st.markdown(
             f"""
-            <div class="hero-footnote" style="text-align: left; margin-top: 14px; margin-bottom: 8px;">
+            <div class="hero-footnote" style="text-align: left; margin-top: 12px; margin-bottom: 6px;">
                 {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
             </div>
             """,
@@ -67,11 +67,11 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     with col_right:
         st.markdown(
             f"""
-            <div class="discovery-section-header" style="text-align: left; margin-bottom: 10px; padding: 0 0 4px 0;">
-                <h2 class="discovery-title" style="font-size: 1.15rem; font-weight: 800; color: #1E3A8A; margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase;">
+            <div class="hero-carousel-header" style="text-align: left; margin: 0 0 8px 0; padding: 0;">
+                <h2 class="discovery-title" style="font-size: 1.12rem; font-weight: 800; color: #1E3A8A; margin: 0 0 4px 0; letter-spacing: 0.04em; text-transform: uppercase;">
                     {"प्रमुख सरकारी योजनाएं" if lang == "hi" else "FEATURED GOVERNMENT SCHEMES"}
                 </h2>
-                <p class="discovery-subtitle" style="font-size: 0.92rem; color: #475569; margin: 0; line-height: 1.4;">
+                <p class="discovery-subtitle" style="font-size: 0.90rem; color: #475569; margin: 0; line-height: 1.4;">
                     {"भारत भर में उपलब्ध महत्वपूर्ण सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore important government schemes available across India"}
                 </p>
             </div>
