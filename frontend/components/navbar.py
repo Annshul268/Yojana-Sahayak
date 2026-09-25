@@ -10,9 +10,9 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
     lang = get_current_language()
     cur_page = st.session_state.get("current_page", "home")
 
-    # Single-line header columns
-    col_brand, col_home, col_check, col_schemes, col_lang, col_auth = st.columns(
-        [3.6, 1.0, 1.7, 1.3, 1.2, 1.2],
+    # Single-line header columns with My Applications
+    col_brand, col_home, col_check, col_schemes, col_apps, col_lang, col_auth = st.columns(
+        [2.6, 0.85, 1.4, 1.15, 1.5, 0.85, 1.2],
         gap="small",
         vertical_alignment="center",
     )
@@ -68,6 +68,23 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         ):
             if navigate_to:
                 navigate_to("schemes")
+
+    with col_apps:
+        is_active = (cur_page in ("tracker", "applications"))
+        label = "मेरे आवेदन" if lang == "hi" else "My Applications"
+        if st.button(
+            label,
+            key="nav_apps_btn",
+            type="primary" if is_active else "secondary",
+            use_container_width=True,
+        ):
+            if not st.session_state.get("is_authenticated", False):
+                st.session_state.auth_redirect_target = "tracker"
+                if navigate_to:
+                    navigate_to("profile")
+            else:
+                if navigate_to:
+                    navigate_to("tracker")
 
     with col_lang:
         # Language Switcher Pill [ EN | हि ]

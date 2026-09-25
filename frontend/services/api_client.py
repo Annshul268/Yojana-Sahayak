@@ -126,28 +126,57 @@ class APIClient:
     def remove_saved_scheme(self, scheme_id: str, user_id: str) -> Dict[str, Any]:
         return self._request("DELETE", f"/api/saved/{scheme_id}", params={"user_id": user_id})
 
-    # Application Tracking
+    # Application Tracking & My Applications
     def list_tracking(self, user_id: str) -> Dict[str, Any]:
-        return self._request("GET", "/api/tracking", params={"user_id": user_id})
+        res = self._request("GET", "/api/applications", params={"user_id": user_id})
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import get_user_applications_db
+        db_entries = get_user_applications_db(user_id=user_id)
+        return {"ok": True, "data": db_entries}
 
     def create_tracking(
         self, user_id: str, scheme_id: str, status: str = "Saved", notes: str = ""
     ) -> Dict[str, Any]:
         payload = {"user_id": user_id, "scheme_id": scheme_id, "status": status, "notes": notes}
-        return self._request("POST", "/api/tracking", json_data=payload)
+        res = self._request("POST", "/api/applications", json_data=payload)
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import add_user_application_db
+        return add_user_application_db(user_id=user_id, scheme_id=scheme_id, status=status, notes=notes)
 
     def update_tracking(
-        self, tracking_id: str, status: Optional[str] = None, notes: Optional[str] = None
+        self, tracking_id: str, user_id: str = "", status: Optional[str] = None, notes: Optional[str] = None
     ) -> Dict[str, Any]:
         payload: Dict[str, Any] = {}
         if status:
             payload["status"] = status
         if notes is not None:
             payload["notes"] = notes
-        return self._request("PUT", f"/api/tracking/{tracking_id}", json_data=payload)
+        params = {"user_id": user_id} if user_id else {}
+        res = self._request("PATCH", f"/api/applications/{tracking_id}", params=params, json_data=payload)
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import update_user_application_status_db
+        updated = update_user_application_status_db(tracking_id=tracking_id, user_id=user_id, status=status or "Saved", notes=notes)
+        return {"ok": updated}
 
-    def delete_tracking(self, tracking_id: str) -> Dict[str, Any]:
-        return self._request("DELETE", f"/api/tracking/{tracking_id}")
+    def delete_tracking(self, tracking_id: str, user_id: str = "") -> Dict[str, Any]:
+        params = {"user_id": user_id} if user_id else {}
+        res = self._request("DELETE", f"/api/applications/{tracking_id}", params=params)
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import delete_user_application_db
+        deleted = delete_user_application_db(tracking_id=tracking_id, user_id=user_id)
+        return {"ok": deleted}
+
+    def is_in_applications(self, user_id: str, scheme_id: str) -> bool:
+        from frontend.services.scheme_data import is_scheme_in_applications_db
+        return is_scheme_in_applications_db(user_id=user_id, scheme_id=scheme_id)
 
     # AI Service
     def explain_eligibility(

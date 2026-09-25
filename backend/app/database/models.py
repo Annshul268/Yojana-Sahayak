@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 from backend.app.database.connection import Base
@@ -94,6 +95,9 @@ class SavedScheme(Base):
 
 class SchemeTracking(Base):
     __tablename__ = "scheme_tracking"
+    __table_args__ = (
+        UniqueConstraint("user_id", "scheme_id", name="uq_scheme_tracking_user_scheme"),
+    )
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     user_id = Column(String(128), index=True, nullable=False)
@@ -102,8 +106,9 @@ class SchemeTracking(Base):
         String(50),
         default="Saved",
         nullable=False,
-    )  # Saved, Planning to Apply, Application Started, Applied, Completed
+    )  # Saved, Planning to Apply, Applied, Application Submitted, Completed
     notes = Column(Text, nullable=True)
+    applied_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 

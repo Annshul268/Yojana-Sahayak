@@ -222,3 +222,239 @@ def get_featured_schemes_db(limit: int = 5) -> List[Dict[str, Any]]:
         return results
     except Exception:
         return []
+
+
+def get_user_applications_db(user_id: str) -> List[Dict[str, Any]]:
+    """Retrieve all tracked applications for a specific user directly from SQLite."""
+    if not user_id:
+        return []
+
+    db_path = find_db_path()
+    if not db_path:
+        return []
+
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT 
+                t.id, t.user_id, t.scheme_id, t.status, t.notes, t.applied_at, t.created_at, t.updated_at,
+                s.slug, s.name, s.name_hi, s.description, s.description_hi, s.category, s.ministry,
+                s.level, s.states, s.official_url, s.image_url
+            FROM scheme_tracking t
+            JOIN schemes s ON t.scheme_id = s.id
+            WHERE t.user_id = ?
+            ORDER BY t.updated_at DESC, t.created_at DESC
+            """,
+            (user_id,),
+        )
+        rows = cursor.fetchall()
+        conn.close()
+
+        results = []
+        for r in rows:
+            states_val = r[16]
+            if isinstance(states_val, str):
+                try:
+                    states_val = json.loads(states_val)
+                except Exception:
+                    pass
+
+            results.append({
+                "id": r[0],
+                "user_id": r[1],
+                "scheme_id": r[2],
+                "status": r[3],
+                "notes": r[4] or "",
+                "applied_at": r[5],
+                "created_at": r[6],
+                "updated_at": r[7],
+                "added_at": r[6],
+                "scheme": {
+                    "id": r[2],
+                    "slug": r[8],
+                    "name": r[9],
+                    "name_hi": r[10],
+                    "description": r[11],
+                    "description_hi": r[12],
+                    "category": r[13],
+                    "ministry": r[14],
+                    "level": r[15],
+                    "states": states_val if isinstance(states_val, list) else [],
+                    "official_url": r[17],
+                    "image_url": r[18],
+                },
+            })
+        return results
+    except Exception:
+        return []
+
+
+def is_scheme_in_applications_db(user_id: str, scheme_id: str) -> bool:
+    """Check if a scheme is already in the citizen's applications."""
+    if not user_id or not scheme_id:
+        return False
+    db_path = find_db_path()
+    if not db_path:
+        return False
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT 1 FROM scheme_tracking WHERE user_id = ? AND scheme_id = ? LIMIT 1",
+            (user_id, scheme_id),
+        )
+        found = cursor.fetchone() is not None
+        conn.close()
+        return found
+    except Exception:
+        return False
+
+
+def add_user_application_db(
+    user_id: str, scheme_id: str, status: str = "Saved", notes: str = ""
+) -> Dict[str, Any]:
+    """Add a scheme to the user's applications or return existing."""
+    import uuid
+    from datetime import datetime, timezone
+
+    if not user_id or not scheme_id:
+        return {"ok": False, "error": "Missing user_id or scheme_id"}
+    db_path = find_db_path()
+    if not db_path:
+        return {"ok": False, "error": "Database not found"}
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, status, notes, created_at FROM scheme_tracking WHERE user_id = ? AND scheme_id = ?",
+            (user_id, scheme_id),
+        )
+        existing = cursor.fetchone()
+        now_str = datetime.now(timezone.utc).isoformat()
+        if existing:
+            conn.close()
+            return {
+                "ok": True,
+                "data": {
+                    "id": existing[0],
+                    "user_id": user_id,
+                    "scheme_id": scheme_id,
+                    "status": existing[1],
+                    "notes": existing[2],
+                    "created_at": existing[3],
+                },
+                "already_existed": True,
+            }
+
+        app_id = str(uuid.uuid4())
+        applied_at = now_str if status in ("Applied", "Application Submitted") else None
+        cursor.execute(
+            """
+            INSERT INTO scheme_tracking (id, user_id, scheme_id, status, notes, applied_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (app_id, user_id, scheme_id, status, notes, applied_at, now_str, now_str),
+        )
+        conn.commit()
+        conn.close()
+        return {
+            "ok": True,
+            "data": {
+                "id": app_id,
+                "user_id": user_id,
+                "scheme_id": scheme_id,
+                "status": status,
+                "notes": notes,
+                "applied_at": applied_at,
+                "created_at": now_str,
+                "updated_at": now_str,
+            },
+            "already_existed": False,
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+def update_user_application_status_db(
+    tracking_id: str, user_id: str, status: str, notes: Optional[str] = None
+) -> bool:
+    """Update application tracking status with user isolation."""
+    from datetime import datetime, timezone
+
+    if not tracking_id or not user_id:
+        return False
+    db_path = find_db_path()
+    if not db_path:
+        return False
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        now_str = datetime.now(timezone.utc).isoformat()
+        if status in ("Applied", "Application Submitted"):
+            if notes is not None:
+                cursor.execute(
+                    """
+                    UPDATE scheme_tracking
+                    SET status = ?, notes = ?, applied_at = COALESCE(applied_at, ?), updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    (status, notes, now_str, now_str, tracking_id, user_id),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE scheme_tracking
+                    SET status = ?, applied_at = COALESCE(applied_at, ?), updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    (status, now_str, now_str, tracking_id, user_id),
+                )
+        else:
+            if notes is not None:
+                cursor.execute(
+                    """
+                    UPDATE scheme_tracking
+                    SET status = ?, notes = ?, updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    (status, notes, now_str, tracking_id, user_id),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE scheme_tracking
+                    SET status = ?, updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    (status, now_str, tracking_id, user_id),
+                )
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+    except Exception:
+        return False
+
+
+def delete_user_application_db(tracking_id: str, user_id: str) -> bool:
+    """Delete an application record strictly for the authenticated user."""
+    if not tracking_id or not user_id:
+        return False
+    db_path = find_db_path()
+    if not db_path:
+        return False
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM scheme_tracking WHERE id = ? AND user_id = ?",
+            (tracking_id, user_id),
+        )
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+        return deleted
+    except Exception:
+        return False

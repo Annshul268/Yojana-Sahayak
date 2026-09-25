@@ -125,18 +125,42 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
             use_container_width=True,
         )
     with col_act2:
-        if st.button("📋 " + ("आवेदनों में जोड़ें" if lang == "hi" else "Add to My Applications"), use_container_width=True):
-            track_res = api_client.create_tracking(
-                user_id=user_id,
-                scheme_id=scheme["id"],
-                status="Planning to Apply",
-                notes=f"Added from {name}",
-            )
-            if track_res["ok"]:
-                st.toast("Added to Applications tracker! ✅")
-                navigate_to("tracker")
-            else:
-                st.error("Could not add to tracker. Please verify connection.")
+        is_already_added = api_client.is_in_applications(user_id=user_id, scheme_id=scheme["id"])
+        just_added = st.session_state.get(f"just_added_{scheme['id']}", False)
+
+        if is_already_added or just_added:
+            col_b1, col_b2 = st.columns([1.1, 1], gap="small")
+            with col_b1:
+                badge_label = "✓ " + (
+                    "आवेदनों में जोड़ा गया"
+                    if lang == "hi"
+                    else ("Added to My Applications" if just_added else "Already in My Applications")
+                )
+                st.button(badge_label, disabled=True, use_container_width=True, key=f"app_status_btn_{scheme['id']}")
+            with col_b2:
+                view_apps_label = "मेरे आवेदन →" if lang == "hi" else "View My Applications →"
+                if st.button(view_apps_label, type="primary", use_container_width=True, key=f"view_apps_btn_{scheme['id']}"):
+                    navigate_to("tracker")
+        else:
+            add_label = "📋 " + ("आवेदनों में जोड़ें" if lang == "hi" else "Add to My Applications")
+            if st.button(add_label, use_container_width=True, key=f"add_app_btn_{scheme['id']}"):
+                if not st.session_state.get("is_authenticated", False):
+                    st.session_state.auth_redirect_target = "scheme_details"
+                    st.toast("Please sign in to add to My Applications 👤")
+                    navigate_to("profile")
+                else:
+                    track_res = api_client.create_tracking(
+                        user_id=user_id,
+                        scheme_id=scheme["id"],
+                        status="Saved",
+                        notes=f"Added from {name}",
+                    )
+                    if track_res.get("ok"):
+                        st.session_state[f"just_added_{scheme['id']}"] = True
+                        st.toast("Added to My Applications! ✅")
+                        st.rerun()
+                    else:
+                        st.error("Could not add to My Applications. Please try again.")
 
     st.markdown("<div style='height: 2.5rem;'></div>", unsafe_allow_html=True)
 

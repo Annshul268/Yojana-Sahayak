@@ -62,6 +62,14 @@ async def init_db() -> None:
                 await conn.execute(text(f"ALTER TABLE schemes ADD COLUMN {col_name} {typedef}"))
             except Exception:
                 pass  # column already exists
+        try:
+            await conn.execute(text("ALTER TABLE scheme_tracking ADD COLUMN applied_at DATETIME DEFAULT NULL"))
+        except Exception:
+            pass
+        try:
+            await conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_scheme_tracking_user_scheme ON scheme_tracking(user_id, scheme_id)"))
+        except Exception:
+            pass
     logger.info("Database schema initialized successfully.")
 
 

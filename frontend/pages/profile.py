@@ -1,4 +1,4 @@
-"""Clean Citizen Profile view."""
+"""Citizen Profile & Authentication Management View."""
 
 from typing import Callable
 import streamlit as st
@@ -9,29 +9,133 @@ from frontend.utils.i18n import get_current_language, t
 
 def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
-    user_id = st.session_state.get("user_id", "citizen_user_1")
+    is_authenticated = bool(st.session_state.get("is_authenticated", False))
+    user_id = st.session_state.get("user_id", "")
+    user_name = st.session_state.get("user_name", "Citizen")
 
+    # Header
     st.markdown(
         f"""
         <div style="margin-bottom: 1.5rem;">
-            <h2 style="color: #1E3A8A; font-weight: 700; margin-bottom: 4px;">
-                {"मेरी प्रोफ़ाइल" if lang == "hi" else "My Profile"}
-            </h2>
-            <p style="color: #6B7280; font-size: 0.95rem;">
-                {"अपने बुनियादी विवरण अद्यतित रखें ताकि आपको सही योजनाओं की सिफारिशें मिल सकें।" if lang == "hi" else "Keep your details up to date for accurate automatic scheme recommendations."}
+            <h1 style="color: #1E3A8A; font-size: 2.1rem; font-weight: 800; margin-bottom: 4px;">
+                {"नागरिक प्रोफ़ाइल एवं खाता" if lang == "hi" else "Citizen Profile & Account"}
+            </h1>
+            <p style="color: #64748B; font-size: 0.95rem;">
+                {"अपने आवेदन और प्रोफ़ाइल विवरण को सुरक्षित रूप से प्रबंधित करें।" if lang == "hi" else "Manage your personal profile, applications, and authentication settings securely."}
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    # 1. Authentication Status / Sign In Box
+    if not is_authenticated:
+        st.markdown(
+            f"""
+            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.75rem; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span style="font-size: 1.5rem;">👤</span>
+                    <h3 style="color: #0F172A; margin: 0; font-weight: 700;">
+                        {"साइन इन करें" if lang == "hi" else "Sign In to Your Citizen Account"}
+                    </h3>
+                </div>
+                <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 16px;">
+                    {"अपने आवेदनों को ट्रैक करने और व्यक्तिगत सिफारिशें प्राप्त करने के लिए साइन इन करें।" if lang == "hi" else "Sign in to track your government applications, access bookmarks, and receive personalized scheme eligibility."}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        col_l1, col_l2 = st.columns(2, gap="large")
+        with col_l1:
+            st.markdown("##### " + ("विवरण दर्ज करें" if lang == "hi" else "Enter Account Details"))
+            sign_name = st.text_input("Full Name", value="Aarav Sharma", key="prof_sign_name")
+            sign_uid = st.text_input("Citizen ID / Mobile Number", value="citizen_user_1", key="prof_sign_uid")
+
+            if st.button("Sign In →" if lang != "hi" else "साइन इन करें →", type="primary", use_container_width=True, key="btn_prof_signin"):
+                st.session_state.is_authenticated = True
+                st.session_state.user_id = sign_uid or "citizen_user_1"
+                st.session_state.user_name = sign_name or "Citizen"
+                target = st.session_state.pop("auth_redirect_target", None)
+                st.toast(f"Welcome, {sign_name}! 🎉")
+                if target:
+                    navigate_to(target)
+                else:
+                    st.rerun()
+
+        with col_l2:
+            st.markdown("##### " + ("डेमो खाते" if lang == "hi" else "Quick Demo Accounts"))
+            st.caption("Switch between demo citizen profiles to test application isolation:")
+
+            if st.button("👤 Sign in as Citizen 1: Aarav Sharma (Delhi)", use_container_width=True, key="btn_demo_u1"):
+                st.session_state.is_authenticated = True
+                st.session_state.user_id = "citizen_user_1"
+                st.session_state.user_name = "Aarav Sharma"
+                target = st.session_state.pop("auth_redirect_target", None)
+                st.toast("Signed in as Aarav Sharma! 🎉")
+                if target:
+                    navigate_to(target)
+                else:
+                    st.rerun()
+
+            if st.button("👤 Sign in as Citizen 2: Priya Patel (Maharashtra)", use_container_width=True, key="btn_demo_u2"):
+                st.session_state.is_authenticated = True
+                st.session_state.user_id = "citizen_user_2"
+                st.session_state.user_name = "Priya Patel"
+                target = st.session_state.pop("auth_redirect_target", None)
+                st.toast("Signed in as Priya Patel! 🎉")
+                if target:
+                    navigate_to(target)
+                else:
+                    st.rerun()
+        st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;' />", unsafe_allow_html=True)
+        return
+
+    # User IS Authenticated
+    col_acc1, col_acc2, col_acc3 = st.columns([4, 2, 2], gap="small")
+    with col_acc1:
+        st.markdown(
+            f"""
+            <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 10px; padding: 12px 18px;">
+                <div style="font-size: 0.82rem; color: #1D4ED8; font-weight: 700; text-transform: uppercase;">
+                    ✓ {"सक्रिय नागरिक खाता" if lang == "hi" else "Active Citizen Session"}
+                </div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">
+                    {user_name}
+                </div>
+                <div style="font-size: 0.85rem; color: #64748B;">
+                    Citizen ID: <code>{user_id}</code>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_acc2:
+        if st.button("📋 " + ("मेरे आवेदन" if lang == "hi" else "My Applications"), use_container_width=True, key="prof_to_apps"):
+            navigate_to("tracker")
+        if st.button("⭐ " + ("सहेजी गई योजनाएं" if lang == "hi" else "Saved Schemes"), use_container_width=True, key="prof_to_saved"):
+            navigate_to("saved")
+    with col_acc3:
+        if st.button("🚪 " + ("साइन आउट" if lang == "hi" else "Sign Out"), type="secondary", use_container_width=True, key="prof_signout_btn"):
+            st.session_state.is_authenticated = False
+            st.session_state.user_id = ""
+            st.session_state.user_name = "Citizen"
+            st.toast("Signed out successfully. 👋")
+            st.rerun()
+
+    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;' />", unsafe_allow_html=True)
+
+    # 2. Profile Details Form
     res = api_client.get_profile(user_id=user_id)
-    prof = res["data"] if res["ok"] else {}
+    prof = res["data"] if res.get("ok") else {}
+
+    st.markdown("### " + ("व्यक्तिगत विवरण" if lang == "hi" else "Personal Eligibility Profile"))
 
     with st.form("clean_profile_form"):
         col1, col2 = st.columns(2)
         with col1:
-            name = st.text_input("Name", value=prof.get("name", "Citizen"))
+            name = st.text_input("Name", value=prof.get("name") or user_name)
             age = st.number_input("Age", min_value=0, max_value=120, value=int(prof.get("age") or 25))
             genders = ["Female", "Male", "Transgender", "Prefer not to say"]
             g_idx = genders.index(prof.get("gender")) if prof.get("gender") in genders else 0
@@ -88,7 +192,7 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
         st.caption("Restricted to verified department administrators.")
         admin_pass = st.text_input("Enter Admin Access Code:", type="password")
         if st.button("Access Admin Dashboard"):
-            if admin_pass == "admin" or admin_pass == "yojana2026":
+            if admin_pass in ("admin", "yojana2026"):
                 st.session_state.is_admin = True
                 navigate_to("admin")
             else:

@@ -46,6 +46,8 @@ if "lang" not in st.session_state:
     st.session_state.lang = "en"
 if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = True
 
 
 def navigate_to(page_name: str) -> None:
@@ -71,7 +73,7 @@ elif page == "scheme_details":
     render_scheme_details(navigate_to)
 elif page == "saved":
     render_saved_schemes(navigate_to)
-elif page == "tracker":
+elif page in ("tracker", "applications"):
     render_application_tracker(navigate_to)
 elif page == "profile":
     render_citizen_profile(navigate_to)

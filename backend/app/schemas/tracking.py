@@ -39,8 +39,13 @@ class SchemeTrackingResponse(BaseModel):
     scheme_id: str
     status: str
     notes: Optional[str] = None
+    applied_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     scheme: Optional[SchemeResponse] = None
+
+    @property
+    def added_at(self) -> Optional[datetime]:
+        return self.created_at
 
     model_config = ConfigDict(from_attributes=True)
