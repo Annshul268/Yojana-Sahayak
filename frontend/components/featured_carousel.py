@@ -1,14 +1,15 @@
-"""Featured Government Schemes auto-scrolling responsive carousel component.
+"""Single-Scheme Featured Government Schemes responsive auto-scrolling carousel component.
 
-Provides clean, real-image scheme cards with touch/mouse swipe, left/right arrows,
-auto-scroll, responsive 3/2/1 card layouts, and direct official scheme URLs.
+Displays exactly ONE scheme card at a time with real photographic banner image,
+smooth transitions, previous/next navigation arrows, indicator dots, touch/mouse swipe,
+auto-scroll every 4.5 seconds, and direct links to official government portals.
 """
 
 import json
 from typing import Any, Dict, List
 import streamlit.components.v1 as components
 
-# High-resolution, real photographic images for government sectors
+# Real high-resolution photographic banners for government sectors
 DEFAULT_BANNER_IMAGES = {
     "pm-kisan": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=700&q=80",
     "ayushman-bharat-pmjay": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80",
@@ -42,11 +43,10 @@ def get_scheme_banner_image(category: str, slug: str, existing_url: str = None) 
 
 
 def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") -> None:
-    """Renders a self-contained HTML/CSS/JavaScript auto-scrolling scheme carousel."""
+    """Renders a single-scheme carousel showing exactly ONE card at a time with navigation."""
     if not schemes:
         return
 
-    # Process items with real banner images and sanitized texts
     items = []
     for s in schemes:
         slug = s.get("slug", "")
@@ -62,8 +62,8 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
 
         name = s.get("name_hi") if lang == "hi" and s.get("name_hi") else s.get("name", "")
         desc = s.get("description_hi") if lang == "hi" and s.get("description_hi") else s.get("description", "")
-        if len(desc) > 130:
-            desc = desc[:127] + "..."
+        if len(desc) > 140:
+            desc = desc[:137] + "..."
 
         items.append({
             "name": name,
@@ -104,52 +104,44 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           overflow: hidden;
         }}
 
-        .carousel-container {{
+        .single-carousel-wrapper {{
           position: relative;
           width: 100%;
-          max-width: 1180px;
+          max-width: 100%;
           margin: 0 auto;
-          padding: 10px 48px;
         }}
 
         .carousel-viewport {{
           overflow: hidden;
           width: 100%;
           border-radius: 14px;
+          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+          border: 1px solid #E2E8F0;
+          background: #FFFFFF;
         }}
 
         .carousel-track {{
           display: flex;
-          transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-          gap: 18px;
+          width: 100%;
+          transition: transform 0.42s cubic-bezier(0.25, 1, 0.5, 1);
           will-change: transform;
         }}
 
-        /* Card element */
+        /* Exactly ONE card takes 100% of viewport */
         .scheme-card {{
-          flex: 0 0 calc((100% - 36px) / 3); /* Desktop: 3 cards */
+          flex: 0 0 100%;
+          width: 100%;
           background: #FFFFFF;
-          border: 1px solid #E2E8F0;
-          border-radius: 12px;
-          overflow: hidden;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
           text-decoration: none;
           color: inherit;
           cursor: pointer;
         }}
 
-        .scheme-card:hover {{
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-          border-color: #CBD5E1;
-        }}
-
         .card-banner {{
           width: 100%;
-          height: 135px;
+          height: 185px;
           overflow: hidden;
           background: #0F172A;
           position: relative;
@@ -164,11 +156,11 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         }}
 
         .scheme-card:hover .card-banner img {{
-          transform: scale(1.06);
+          transform: scale(1.05);
         }}
 
         .card-body {{
-          padding: 16px;
+          padding: 18px 20px 14px 20px;
           display: flex;
           flex-direction: column;
           flex: 1;
@@ -182,9 +174,9 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         }}
 
         .badge {{
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           font-weight: 700;
-          padding: 3px 8px;
+          padding: 3px 9px;
           border-radius: 9999px;
           line-height: 1.2;
         }}
@@ -202,7 +194,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         }}
 
         .card-title {{
-          font-size: 0.98rem;
+          font-size: 1.15rem;
           font-weight: 800;
           color: #0F172A;
           line-height: 1.35;
@@ -211,26 +203,24 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          min-height: 2.65em;
+          min-height: 2.7em;
         }}
 
         .card-desc {{
-          font-size: 0.83rem;
+          font-size: 0.88rem;
           color: #64748B;
-          line-height: 1.45;
+          line-height: 1.5;
           margin-bottom: 14px;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          flex: 1;
         }}
 
-        .card-action {{
-          margin-top: auto;
+        .card-footer {{
           display: flex;
           align-items: center;
-          justify-content: flex-end;
+          justify-content: space-between;
           padding-top: 10px;
           border-top: 1px solid #F1F5F9;
         }}
@@ -239,7 +229,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 0.82rem;
+          font-size: 0.86rem;
           font-weight: 700;
           color: #2563EB;
           padding: 6px 14px;
@@ -255,55 +245,45 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           border-color: #2563EB;
         }}
 
-        .btn-disabled {{
-          font-size: 0.82rem;
-          font-weight: 600;
-          color: #94A3B8;
+        /* Carousel Navigation Controls */
+        .controls-row {{
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }}
 
-        /* Navigation Arrows */
-        .nav-btn {{
-          position: absolute;
-          top: calc(50% - 15px);
-          width: 38px;
-          height: 38px;
+        .nav-arrow {{
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
-          background: #FFFFFF;
+          background: #F1F5F9;
           border: 1px solid #CBD5E1;
           color: #1E293B;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.2rem;
+          font-size: 1rem;
           font-weight: bold;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
           transition: all 0.15s ease;
-          z-index: 10;
         }}
 
-        .nav-btn:hover {{
+        .nav-arrow:hover {{
           background: #1E293B;
           color: #FFFFFF;
           border-color: #1E293B;
           transform: scale(1.08);
         }}
 
-        .nav-btn.prev {{ left: 2px; }}
-        .nav-btn.next {{ right: 2px; }}
-
-        /* Indicator Dots */
-        .dots-container {{
+        .dots-row {{
           display: flex;
-          justify-content: center;
           align-items: center;
-          gap: 7px;
-          margin-top: 14px;
+          gap: 6px;
         }}
 
         .dot {{
-          width: 8px;
-          height: 8px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           background: #CBD5E1;
           cursor: pointer;
@@ -311,44 +291,17 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         }}
 
         .dot.active {{
-          width: 24px;
+          width: 20px;
           border-radius: 9999px;
           background: #2563EB;
-        }}
-
-        /* Responsive breakpoints: 3 on desktop, 2 on tablet, 1 on mobile */
-        @media (max-width: 900px) {{
-          .scheme-card {{
-            flex: 0 0 calc((100% - 18px) / 2); /* Tablet: 2 cards */
-          }}
-          .carousel-container {{
-            padding: 10px 42px;
-          }}
-        }}
-
-        @media (max-width: 600px) {{
-          .scheme-card {{
-            flex: 0 0 100%; /* Mobile: 1 card */
-          }}
-          .carousel-container {{
-            padding: 10px 36px;
-          }}
-          .nav-btn {{
-            width: 32px;
-            height: 32px;
-            font-size: 1rem;
-          }}
         }}
       </style>
     </head>
     <body>
-      <div class="carousel-container" id="carouselWrapper">
-        <button class="nav-btn prev" id="prevBtn" aria-label="Previous scheme">‹</button>
+      <div class="single-carousel-wrapper" id="carouselWrapper">
         <div class="carousel-viewport" id="viewport">
           <div class="carousel-track" id="track"></div>
         </div>
-        <button class="nav-btn next" id="nextBtn" aria-label="Next scheme">›</button>
-        <div class="dots-container" id="dots"></div>
       </div>
 
       <script>
@@ -359,18 +312,16 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         const stateBadge = "{state_badge}";
 
         const track = document.getElementById("track");
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-        const dotsContainer = document.getElementById("dots");
         const viewport = document.getElementById("viewport");
         const wrapper = document.getElementById("carouselWrapper");
 
         let currentIndex = 0;
         let autoScrollTimer = null;
         let isHovered = false;
+        const total = schemes.length;
 
-        // Populate cards using safe DOM methods (eliminates any string escaping or syntax bugs)
-        schemes.forEach((s) => {{
+        // Build single scheme cards
+        schemes.forEach((s, idx) => {{
           const card = document.createElement("a");
           card.className = "scheme-card";
           if (s.has_url) {{
@@ -381,7 +332,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
             card.href = "javascript:void(0)";
           }}
 
-          // 1. Banner with Real Image
+          // 1. Photographic Banner Image
           const banner = document.createElement("div");
           banner.className = "card-banner";
           const img = document.createElement("img");
@@ -429,80 +380,89 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           desc.textContent = s.desc;
           body.appendChild(desc);
 
-          // Action Button
-          const action = document.createElement("div");
-          action.className = "card-action";
+          // Footer with View button & Arrows / Dots
+          const footer = document.createElement("div");
+          footer.className = "card-footer";
 
           const btn = document.createElement("span");
           btn.className = s.has_url ? "btn-view" : "btn-disabled";
           btn.textContent = s.has_url ? viewBtnText : noUrlText;
-          action.appendChild(btn);
+          footer.appendChild(btn);
 
-          body.appendChild(action);
+          // Controls row: [ ← ] [ ● ● ● ] [ → ]
+          const controls = document.createElement("div");
+          controls.className = "controls-row";
+
+          const prevArrow = document.createElement("button");
+          prevArrow.className = "nav-arrow";
+          prevArrow.type = "button";
+          prevArrow.setAttribute("aria-label", "Previous");
+          prevArrow.textContent = "←";
+          prevArrow.addEventListener("click", (e) => {{
+            e.preventDefault();
+            e.stopPropagation();
+            prevSlide();
+            resetAutoScroll();
+          }});
+          controls.appendChild(prevArrow);
+
+          const dotsContainer = document.createElement("div");
+          dotsContainer.className = "dots-row";
+          dotsContainer.id = "dots-" + idx;
+          controls.appendChild(dotsContainer);
+
+          const nextArrow = document.createElement("button");
+          nextArrow.className = "nav-arrow";
+          nextArrow.type = "button";
+          nextArrow.setAttribute("aria-label", "Next");
+          nextArrow.textContent = "→";
+          nextArrow.addEventListener("click", (e) => {{
+            e.preventDefault();
+            e.stopPropagation();
+            nextSlide();
+            resetAutoScroll();
+          }});
+          controls.appendChild(nextArrow);
+
+          footer.appendChild(controls);
+          body.appendChild(footer);
           card.appendChild(body);
 
           track.appendChild(card);
         }});
 
-        function getVisibleCount() {{
-          const width = window.innerWidth;
-          if (width <= 600) return 1;
-          if (width <= 900) return 2;
-          return 3;
-        }}
-
-        function getMaxIndex() {{
-          const visible = getVisibleCount();
-          return Math.max(0, schemes.length - visible);
-        }}
-
         function updateDots() {{
-          dotsContainer.innerHTML = "";
-          const maxIdx = getMaxIndex();
-          for (let i = 0; i <= maxIdx; i++) {{
-            const dot = document.createElement("div");
-            dot.className = "dot" + (i === currentIndex ? " active" : "");
-            dot.addEventListener("click", () => {{
-              currentIndex = i;
-              updatePosition();
-              resetAutoScroll();
-            }});
-            dotsContainer.appendChild(dot);
+          for (let idx = 0; idx < total; idx++) {{
+            const dotsEl = document.getElementById("dots-" + idx);
+            if (!dotsEl) continue;
+            dotsEl.innerHTML = "";
+            for (let i = 0; i < total; i++) {{
+              const dot = document.createElement("div");
+              dot.className = "dot" + (i === currentIndex ? " active" : "");
+              dot.addEventListener("click", (e) => {{
+                e.preventDefault();
+                e.stopPropagation();
+                currentIndex = i;
+                updatePosition();
+                resetAutoScroll();
+              }});
+              dotsEl.appendChild(dot);
+            }}
           }}
         }}
 
         function updatePosition() {{
-          const maxIdx = getMaxIndex();
-          if (currentIndex > maxIdx) currentIndex = maxIdx;
-          if (currentIndex < 0) currentIndex = 0;
-
-          const cards = track.children;
-          if (cards.length > 0) {{
-            const cardWidth = cards[0].offsetWidth;
-            const gap = 18;
-            const offset = currentIndex * (cardWidth + gap);
-            track.style.transform = `translateX(-${{offset}}px)`;
-          }}
+          track.style.transform = `translateX(-${{currentIndex * 100}}%)`;
           updateDots();
         }}
 
         function nextSlide() {{
-          const maxIdx = getMaxIndex();
-          if (currentIndex >= maxIdx) {{
-            currentIndex = 0;
-          }} else {{
-            currentIndex++;
-          }}
+          currentIndex = (currentIndex + 1) % total;
           updatePosition();
         }}
 
         function prevSlide() {{
-          const maxIdx = getMaxIndex();
-          if (currentIndex <= 0) {{
-            currentIndex = maxIdx;
-          }} else {{
-            currentIndex--;
-          }}
+          currentIndex = (currentIndex - 1 + total) % total;
           updatePosition();
         }}
 
@@ -526,17 +486,6 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           stopAutoScroll();
           startAutoScroll();
         }}
-
-        // Controls
-        nextBtn.addEventListener("click", () => {{
-          nextSlide();
-          resetAutoScroll();
-        }});
-
-        prevBtn.addEventListener("click", () => {{
-          prevSlide();
-          resetAutoScroll();
-        }});
 
         // Hover pause
         wrapper.addEventListener("mouseenter", () => {{
@@ -568,11 +517,6 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           startAutoScroll();
         }}, {{ passive: true }});
 
-        // Resize handler
-        window.addEventListener("resize", () => {{
-          updatePosition();
-        }});
-
         // Init
         updatePosition();
         startAutoScroll();
@@ -581,4 +525,4 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
     </html>
     """
 
-    components.html(html_code, height=430)
+    components.html(html_code, height=450)

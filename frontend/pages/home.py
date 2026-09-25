@@ -12,87 +12,85 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
 
     # =========================================================================
-    # 1. HERO SECTION (PREVIOUS SECTION)
+    # 1. TOP ROW: BENEFITS (LEFT) & FEATURED SCHEMES CAROUSEL (RIGHT)
+    # Side-by-side on desktop, naturally stacking on mobile
     # =========================================================================
-    st.markdown(
-        f"""
-        <div style="max-width: 880px; margin: 0 auto; text-align: center; padding: 20px 10px 6px 10px;">
-            <div class="hero-tag-pill" style="display: inline-flex; margin-bottom: 16px;">
-                <span>✓</span>
-                <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
+    col_left, col_right = st.columns([5.2, 4.8], gap="large")
+
+    with col_left:
+        st.markdown(
+            f"""
+            <div style="padding: 0 0 10px 0;">
+                <div class="hero-tag-pill" style="display: inline-flex; margin-bottom: 14px;">
+                    <span>✓</span>
+                    <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
+                </div>
+                <h1 class="hero-headline" style="font-size: 2.45rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2; text-align: left;">
+                    {"सरकारी लाभ, सरल भाषा में समझें" if lang == "hi" else "Government benefits, explained in plain language"}
+                </h1>
+                <p class="hero-subhead" style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 22px; text-align: left; max-width: 100%;">
+                    {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
+                </p>
             </div>
-            <h1 class="hero-headline" style="font-size: 2.85rem; margin-bottom: 16px; line-height: 1.18;">
-                {"सरकारी लाभ, सरल भाषा में समझें" if lang == "hi" else "Government benefits, explained in plain language"}
-            </h1>
-            <p class="hero-subhead" style="font-size: 1.12rem; max-width: 760px; margin: 0 auto 24px auto;">
-                {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    # Action buttons centered
-    col_b_spacer1, col_b1, col_b2, col_b_spacer2 = st.columns([1.5, 2, 2, 1.5])
-    with col_b1:
-        if st.button(
-            "पात्रता जांचें →" if lang == "hi" else "Check my eligibility →",
-            type="primary",
-            use_container_width=True,
-            key="hero_check_eligibility_btn",
-        ):
-            navigate_to("finder")
+        col_b1, col_b2 = st.columns([1.1, 1], gap="small")
+        with col_b1:
+            if st.button(
+                "पात्रता जांचें →" if lang == "hi" else "Check my eligibility →",
+                type="primary",
+                use_container_width=True,
+                key="hero_check_eligibility_btn",
+            ):
+                navigate_to("finder")
 
-    with col_b2:
-        if st.button(
-            "सभी योजनाएं" if lang == "hi" else "Browse all schemes",
-            type="secondary",
-            use_container_width=True,
-            key="hero_browse_schemes_btn",
-        ):
-            navigate_to("schemes")
+        with col_b2:
+            if st.button(
+                "सभी योजनाएं" if lang == "hi" else "Browse all schemes",
+                type="secondary",
+                use_container_width=True,
+                key="hero_browse_schemes_btn",
+            ):
+                navigate_to("schemes")
 
-    st.markdown(
-        f"""
-        <div class="hero-footnote" style="text-align: center; margin-top: 14px; margin-bottom: 6px;">
-            {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            f"""
+            <div class="hero-footnote" style="text-align: left; margin-top: 14px; margin-bottom: 8px;">
+                {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 32px 0 26px 0;' />", unsafe_allow_html=True)
+    with col_right:
+        st.markdown(
+            f"""
+            <div class="discovery-section-header" style="text-align: left; margin-bottom: 10px; padding: 0 0 4px 0;">
+                <h2 class="discovery-title" style="font-size: 1.15rem; font-weight: 800; color: #1E3A8A; margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase;">
+                    {"प्रमुख सरकारी योजनाएं" if lang == "hi" else "FEATURED GOVERNMENT SCHEMES"}
+                </h2>
+                <p class="discovery-subtitle" style="font-size: 0.92rem; color: #475569; margin: 0; line-height: 1.4;">
+                    {"भारत भर में उपलब्ध महत्वपूर्ण सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore important government schemes available across India"}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    # =========================================================================
-    # 2. FEATURED GOVERNMENT SCHEMES CAROUSEL
-    # Replaces the Categories Covered block
-    # =========================================================================
-    st.markdown(
-        f"""
-        <div class="discovery-section-header" style="text-align: center; margin-bottom: 6px;">
-            <h2 class="discovery-title" style="font-size: 2rem; font-weight: 800; color: #0F172A; margin-bottom: 4px; letter-spacing: -0.3px;">
-                {"प्रमुख सरकारी योजनाएं" if lang == "hi" else "FEATURED GOVERNMENT SCHEMES"}
-            </h2>
-            <p class="discovery-subtitle" style="font-size: 1rem; color: #475569; margin: 0;">
-                {"भारत भर में उपलब्ध महत्वपूर्ण सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore important government schemes available across India"}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        # Resilient featured schemes retrieval with verified images
+        featured_schemes = get_featured_schemes_db(limit=5)
+        if not featured_schemes:
+            featured_res = api_client.get_featured_schemes(limit=5)
+            featured_schemes = featured_res.get("data", []) if featured_res.get("ok") else []
 
-    # Resilient featured schemes retrieval with verified images
-    featured_schemes = get_featured_schemes_db(limit=5)
-    if not featured_schemes:
-        featured_res = api_client.get_featured_schemes(limit=5)
-        featured_schemes = featured_res.get("data", []) if featured_res.get("ok") else []
+        if featured_schemes:
+            render_featured_carousel(featured_schemes, lang=lang)
+        else:
+            st.info("Featured schemes are currently loading...")
 
-    if featured_schemes:
-        render_featured_carousel(featured_schemes, lang=lang)
-    else:
-        st.info("Featured schemes are currently loading...")
-
-    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 36px 0 28px 0;' />", unsafe_allow_html=True)
+    st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 34px 0 28px 0;' />", unsafe_allow_html=True)
 
     # =========================================================================
     # 3. SCHEME COUNTERS (Total Schemes | Central Schemes | State/UT Schemes)
