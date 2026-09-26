@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_data"
     GROQ_API_KEY: Optional[str] = None
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     DATAGOV_API_KEY: Optional[str] = None
 
 

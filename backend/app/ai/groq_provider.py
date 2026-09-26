@@ -1,7 +1,7 @@
-"""Groq AI Provider implementation using Llama models."""
+"""Groq AI Provider implementation using supported Groq models."""
 
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 from backend.app.ai.provider import AIProvider
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
@@ -13,11 +13,15 @@ except ImportError:
 
 
 class GroqProvider(AIProvider):
-    """Integrates with Groq API running high-speed Llama models."""
+    """Integrates with Groq API running high-speed LLM models."""
 
-    def __init__(self, model_name: str = "llama-3.3-70b-versatile"):
+    def __init__(self, model_name: Optional[str] = None):
         self.api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY")
-        self.model_name = model_name
+        self.model_name = (
+            model_name
+            or getattr(settings, "GROQ_MODEL", None)
+            or os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        )
         self.client = None
         if self.api_key and AsyncGroq is not None:
             try:
@@ -33,7 +37,7 @@ class GroqProvider(AIProvider):
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.2,
-        max_tokens: int = 800,
+        max_tokens: int = 1000,
     ) -> str:
         if not self.is_available():
             logger.info("Groq API key not set; providing grounded fallback response.")
@@ -42,7 +46,7 @@ class GroqProvider(AIProvider):
             return (
                 "ℹ️ **Verified Government Information:**\n\n"
                 "All scheme criteria, benefits, and application processes shown above are retrieved directly from official government databases. "
-                "(To activate conversational AI explanations with Groq Llama, configure `GROQ_API_KEY` in your `.env` file.)"
+                "(To activate conversational AI explanations with Groq, configure `GROQ_API_KEY` in your `.env` file.)"
             )
 
         try:
@@ -55,10 +59,7 @@ class GroqProvider(AIProvider):
             return response.choices[0].message.content or ""
         except Exception as exc:
             logger.error("Groq API request failed: %s", exc)
-            return (
-                f"An error occurred while communicating with the AI service: {str(exc)}. "
-                "Please refer to the verified scheme criteria listed above."
-            )
+            return "AI Assistant is temporarily unavailable. Please try again."
 
 
 groq_provider = GroqProvider()

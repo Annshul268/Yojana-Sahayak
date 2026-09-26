@@ -248,7 +248,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
                     unsafe_allow_html=True,
                 )
             else:
-                st.error("Unable to generate AI answer right now.")
+                st.error("AI Assistant is temporarily unavailable. Please try again.")
 
     # Reset viewport scroll position strictly after page elements have completely rendered
     if should_scroll:
