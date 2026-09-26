@@ -45,6 +45,17 @@ class IngestionPipeline:
         failed_count = 0
         error_details: List[str] = []
 
+        chroma_already_indexed = False
+        try:
+            chroma_already_indexed = chroma_manager.collection.count() >= total_fetched
+            if chroma_already_indexed:
+                logger.info(
+                    "ChromaDB collection already contains %d documents. Skipping re-embedding.",
+                    chroma_manager.collection.count(),
+                )
+        except Exception:
+            chroma_already_indexed = False
+
         for raw_item in raw_items:
             cleaned = self.cleaner.clean(raw_item)
             is_valid, errors = self.validator.validate(cleaned)
@@ -74,25 +85,26 @@ class IngestionPipeline:
                 await db.flush()
                 scheme_id = new_scheme.id
 
-            # Create & index in ChromaDB
-            doc_text = self.build_embedding_text(cleaned)
-            metadata = {
-                "scheme_id": scheme_id,
-                "slug": slug,
-                "category": cleaned.get("category", ""),
-                "ministry": cleaned.get("ministry", ""),
-                "level": cleaned.get("level", "Central"),
-                "source": source_name,
-                "official_url": cleaned.get("official_url", ""),
-            }
-            try:
-                chroma_manager.upsert_scheme_document(
-                    scheme_id=scheme_id,
-                    document_text=doc_text,
-                    metadata=metadata,
-                )
-            except Exception as exc:
-                logger.error("Failed to index scheme '%s' in ChromaDB: %s", slug, exc)
+            # Create & index in ChromaDB only if not already indexed
+            if not chroma_already_indexed:
+                doc_text = self.build_embedding_text(cleaned)
+                metadata = {
+                    "scheme_id": scheme_id,
+                    "slug": slug,
+                    "category": cleaned.get("category", ""),
+                    "ministry": cleaned.get("ministry", ""),
+                    "level": cleaned.get("level", "Central"),
+                    "source": source_name,
+                    "official_url": cleaned.get("official_url", ""),
+                }
+                try:
+                    chroma_manager.upsert_scheme_document(
+                        scheme_id=scheme_id,
+                        document_text=doc_text,
+                        metadata=metadata,
+                    )
+                except Exception as exc:
+                    logger.error("Failed to index scheme '%s' in ChromaDB: %s", slug, exc)
 
             ingested_count += 1
 

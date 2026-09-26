@@ -3,13 +3,23 @@
 from typing import List
 from backend.app.core.logging import logger
 
-try:
-    from chromadb.utils import embedding_functions
+_default_ef = None
 
-    default_ef = embedding_functions.DefaultEmbeddingFunction()
-except Exception as exc:
-    logger.warning("DefaultEmbeddingFunction initialization notice: %s", exc)
-    default_ef = None
+
+def get_default_embedding_function():
+    """Lazily load and cache the DefaultEmbeddingFunction on first actual use."""
+    global _default_ef
+    if _default_ef is None:
+        try:
+            from chromadb.utils import embedding_functions
+
+            logger.info("Initializing embedding model lazily...")
+            _default_ef = embedding_functions.DefaultEmbeddingFunction()
+            logger.info("Embedding model initialized successfully.")
+        except Exception as exc:
+            logger.warning("DefaultEmbeddingFunction initialization notice: %s", exc)
+            _default_ef = None
+    return _default_ef
 
 
 class EmbeddingService:
@@ -20,9 +30,10 @@ class EmbeddingService:
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
         """Generates embedding vectors for a list of texts."""
-        if default_ef is not None:
+        ef = get_default_embedding_function()
+        if ef is not None:
             try:
-                return default_ef(texts)
+                return ef(texts)
             except Exception as exc:
                 logger.error("Error generating embeddings via default_ef: %s", exc)
 
