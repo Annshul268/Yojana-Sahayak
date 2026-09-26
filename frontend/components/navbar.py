@@ -10,9 +10,9 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
     lang = get_current_language()
     cur_page = st.session_state.get("current_page", "home")
 
-    # Single-line header columns with My Applications
-    col_brand, col_home, col_check, col_schemes, col_apps, col_lang, col_auth = st.columns(
-        [2.6, 0.85, 1.4, 1.15, 1.5, 0.85, 1.2],
+    # Single-line header columns: Logo | Home | My Applications | Language | Profile
+    col_brand, col_home, col_apps, col_lang, col_auth = st.columns(
+        [4.0, 1.1, 1.7, 0.8, 1.3],
         gap="small",
         vertical_alignment="center",
     )
@@ -44,30 +44,6 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         ):
             if navigate_to:
                 navigate_to("home")
-
-    with col_check:
-        is_active = (cur_page in ("finder", "results"))
-        label = "पात्रता जांचें" if lang == "hi" else "Check eligibility"
-        if st.button(
-            label,
-            key="nav_check_btn",
-            type="primary" if is_active else "secondary",
-            use_container_width=True,
-        ):
-            if navigate_to:
-                navigate_to("finder")
-
-    with col_schemes:
-        is_active = (cur_page in ("schemes", "scheme_details"))
-        label = "सभी योजनाएं" if lang == "hi" else "All schemes"
-        if st.button(
-            label,
-            key="nav_schemes_btn",
-            type="primary" if is_active else "secondary",
-            use_container_width=True,
-        ):
-            if navigate_to:
-                navigate_to("schemes")
 
     with col_apps:
         is_active = (cur_page in ("tracker", "applications"))
