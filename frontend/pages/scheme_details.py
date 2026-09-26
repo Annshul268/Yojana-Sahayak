@@ -4,6 +4,7 @@ from typing import Callable
 import streamlit as st
 from frontend.services.api_client import api_client
 from frontend.utils.i18n import get_current_language
+from frontend.utils.ui import inject_scheme_details_scroll_to_top
 
 
 def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
@@ -13,6 +14,29 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         if st.button("← Back to Directory"):
             navigate_to("schemes")
         return
+
+    # Check whether viewport scroll-to-top is needed on this navigation
+    cur_slug = slug
+    last_viewed_slug = st.session_state.get("_last_viewed_scheme_slug")
+    last_page = st.session_state.get("_last_rendered_page", "")
+    explicit_scroll = st.session_state.pop("_scheme_scroll_to_top", False)
+
+    should_scroll = (
+        explicit_scroll
+        or (last_page != "scheme_details")
+        or (last_viewed_slug != cur_slug)
+        or ("_scheme_view_initialized" not in st.session_state)
+    )
+
+    st.session_state["_last_viewed_scheme_slug"] = cur_slug
+    st.session_state["_last_rendered_page"] = "scheme_details"
+    st.session_state["_scheme_view_initialized"] = True
+
+    # Top anchor element for instant scrolling
+    st.markdown(
+        '<div id="scheme-detail-top" style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; opacity: 0; pointer-events: none;"></div>',
+        unsafe_allow_html=True,
+    )
 
     # Back Link button
     col_bk, _ = st.columns([2, 8])
@@ -225,3 +249,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
                 )
             else:
                 st.error("Unable to generate AI answer right now.")
+
+    # Reset viewport scroll position strictly after page elements have completely rendered
+    if should_scroll:
+        inject_scheme_details_scroll_to_top(anchor_id="scheme-detail-top")

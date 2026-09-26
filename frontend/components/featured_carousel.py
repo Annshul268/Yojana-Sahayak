@@ -66,6 +66,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
             desc = desc[:137] + "..."
 
         items.append({
+            "slug": slug,
             "name": name,
             "desc": desc,
             "category": category,
@@ -324,7 +325,10 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         schemes.forEach((s, idx) => {{
           const card = document.createElement("a");
           card.className = "scheme-card";
-          if (s.has_url) {{
+          if (s.slug) {{
+            card.href = "?scheme=" + encodeURIComponent(s.slug);
+            card.target = "_top";
+          }} else if (s.has_url) {{
             card.href = s.official_url;
             card.target = "_blank";
             card.rel = "noopener noreferrer";
@@ -385,8 +389,8 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           footer.className = "card-footer";
 
           const btn = document.createElement("span");
-          btn.className = s.has_url ? "btn-view" : "btn-disabled";
-          btn.textContent = s.has_url ? viewBtnText : noUrlText;
+          btn.className = (s.slug || s.has_url) ? "btn-view" : "btn-disabled";
+          btn.textContent = (s.slug || s.has_url) ? viewBtnText : noUrlText;
           footer.appendChild(btn);
 
           // Controls row: [ ← ] [ ● ● ● ] [ → ]

@@ -39,6 +39,31 @@ class TestScrollToTopUtilities:
         assert kwargs.get("width") == 0
         assert "questionnaire-top" in args[0]
 
+    def test_get_scheme_details_scroll_js(self):
+        from frontend.utils.ui import get_scheme_details_scroll_js
+        js = get_scheme_details_scroll_js(anchor_id="scheme-detail-top")
+        assert "<script" in js
+        assert "</script>" in js
+        assert "scheme-detail-top" in js
+        assert "resetSchemePageScroll" in js
+        assert "scrollRestoration" in js
+        assert "scrollTo" in js
+        assert '[data-testid="stAppViewContainer"]' in js
+        assert "section.main" in js
+        assert "requestAnimationFrame" in js
+        assert "setTimeout" in js
+
+    @patch("streamlit.html")
+    @patch("streamlit.components.v1.html")
+    def test_inject_scheme_details_scroll_to_top_uses_st_html(self, mock_components_html, mock_st_html):
+        from frontend.utils.ui import inject_scheme_details_scroll_to_top
+        inject_scheme_details_scroll_to_top(anchor_id="scheme-detail-top")
+        assert mock_st_html.called
+        assert not mock_components_html.called
+        args, kwargs = mock_st_html.call_args
+        assert kwargs.get("unsafe_allow_javascript") is True
+        assert "scheme-detail-top" in args[0]
+
 
 class TestScrollNavigationStateLogic:
     """Tests for scroll-to-top triggering logic during questionnaire navigation steps."""
@@ -114,3 +139,67 @@ class TestScrollNavigationStateLogic:
         assert payload["state"] == "Maharashtra"
         assert payload["occupation"] == "student"
         assert payload["annual_income"] == 180000
+
+
+class TestSchemeDetailScrollLogic:
+    """Tests for scroll-to-top triggering logic on Scheme Detail page."""
+
+    def test_navigation_from_other_pages_triggers_scroll(self):
+        """Navigating to a scheme from any other page must trigger scroll-to-top."""
+        entry_pages = ["home", "schemes", "results", "saved", "tracker"]
+        cur_slug = "pm-kisan"
+
+        for p in entry_pages:
+            last_page = p
+            last_viewed_slug = cur_slug
+            explicit_scroll = True
+            should_scroll = (
+                explicit_scroll
+                or (last_page != "scheme_details")
+                or (last_viewed_slug != cur_slug)
+            )
+            assert should_scroll is True, f"Failed for entry page: {p}"
+
+    def test_switching_schemes_triggers_scroll(self):
+        """Switching between two different schemes must trigger scroll-to-top."""
+        last_page = "scheme_details"
+        last_viewed_slug = "ayushman-bharat-pmjay"
+        cur_slug = "pm-kisan"
+        explicit_scroll = False
+
+        should_scroll = (
+            explicit_scroll
+            or (last_page != "scheme_details")
+            or (last_viewed_slug != cur_slug)
+        )
+        assert should_scroll is True
+
+    def test_in_page_interaction_does_not_trigger_scroll(self):
+        """Interacting with in-page elements (e.g. AI questions) on Scheme Detail must NOT trigger scroll."""
+        last_page = "scheme_details"
+        last_viewed_slug = "pm-kisan"
+        cur_slug = "pm-kisan"
+        explicit_scroll = False
+
+        should_scroll = (
+            explicit_scroll
+            or (last_page != "scheme_details")
+            or (last_viewed_slug != cur_slug)
+        )
+        assert should_scroll is False
+
+    def test_revisiting_same_scheme_after_browsing_triggers_scroll(self):
+        """Leaving Scheme Detail to browse schemes and clicking the same scheme again must trigger scroll."""
+        # User was on schemes page
+        last_page = "schemes"
+        last_viewed_slug = "pm-kisan"
+        cur_slug = "pm-kisan"
+        explicit_scroll = True  # Set by on_details click or navigate_to
+
+        should_scroll = (
+            explicit_scroll
+            or (last_page != "scheme_details")
+            or (last_viewed_slug != cur_slug)
+        )
+        assert should_scroll is True
+

@@ -80,6 +80,7 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
 
     def handle_details(slug: str):
         st.session_state.selected_scheme_slug = slug
+        st.session_state["_scheme_scroll_to_top"] = True
         navigate_to("scheme_details")
 
     def handle_save(scheme_id: str):

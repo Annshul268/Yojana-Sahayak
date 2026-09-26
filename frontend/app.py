@@ -51,8 +51,22 @@ if "is_authenticated" not in st.session_state:
 
 
 def navigate_to(page_name: str) -> None:
+    st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "")
+    if page_name == "scheme_details":
+        st.session_state["_scheme_scroll_to_top"] = True
     st.session_state.current_page = page_name
     st.rerun()
+
+
+# Direct scheme query parameter navigation (e.g. from featured carousel or direct links)
+if "scheme" in st.query_params:
+    query_slug = st.query_params.get("scheme")
+    if query_slug:
+        st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "")
+        st.session_state.selected_scheme_slug = query_slug
+        st.session_state["_scheme_scroll_to_top"] = True
+        st.session_state.current_page = "scheme_details"
+    del st.query_params["scheme"]
 
 
 # Render Clean Top Header with Navigation Tabs
@@ -60,6 +74,8 @@ render_navbar(navigate_to)
 
 # Route to Current Page
 page = st.session_state.current_page
+if page != "scheme_details":
+    st.session_state["_last_rendered_page"] = page
 
 if page == "home":
     render_home(navigate_to)

@@ -73,8 +73,9 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
 
             col1, col2, col3 = st.columns([4, 2, 4])
             with col1:
-                if st.button("View Scheme →", key=f"saved_view_{slug}", type="primary", use_container_width=True):
+                if st.button("View Scheme", key=f"saved_view_{slug}", type="primary", use_container_width=True):
                     st.session_state.selected_scheme_slug = slug
+                    st.session_state["_scheme_scroll_to_top"] = True
                     navigate_to("scheme_details")
             with col2:
                 if st.button("Remove 🗑️", key=f"saved_rem_{slug}", use_container_width=True):

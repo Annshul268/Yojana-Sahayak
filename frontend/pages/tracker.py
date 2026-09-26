@@ -182,6 +182,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
                 help="View Scheme",
             ):
                 st.session_state.selected_scheme_slug = slug
+                st.session_state["_scheme_scroll_to_top"] = True
                 navigate_to("scheme_details")
 
         with col_link:
