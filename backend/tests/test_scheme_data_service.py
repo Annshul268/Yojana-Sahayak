@@ -41,3 +41,20 @@ def test_get_featured_schemes_db():
         assert "slug" in s
         assert "official_url" in s
         assert s["is_featured"] is True
+
+
+def test_fallback_when_db_absent():
+    from unittest.mock import patch
+    with patch("frontend.services.scheme_data.find_db_path", return_value=None):
+        stats = get_live_db_statistics()
+        assert stats["ok"] is True
+        assert stats["total"] == 438
+        assert stats["central"] == 109
+        assert stats["state"] == 329
+        assert len(stats["category_items"]) == 10
+
+        featured = get_featured_schemes_db(limit=5)
+        assert len(featured) == 5
+        for s in featured:
+            assert "name" in s
+            assert s["is_featured"] is True

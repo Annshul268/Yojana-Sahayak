@@ -21,7 +21,6 @@ def find_db_path() -> Optional[str]:
     candidates = [
         Path(__file__).resolve().parent.parent.parent / "yojana_sahayak.db",
         Path.cwd() / "yojana_sahayak.db",
-        Path("/Users/anshulmac/Documents/Projects/Yojana-Sahayak/yojana_sahayak.db"),
     ]
     for p in candidates:
         if p.exists():
@@ -29,14 +28,24 @@ def find_db_path() -> Optional[str]:
     return None
 
 
-def get_live_db_statistics() -> Dict[str, Any]:
-    """Retrieve verified scheme statistics directly from the SQLite database.
+def _find_schemes_json_path() -> Optional[Path]:
+    """Locate the processed or seed schemes.json file bundled with the repository."""
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent / "data" / "processed" / "schemes.json",
+        Path(__file__).resolve().parent.parent.parent / "data" / "seed" / "schemes.json",
+        Path.cwd() / "data" / "processed" / "schemes.json",
+        Path.cwd() / "data" / "seed" / "schemes.json",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
 
-    Returns:
-        dict with total, central, state, category list, state list, and ministry list.
-    """
-    db_path = find_db_path()
-    if not db_path:
+
+def _get_fallback_statistics_from_json() -> Dict[str, Any]:
+    """Calculate scheme metrics dynamically from bundled schemes.json when DB is unavailable."""
+    json_path = _find_schemes_json_path()
+    if not json_path:
         return {
             "ok": False,
             "total": 0,
@@ -47,9 +56,158 @@ def get_live_db_statistics() -> Dict[str, Any]:
             "category_items": [],
             "states": [],
             "ministries": [],
-            "error": "Database file yojana_sahayak.db not found",
+            "error": "Neither database file nor schemes.json could be found",
             "db_source": "None",
         }
+
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            schemes = json.load(f)
+
+        total = len(schemes)
+        central = sum(1 for s in schemes if (s.get("level") or "").capitalize() == "Central")
+        state = sum(1 for s in schemes if (s.get("level") or "").capitalize() == "State")
+
+        raw_cat_counts: Dict[str, int] = {}
+        state_counts: Dict[str, int] = {}
+        ministry_counts: Dict[str, int] = {}
+
+        for s in schemes:
+            cat = s.get("category", "Other")
+            raw_cat_counts[cat] = raw_cat_counts.get(cat, 0) + 1
+
+            for st in (s.get("states") or []):
+                st_clean = str(st).strip()
+                if st_clean and st_clean.upper() != "ALL":
+                    state_counts[st_clean] = state_counts.get(st_clean, 0) + 1
+
+            min_name = s.get("ministry")
+            if min_name and (s.get("level") or "").capitalize() == "Central":
+                ministry_counts[min_name] = ministry_counts.get(min_name, 0) + 1
+
+        category_catalog = [
+            ("Education & Learning", "Education & Learning", "🎓", "शिक्षा एवं ज्ञान", raw_cat_counts.get("Education & Learning", 0)),
+            ("Health & Wellness", "Healthcare", "🏥", "स्वास्थ्य एवं कल्याण", raw_cat_counts.get("Healthcare", 0)),
+            ("Agriculture, Rural & Environment", "Agriculture & Rural Development", "🌾", "कृषि, ग्रामीण एवं पर्यावरण", raw_cat_counts.get("Agriculture & Rural Development", 0)),
+            ("Business & Entrepreneurship", "Business & Self Employment", "📈", "व्यवसाय एवं उद्यमिता", raw_cat_counts.get("Business & Self Employment", 0)),
+            ("Skills & Employment", "Employment & Skills", "💼", "कौशल एवं रोजगार", raw_cat_counts.get("Employment & Skills", 0)),
+            ("Housing & Shelter", "Housing & Shelter", "🏠", "आवास एवं आश्रय", raw_cat_counts.get("Housing & Shelter", 0)),
+            ("Social Welfare & Empowerment", "Social Security & Pension", "👴", "सामाजिक कल्याण एवं पेंशन", raw_cat_counts.get("Social Security & Pension", 0)),
+            ("Women & Child Development", "Women & Child Development", "👩‍👧", "महिला एवं बाल विकास", raw_cat_counts.get("Women & Child Development", 0)),
+            ("Differently Abled Support", "Differently Abled Support", "♿", "दिव्यांगजन सहायता", raw_cat_counts.get("Differently Abled Support", 0)),
+            ("Banking, Financial Services and Insurance", "Financial Assistance", "💳", "बैंकिंग, वित्तीय सेवाएं एवं बीमा", raw_cat_counts.get("Financial Assistance", 0)),
+        ]
+
+        category_items = [
+            {
+                "name": item[0],
+                "db_category": item[1],
+                "icon": item[2],
+                "name_hi": item[3],
+                "count": item[4],
+            }
+            for item in category_catalog
+        ]
+
+        states = [{"state": k, "state_count": v, "count": v} for k, v in sorted(state_counts.items(), key=lambda x: x[1], reverse=True)]
+        ministries = [{"ministry": k, "count": v} for k, v in sorted(ministry_counts.items(), key=lambda x: x[1], reverse=True)]
+
+        categories_map = {item["name"]: item["count"] for item in category_items}
+        shorthands = {
+            "Education & Scholarships": raw_cat_counts.get("Education & Learning", 0),
+            "Health": raw_cat_counts.get("Healthcare", 0),
+            "Housing": raw_cat_counts.get("Housing & Shelter", 0),
+            "Agriculture": raw_cat_counts.get("Agriculture & Rural Development", 0),
+            "Business & Loans": raw_cat_counts.get("Business & Self Employment", 0),
+            "Employment & Skills": raw_cat_counts.get("Employment & Skills", 0),
+            "Pension": raw_cat_counts.get("Social Security & Pension", 0),
+            "Insurance": raw_cat_counts.get("Financial Assistance", 0),
+            "Women & Child": raw_cat_counts.get("Women & Child Development", 0),
+            "Disability Support": raw_cat_counts.get("Differently Abled Support", 0),
+        }
+        categories_map.update(shorthands)
+
+        return {
+            "ok": True,
+            "total": total,
+            "central": central,
+            "state": state,
+            "categories": categories_map,
+            "category_items": category_items,
+            "raw_categories": raw_cat_counts,
+            "states": states,
+            "ministries": ministries,
+            "db_source": f"JSON Fallback ({json_path.name})",
+            "error": None,
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "total": 0,
+            "central": 0,
+            "state": 0,
+            "categories": {},
+            "raw_categories": {},
+            "category_items": [],
+            "states": [],
+            "ministries": [],
+            "error": str(exc),
+            "db_source": f"Error: {exc}",
+        }
+
+
+def _get_fallback_featured_from_json(limit: int = 5) -> List[Dict[str, Any]]:
+    """Retrieve featured schemes from bundled schemes.json when database is unavailable."""
+    json_path = _find_schemes_json_path()
+    if not json_path:
+        return []
+
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            schemes = json.load(f)
+
+        slug_to_scheme = {s.get("slug"): s for s in schemes if isinstance(s, dict)}
+        default_featured = [
+            ("up-post-matric-scholarship-obc", 10),
+            ("pmay-gramin", 9),
+            ("adip-scheme-disabled", 8),
+            ("ayushman-bharat-pmjay", 7),
+            ("pm-kisan", 6),
+        ]
+
+        results = []
+        for slug, priority in default_featured:
+            if slug in slug_to_scheme:
+                s = dict(slug_to_scheme[slug])
+                s["is_featured"] = True
+                s["featured_priority"] = priority
+                results.append(s)
+                if len(results) >= limit:
+                    break
+
+        if len(results) < limit:
+            for s in schemes:
+                if s.get("slug") not in [r.get("slug") for r in results]:
+                    sc = dict(s)
+                    sc["is_featured"] = True
+                    results.append(sc)
+                    if len(results) >= limit:
+                        break
+
+        return results
+    except Exception:
+        return []
+
+
+def get_live_db_statistics() -> Dict[str, Any]:
+    """Retrieve verified scheme statistics directly from SQLite or bundled JSON fallback.
+
+    Returns:
+        dict with total, central, state, category list, state list, and ministry list.
+    """
+    db_path = find_db_path()
+    if not db_path:
+        return _get_fallback_statistics_from_json()
 
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
@@ -150,6 +308,9 @@ def get_live_db_statistics() -> Dict[str, Any]:
             "error": None,
         }
     except Exception as exc:
+        fallback = _get_fallback_statistics_from_json()
+        if fallback.get("ok"):
+            return fallback
         return {
             "ok": False,
             "total": 0,
@@ -166,10 +327,10 @@ def get_live_db_statistics() -> Dict[str, Any]:
 
 
 def get_featured_schemes_db(limit: int = 5) -> List[Dict[str, Any]]:
-    """Retrieve verified featured schemes directly from the SQLite database."""
+    """Retrieve verified featured schemes directly from SQLite or bundled JSON fallback."""
     db_path = find_db_path()
     if not db_path:
-        return []
+        return _get_fallback_featured_from_json(limit)
 
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
@@ -185,6 +346,9 @@ def get_featured_schemes_db(limit: int = 5) -> List[Dict[str, Any]]:
         """, (limit,))
         rows = cursor.fetchall()
         conn.close()
+
+        if not rows:
+            return _get_fallback_featured_from_json(limit)
 
         results = []
         for r in rows:
@@ -221,7 +385,7 @@ def get_featured_schemes_db(limit: int = 5) -> List[Dict[str, Any]]:
             })
         return results
     except Exception:
-        return []
+        return _get_fallback_featured_from_json(limit)
 
 
 def get_user_applications_db(user_id: str) -> List[Dict[str, Any]]:
