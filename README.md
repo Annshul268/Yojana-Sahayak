@@ -10,7 +10,7 @@ Yojana Sahayak helps Indian citizens discover government welfare schemes and ben
 
 ---
 
-## 🏛️ Core Architectural Principle
+## Core Architectural Principle
 > **Accuracy and trustworthy government information come before AI-generated answers.**
 > The LLM must **NEVER** be the source of truth for government scheme information.
 > 
@@ -22,7 +22,7 @@ Yojana Sahayak helps Indian citizens discover government welfare schemes and ben
 
 ---
 
-## 🏗️ Architecture Stack
+## Architecture Stack
 - **Frontend:** Streamlit (Python, responsive civic theme, bilingual EN/HI)
 - **Backend:** FastAPI (REST API, deterministic matching engine, business services)
 - **Database:** PostgreSQL (structured profile and scheme storage)
@@ -32,7 +32,7 @@ Yojana Sahayak helps Indian citizens discover government welfare schemes and ben
 
 ---
 
-## 🚀 Quick Start (Phase 0)
+## Installation & Setup
 
 ### 1. Prerequisites
 - Python 3.10+ (tested on Python 3.13)
@@ -78,7 +78,7 @@ Alternatively, run both concurrently with:
 
 ---
 
-## 🧪 Testing
+## Testing
 
 Run backend tests using `pytest`:
 ```bash
@@ -89,7 +89,7 @@ pytest -v
 
 ---
 
-## 🎯 Intent-Driven Dynamic Eligibility Architecture
+## Intent-Driven Dynamic Eligibility Architecture
 
 Yojana Sahayak replaces static, overwhelming forms with an **intent-first, adaptive discovery engine**:
 
@@ -110,7 +110,7 @@ $$\text{Citizen Intent} \longrightarrow \text{Adaptive Minimum Questions} \longr
 
 ---
 
-## 📚 Documentation
+## Documentation
 - [Architecture](docs/architecture.md)
 - [API Reference](docs/api.md)
 - [Database Schema](docs/database.md)
