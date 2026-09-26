@@ -1,4 +1,4 @@
-# Yojana Sahayak (योजना सहायक)
+# Yojana Sahayak
 ### AI Government Scheme & Benefits Navigator for Indian Citizens
 
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
@@ -117,14 +117,3 @@ $$\text{Citizen Intent} \longrightarrow \text{Adaptive Minimum Questions} \longr
 - [Matching Engine](docs/matching-engine.md)
 - [RAG & Vector Retrieval](docs/rag.md)
 - [Data Pipeline](docs/data-pipeline.md)
-
----
-
-## 🧭 Project Status
-- [x] **Core Architecture:** FastAPI backend, SQLite/PostgreSQL, ChromaDB, Sentence Transformers, Groq Llama
-- [x] **Intent Taxonomy & Tagging:** Extensible taxonomy with metadata tags on all curated government schemes
-- [x] **Adaptive Questionnaire:** Declarative, rule-driven progressive question flow
-- [x] **Deterministic Matching Engine:** Strict rule matching, missing info vs disqualification distinction
-- [x] **Sleek Civic UI:** Minimal, warm off-white design system (`#FAFAF7`) matching modern civic portals
-- [x] **Test Suite:** 35 comprehensive unit and integration tests passing (`pytest backend/tests/ -v`)
-
