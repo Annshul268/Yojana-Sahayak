@@ -34,7 +34,6 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             f"""
             <div style="background: white; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.75rem; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                    <span style="font-size: 1.5rem;">👤</span>
                     <h3 style="color: #0F172A; margin: 0; font-weight: 700;">
                         {"साइन इन करें" if lang == "hi" else "Sign In to Your Citizen Account"}
                     </h3>
@@ -53,12 +52,12 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             sign_name = st.text_input("Full Name", value="Aarav Sharma", key="prof_sign_name")
             sign_uid = st.text_input("Citizen ID / Mobile Number", value="citizen_user_1", key="prof_sign_uid")
 
-            if st.button("Sign In →" if lang != "hi" else "साइन इन करें →", type="primary", use_container_width=True, key="btn_prof_signin"):
+            if st.button("Sign In" if lang != "hi" else "साइन इन करें", type="primary", use_container_width=True, key="btn_prof_signin"):
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = sign_uid or "citizen_user_1"
                 st.session_state.user_name = sign_name or "Citizen"
                 target = st.session_state.pop("auth_redirect_target", None)
-                st.toast(f"Welcome, {sign_name}! 🎉")
+                st.toast(f"Welcome, {sign_name}!")
                 if target:
                     navigate_to(target)
                 else:
@@ -68,23 +67,23 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             st.markdown("##### " + ("डेमो खाते" if lang == "hi" else "Quick Demo Accounts"))
             st.caption("Switch between demo citizen profiles to test application isolation:")
 
-            if st.button("👤 Sign in as Citizen 1: Aarav Sharma (Delhi)", use_container_width=True, key="btn_demo_u1"):
+            if st.button("Sign in as Citizen 1: Aarav Sharma (Delhi)", use_container_width=True, key="btn_demo_u1"):
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = "citizen_user_1"
                 st.session_state.user_name = "Aarav Sharma"
                 target = st.session_state.pop("auth_redirect_target", None)
-                st.toast("Signed in as Aarav Sharma! 🎉")
+                st.toast("Signed in as Aarav Sharma!")
                 if target:
                     navigate_to(target)
                 else:
                     st.rerun()
 
-            if st.button("👤 Sign in as Citizen 2: Priya Patel (Maharashtra)", use_container_width=True, key="btn_demo_u2"):
+            if st.button("Sign in as Citizen 2: Priya Patel (Maharashtra)", use_container_width=True, key="btn_demo_u2"):
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = "citizen_user_2"
                 st.session_state.user_name = "Priya Patel"
                 target = st.session_state.pop("auth_redirect_target", None)
-                st.toast("Signed in as Priya Patel! 🎉")
+                st.toast("Signed in as Priya Patel!")
                 if target:
                     navigate_to(target)
                 else:
@@ -99,7 +98,7 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             f"""
             <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 10px; padding: 12px 18px;">
                 <div style="font-size: 0.82rem; color: #1D4ED8; font-weight: 700; text-transform: uppercase;">
-                    ✓ {"सक्रिय नागरिक खाता" if lang == "hi" else "Active Citizen Session"}
+                    {"सक्रिय नागरिक खाता" if lang == "hi" else "Active Citizen Session"}
                 </div>
                 <div style="font-size: 1.15rem; font-weight: 800; color: #0F172A;">
                     {user_name}
@@ -112,16 +111,16 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             unsafe_allow_html=True,
         )
     with col_acc2:
-        if st.button("📋 " + ("मेरे आवेदन" if lang == "hi" else "My Applications"), use_container_width=True, key="prof_to_apps"):
+        if st.button("मेरे आवेदन" if lang == "hi" else "My Applications", use_container_width=True, key="prof_to_apps"):
             navigate_to("tracker")
-        if st.button("⭐ " + ("सहेजी गई योजनाएं" if lang == "hi" else "Saved Schemes"), use_container_width=True, key="prof_to_saved"):
+        if st.button("सहेजी गई योजनाएं" if lang == "hi" else "Saved Schemes", use_container_width=True, key="prof_to_saved"):
             navigate_to("saved")
     with col_acc3:
-        if st.button("🚪 " + ("साइन आउट" if lang == "hi" else "Sign Out"), type="secondary", use_container_width=True, key="prof_signout_btn"):
+        if st.button("साइन आउट" if lang == "hi" else "Sign Out", type="secondary", use_container_width=True, key="prof_signout_btn"):
             st.session_state.is_authenticated = False
             st.session_state.user_id = ""
             st.session_state.user_name = "Citizen"
-            st.toast("Signed out successfully. 👋")
+            st.toast("Signed out successfully.")
             st.rerun()
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;' />", unsafe_allow_html=True)
@@ -166,7 +165,7 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
         disability = st.checkbox("Person with Disability (Divyangjan)?", value=bool(prof.get("disability", False)))
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-        if st.form_submit_button("Save Profile 💾", type="primary", use_container_width=True):
+        if st.form_submit_button("Save Profile" if lang != "hi" else "प्रोफ़ाइल सहेजें", type="primary", use_container_width=True):
             updated_data = {
                 "user_id": user_id,
                 "name": name,
@@ -181,14 +180,14 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             }
             api_client.upsert_profile(updated_data)
             st.session_state.user_name = name
-            st.toast("Profile saved successfully! ✅")
+            st.toast("Profile saved successfully!")
             st.rerun()
 
     # Subtle Admin Login / Switcher in footer of profile for administrators
     st.markdown("<div style='height: 3rem;'></div>", unsafe_allow_html=True)
     st.markdown("<hr style='border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;' />", unsafe_allow_html=True)
 
-    with st.expander("🔐 Staff / Administrator Access", expanded=False):
+    with st.expander("Staff / Administrator Access", expanded=False):
         st.caption("Restricted to verified department administrators.")
         admin_pass = st.text_input("Enter Admin Access Code:", type="password")
         if st.button("Access Admin Dashboard"):

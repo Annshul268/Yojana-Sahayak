@@ -672,3 +672,43 @@ div[data-testid="stCustomComponentV1"]:has(> iframe[height="0"]) {
   border: 1px solid #DBEAFE;
 }
 
+/* Applications Table - Clean Row-based Tracking */
+.applications-table {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem 0.5rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  margin-top: 1rem;
+}
+
+.app-table-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 0;
+}
+
+.applications-table [data-testid="column"]:nth-child(2) button {
+  text-align: left !important;
+  justify-content: flex-start !important;
+  font-weight: 600 !important;
+  color: #1E3A8A !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 4px 0 !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.applications-table [data-testid="column"]:nth-child(2) button:hover {
+  color: #2563EB !important;
+  text-decoration: underline !important;
+  background: transparent !important;
+}
+
+

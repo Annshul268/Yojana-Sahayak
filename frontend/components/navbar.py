@@ -22,8 +22,8 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         st.markdown(
             """
             <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #1E3A8A; color: white; border-radius: 8px; font-size: 16px;">
-                    🛡️
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #1E3A8A; color: white; border-radius: 8px; font-size: 14px; font-weight: 800;">
+                    YS
                 </span>
                 <span style="font-size: 1.2rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em;">
                     Yojana Sahayak
@@ -89,7 +89,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
     with col_lang:
         # Language Switcher Pill [ EN | हि ]
         pill_label = "हि" if lang == "en" else "EN"
-        btn_label = f"🌐 {pill_label}"
+        btn_label = pill_label
         help_text = "हिंदी में बदलें" if lang == "en" else "Switch to English"
         if st.button(btn_label, key="nav_lang_toggle_btn", help=help_text, use_container_width=True):
             st.session_state.lang = "hi" if lang == "en" else "en"
@@ -98,7 +98,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
     with col_auth:
         user_name = st.session_state.get("user_name")
         is_logged_in = bool(st.session_state.get("is_authenticated", False))
-        auth_label = f"👤 {user_name[:7]}" if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign in")
+        auth_label = user_name[:8] if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign in")
         btn_type = "primary" if not is_logged_in else "secondary"
         if st.button(auth_label, key="nav_auth_btn", type=btn_type, use_container_width=True):
             if navigate_to:

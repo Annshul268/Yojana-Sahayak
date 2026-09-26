@@ -64,7 +64,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         f"""
         <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem;">
             <div style="font-size: 1.1rem; font-weight: 700; color: #0F172A; margin-bottom: 12px;">
-                🎁 {"योजना के प्रमुख लाभ" if lang == "hi" else "Key Benefits & Financial Assistance"}
+                {"योजना के प्रमुख लाभ" if lang == "hi" else "Key Benefits & Financial Assistance"}
             </div>
         """,
         unsafe_allow_html=True,
@@ -82,7 +82,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         f"""
         <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem;">
             <div style="font-size: 1.1rem; font-weight: 700; color: #0F172A; margin-bottom: 12px;">
-                📄 {"आवश्यक दस्तावेज" if lang == "hi" else "Documents Required to Apply"}
+                {"आवश्यक दस्तावेज" if lang == "hi" else "Documents Required to Apply"}
             </div>
         """,
         unsafe_allow_html=True,
@@ -102,7 +102,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         f"""
         <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem;">
             <div style="font-size: 1.1rem; font-weight: 700; color: #0F172A; margin-bottom: 12px;">
-                📝 {"आवेदन करने की चरणबद्ध प्रक्रिया" if lang == "hi" else "Step-by-Step Application Process"}
+                {"आवेदन करने की चरणबद्ध प्रक्रिया" if lang == "hi" else "Step-by-Step Application Process"}
             </div>
         """,
         unsafe_allow_html=True,
@@ -119,7 +119,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     col_act1, col_act2 = st.columns(2, gap="medium")
     with col_act1:
         st.link_button(
-            "🔗 " + ("आधिकारिक वेबसाइट पर जाएं ↗" if lang == "hi" else "Visit Official Government Portal ↗"),
+            ("आधिकारिक वेबसाइट पर जाएं" if lang == "hi" else "Visit Official Government Portal"),
             official_url,
             type="primary",
             use_container_width=True,
@@ -131,22 +131,22 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         if is_already_added or just_added:
             col_b1, col_b2 = st.columns([1.1, 1], gap="small")
             with col_b1:
-                badge_label = "✓ " + (
+                badge_label = (
                     "आवेदनों में जोड़ा गया"
                     if lang == "hi"
                     else ("Added to My Applications" if just_added else "Already in My Applications")
                 )
                 st.button(badge_label, disabled=True, use_container_width=True, key=f"app_status_btn_{scheme['id']}")
             with col_b2:
-                view_apps_label = "मेरे आवेदन →" if lang == "hi" else "View My Applications →"
+                view_apps_label = "मेरे आवेदन" if lang == "hi" else "View My Applications"
                 if st.button(view_apps_label, type="primary", use_container_width=True, key=f"view_apps_btn_{scheme['id']}"):
                     navigate_to("tracker")
         else:
-            add_label = "📋 " + ("आवेदनों में जोड़ें" if lang == "hi" else "Add to My Applications")
+            add_label = ("आवेदनों में जोड़ें" if lang == "hi" else "Add to My Applications")
             if st.button(add_label, use_container_width=True, key=f"add_app_btn_{scheme['id']}"):
                 if not st.session_state.get("is_authenticated", False):
                     st.session_state.auth_redirect_target = "scheme_details"
-                    st.toast("Please sign in to add to My Applications 👤")
+                    st.toast("Please sign in to add to My Applications")
                     navigate_to("profile")
                 else:
                     track_res = api_client.create_tracking(
@@ -157,7 +157,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
                     )
                     if track_res.get("ok"):
                         st.session_state[f"just_added_{scheme['id']}"] = True
-                        st.toast("Added to My Applications! ✅")
+                        st.toast("Added to My Applications")
                         st.rerun()
                     else:
                         st.error("Could not add to My Applications. Please try again.")
