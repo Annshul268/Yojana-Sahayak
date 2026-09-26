@@ -12,7 +12,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
 
     # Single-line header columns: Logo | Home | My Applications | Language | Profile
     col_brand, col_home, col_apps, col_lang, col_auth = st.columns(
-        [4.0, 1.1, 1.7, 0.8, 1.3],
+        [4.1, 1.1, 1.8, 0.65, 1.35],
         gap="small",
         vertical_alignment="center",
     )
@@ -63,13 +63,19 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                     navigate_to("tracker")
 
     with col_lang:
-        # Language Switcher Pill [ EN | हि ]
-        pill_label = "हि" if lang == "en" else "EN"
-        btn_label = pill_label
-        help_text = "हिंदी में बदलें" if lang == "en" else "Switch to English"
-        if st.button(btn_label, key="nav_lang_toggle_btn", help=help_text, use_container_width=True):
+        # Phone keyboard-style globe language switcher
+        st.markdown("<div class='nav-globe-wrapper'>", unsafe_allow_html=True)
+        help_text = "Change language"
+        if st.button(
+            "",
+            key="nav_lang_toggle_btn",
+            icon=":material/language:",
+            help=help_text,
+            use_container_width=True,
+        ):
             st.session_state.lang = "hi" if lang == "en" else "en"
             st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with col_auth:
         user_name = st.session_state.get("user_name")

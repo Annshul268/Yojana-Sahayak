@@ -711,4 +711,59 @@ div[data-testid="stCustomComponentV1"]:has(> iframe[height="0"]) {
   background: transparent !important;
 }
 
+/* Phone Keyboard-Style Globe Language Switcher */
+.nav-globe-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.nav-globe-wrapper button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  width: 100% !important;
+  padding: 0 4px !important;
+  border-radius: 8px !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.nav-globe-wrapper button:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08) !important;
+}
+
+.nav-globe-wrapper button:active {
+  background-color: #E2E8F0 !important;
+  transform: scale(0.96) !important;
+}
+
+.nav-globe-wrapper button span[data-testid="stIconMaterial"],
+.nav-globe-wrapper button .material-symbols-rounded {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  color: #334155 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+.nav-globe-wrapper button:hover span[data-testid="stIconMaterial"],
+.nav-globe-wrapper button:hover .material-symbols-rounded {
+  color: #0F172A !important;
+}
+
+
 
