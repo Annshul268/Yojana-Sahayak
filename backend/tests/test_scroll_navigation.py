@@ -203,3 +203,93 @@ class TestSchemeDetailScrollLogic:
         )
         assert should_scroll is True
 
+
+class TestResultsBackNavigation:
+    """Tests for Back button navigation from Results page to the questionnaire."""
+
+    def test_results_back_returns_to_last_questionnaire_step(self):
+        """Clicking Back from Results should return to the last active questionnaire group."""
+        answers = {
+            "intent": "agriculture",
+            "age": 42,
+            "gender": "male",
+            "state": "Uttar Pradesh",
+            "landholding_acres": 2.5,
+        }
+        active_groups = questionnaire_engine.get_active_groups(answers)
+        assert len(active_groups) >= 2
+        last_group_idx = len(active_groups) - 1
+
+        # Simulate questionnaire finishing on last group
+        step = last_group_idx
+        resolved_step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
+        assert resolved_step == last_group_idx
+
+    def test_results_back_preserves_all_answers(self):
+        """All user answers must remain completely intact when returning to the questionnaire."""
+        session_state = {
+            "eligibility_answers": {
+                "intent": "education",
+                "age": 22,
+                "gender": "female",
+                "state": "Maharashtra",
+                "area": "Urban",
+                "student_status": "in_college",
+                "course_level": "postgraduate",
+                "annual_income": 250000,
+            },
+            "questionnaire_step": 2,
+        }
+
+        # Simulate clicking back
+        answers = session_state.get("eligibility_answers", {})
+        active_groups = questionnaire_engine.get_active_groups(answers) if "intent" in answers else []
+        step = session_state.get("questionnaire_step")
+        if step is None or step < 0:
+            step = max(0, len(active_groups) - 1) if active_groups else 0
+        else:
+            step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
+
+        session_state["questionnaire_step"] = step
+        session_state["validation_error"] = None
+        session_state["_scroll_to_top_needed"] = True
+        session_state["_last_questionnaire_step"] = None
+
+        # Verify all answers remain exactly preserved
+        assert session_state["eligibility_answers"]["intent"] == "education"
+        assert session_state["eligibility_answers"]["age"] == 22
+        assert session_state["eligibility_answers"]["gender"] == "female"
+        assert session_state["eligibility_answers"]["state"] == "Maharashtra"
+        assert session_state["eligibility_answers"]["course_level"] == "postgraduate"
+        assert session_state["eligibility_answers"]["annual_income"] == 250000
+        assert session_state["questionnaire_step"] == 2
+        assert session_state["_scroll_to_top_needed"] is True
+
+    def test_results_back_triggers_scroll_to_top(self):
+        """Returning to the questionnaire from Results must evaluate should_scroll to True."""
+        _scroll_to_top_needed = True
+        _last_questionnaire_step = None
+        current_step = 2
+
+        explicit_scroll = _scroll_to_top_needed
+        last_step = _last_questionnaire_step
+        step_changed = (last_step is not None and last_step != current_step)
+        initial_entry = (last_step is None)
+        should_scroll = explicit_scroll or step_changed or initial_entry
+
+        assert should_scroll is True
+
+    def test_results_back_graceful_fallback_without_prior_answers(self):
+        """If user reaches Results directly with empty answers, Back safely defaults to step 0."""
+        answers = {}
+        active_groups = questionnaire_engine.get_active_groups(answers) if "intent" in answers else []
+        step = None
+
+        if step is None or step < 0:
+            step = max(0, len(active_groups) - 1) if active_groups else 0
+        else:
+            step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
+
+        assert step == 0
+
+

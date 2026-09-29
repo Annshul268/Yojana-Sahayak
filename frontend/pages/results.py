@@ -4,6 +4,7 @@ from typing import Callable
 import streamlit as st
 from frontend.components.eligibility_card import render_eligibility_card
 from frontend.services.api_client import api_client
+from frontend.services.questionnaire_engine import questionnaire_engine
 from frontend.utils.i18n import get_current_language
 from frontend.utils.ui import inject_scroll_to_top
 
@@ -38,11 +39,37 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
     eligible_count = match_data.get("eligible_count", sum(1 for r in results if r.get("status") == "eligible"))
     pot_count = match_data.get("potentially_eligible_count", sum(1 for r in results if r.get("status") == "potentially_eligible"))
 
+    # Top anchor element for instant scrolling
     st.markdown(
-        f"""
+        """
         <div id="results-top" style="position: relative;">
             <div id="results-top-anchor" style="position: absolute; top: -20px; left: 0; height: 1px; width: 1px; opacity: 0; pointer-events: none;"></div>
         </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Back Link button
+    col_back, _ = st.columns([2, 8])
+    with col_back:
+        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+        if st.button(back_label, key="results_back_btn"):
+            answers = st.session_state.get("eligibility_answers", {})
+            active_groups = questionnaire_engine.get_active_groups(answers) if "intent" in answers else []
+            step = st.session_state.get("questionnaire_step")
+            if step is None or step < 0:
+                step = max(0, len(active_groups) - 1) if active_groups else 0
+            else:
+                step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
+
+            st.session_state.questionnaire_step = step
+            st.session_state.validation_error = None
+            st.session_state["_scroll_to_top_needed"] = True
+            st.session_state["_last_questionnaire_step"] = None
+            navigate_to("finder")
+
+    st.markdown(
+        f"""
         <div style="margin-bottom: 1.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
                 <h2 style="color: #0F172A; font-weight: 800; font-size: 1.75rem; margin-bottom: 4px;">
