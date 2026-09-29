@@ -5,6 +5,7 @@ import pytest
 import streamlit as st
 
 from frontend.pages.profile import render_citizen_profile
+from frontend.pages.saved import render_saved_schemes
 from frontend.pages.schemes import render_schemes_directory
 from frontend.pages.tracker import render_application_tracker
 from frontend.pages.scheme_finder import (
@@ -90,6 +91,102 @@ class TestNavigationBackButtons:
 
         render_citizen_profile(navigate_mock)
         navigate_mock.assert_called_with("home")
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("frontend.services.api_client.api_client.list_saved")
+    def test_saved_schemes_back_button_navigates_to_last_page(
+        self, mock_list_saved, mock_markdown, mock_columns, mock_button
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "saved_back_btn"
+        mock_list_saved.return_value = {"ok": True, "data": []}
+
+        navigate_mock = MagicMock()
+        st.session_state["_last_rendered_page"] = "profile"
+
+        render_saved_schemes(navigate_mock)
+        navigate_mock.assert_called_with("profile")
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("frontend.services.api_client.api_client.list_saved")
+    def test_saved_schemes_back_button_fallback_to_home(
+        self, mock_list_saved, mock_markdown, mock_columns, mock_button
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "saved_back_btn"
+        mock_list_saved.return_value = {"ok": True, "data": []}
+
+        navigate_mock = MagicMock()
+        st.session_state["_last_rendered_page"] = "saved"
+
+        render_saved_schemes(navigate_mock)
+        navigate_mock.assert_called_with("home")
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.link_button")
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("frontend.services.api_client.api_client.remove_saved_scheme")
+    @patch("frontend.services.api_client.api_client.list_saved")
+    def test_saved_schemes_remove_button_has_no_emoji_and_triggers_removal(
+        self,
+        mock_list_saved,
+        mock_remove_saved,
+        mock_markdown,
+        mock_columns,
+        mock_button,
+        mock_link_button,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_list_saved.return_value = {
+            "ok": True,
+            "data": [
+                {
+                    "scheme": {
+                        "id": "scheme_101",
+                        "slug": "pm-kisan",
+                        "name": "PM Kisan Samman Nidhi",
+                        "category": "Agriculture",
+                        "official_url": "https://pmkisan.gov.in",
+                    }
+                }
+            ],
+        }
+
+        # Track labels of rendered buttons
+        button_labels = []
+
+        def handle_button(label, *args, **kwargs):
+            button_labels.append(label)
+            if kwargs.get("key") == "saved_rem_pm-kisan":
+                return True
+            return False
+
+        mock_button.side_effect = handle_button
+
+        st.session_state["user_id"] = "test_user_42"
+        render_saved_schemes(MagicMock())
+
+        # Verify "Remove" button label is clean and has no dustbin or other emojis
+        assert "Remove" in button_labels
+        assert not any("🗑" in lbl for lbl in button_labels)
+        mock_remove_saved.assert_called_once_with(scheme_id="scheme_101", user_id="test_user_42")
+        mock_toast.assert_called_once_with("Removed from bookmarks")
+        mock_rerun.assert_called_once()
 
 
 class TestSessionReset:
