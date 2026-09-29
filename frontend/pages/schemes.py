@@ -51,19 +51,17 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
 
     # Back Link button
-    col_bk, _ = st.columns([2, 8])
-    with col_bk:
-        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+    back_label = "← " + ("पीछे" if lang == "hi" else "Back")
 
-        def on_schemes_back():
-            last_page = st.session_state.get("_last_rendered_page")
-            if last_page and last_page not in ("schemes", "scheme_details", "admin"):
-                navigate_to(last_page)
-            else:
-                navigate_to("home")
+    def on_schemes_back():
+        last_page = st.session_state.get("_last_rendered_page")
+        if last_page and last_page not in ("schemes", "scheme_details", "admin"):
+            navigate_to(last_page)
+        else:
+            navigate_to("home")
 
-        if st.button(back_label, key="schemes_dir_back_btn", on_click=on_schemes_back):
-            on_schemes_back()
+    if st.button(back_label, key="schemes_dir_back_btn", on_click=on_schemes_back):
+        on_schemes_back()
 
     st.markdown(
         f"""

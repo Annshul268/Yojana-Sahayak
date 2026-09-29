@@ -23,8 +23,7 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
         def on_results_empty_check():
             st.session_state["_scroll_to_top_needed"] = True
             navigate_to("finder")
-        if st.button("🚀 " + ("पात्रता जांचें" if lang == "hi" else "Check Eligibility"), type="primary", on_click=on_results_empty_check):
-            on_results_empty_check()
+        st.button("🚀 " + ("पात्रता जांचें" if lang == "hi" else "Check Eligibility"), type="primary", on_click=on_results_empty_check)
         return
 
     results = match_data.get("results", [])
@@ -52,27 +51,25 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
     )
 
     # Back Link button
-    col_back, _ = st.columns([2, 8])
-    with col_back:
-        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+    back_label = "← " + ("पीछे" if lang == "hi" else "Back")
 
-        def on_results_back():
-            answers = st.session_state.get("eligibility_answers", {})
-            active_groups = questionnaire_engine.get_active_groups(answers) if "intent" in answers else []
-            step = st.session_state.get("questionnaire_step")
-            if step is None or step < 0:
-                step = max(0, len(active_groups) - 1) if active_groups else 0
-            else:
-                step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
+    def on_results_back():
+        answers = st.session_state.get("eligibility_answers", {})
+        active_groups = questionnaire_engine.get_active_groups(answers) if "intent" in answers else []
+        step = st.session_state.get("questionnaire_step")
+        if step is None or step < 0:
+            step = max(0, len(active_groups) - 1) if active_groups else 0
+        else:
+            step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
 
-            st.session_state.questionnaire_step = step
-            st.session_state.validation_error = None
-            st.session_state["_scroll_to_top_needed"] = True
-            st.session_state["_last_questionnaire_step"] = None
-            navigate_to("finder")
+        st.session_state.questionnaire_step = step
+        st.session_state.validation_error = None
+        st.session_state["_scroll_to_top_needed"] = True
+        st.session_state["_last_questionnaire_step"] = None
+        navigate_to("finder")
 
-        if st.button(back_label, key="results_back_btn", on_click=on_results_back):
-            on_results_back()
+    if st.button(back_label, key="results_back_btn", on_click=on_results_back):
+        on_results_back()
 
     st.markdown(
         f"""
@@ -146,20 +143,18 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
             st.session_state["_scroll_to_top_needed"] = True
             navigate_to("finder")
 
-        if st.button(
+        st.button(
             "🔄 " + ("विवरण संशोधित करें" if lang == "hi" else "Edit Your Answers"),
             use_container_width=True,
             on_click=on_edit_answers,
-        ):
-            on_edit_answers()
+        )
     with c_btn2:
         def on_browse_schemes_results():
             st.session_state["_scroll_to_top_needed"] = True
             navigate_to("schemes")
 
-        if st.button(
+        st.button(
             "📚 " + ("सभी योजनाएं ब्राउज़ करें" if lang == "hi" else "Browse All Schemes Directory"),
             use_container_width=True,
             on_click=on_browse_schemes_results,
-        ):
-            on_browse_schemes_results()
+        )

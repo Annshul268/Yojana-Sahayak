@@ -11,19 +11,17 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
     user_id = st.session_state.get("user_id", "citizen_user_1")
 
     # Back Link button
-    col_bk, _ = st.columns([2, 8])
-    with col_bk:
-        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+    back_label = "← " + ("पीछे" if lang == "hi" else "Back")
 
-        def on_saved_back():
-            last_page = st.session_state.get("_last_rendered_page")
-            if last_page and last_page not in ("saved", "scheme_details", "admin"):
-                navigate_to(last_page)
-            else:
-                navigate_to("home")
+    def on_saved_back():
+        last_page = st.session_state.get("_last_rendered_page")
+        if last_page and last_page not in ("saved", "scheme_details", "admin"):
+            navigate_to(last_page)
+        else:
+            navigate_to("home")
 
-        if st.button(back_label, key="saved_back_btn", on_click=on_saved_back):
-            on_saved_back()
+    if st.button(back_label, key="saved_back_btn", on_click=on_saved_back):
+        on_saved_back()
 
     st.markdown(
         f"""
@@ -58,8 +56,7 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("📚 " + ("योजनाएं देखें" if lang == "hi" else "Browse Schemes"), type="primary", on_click=navigate_to, args=("schemes",)):
-            navigate_to("schemes")
+        st.button("📚 " + ("योजनाएं देखें" if lang == "hi" else "Browse Schemes"), type="primary", on_click=navigate_to, args=("schemes",))
         return
 
     for item in saved_items:
@@ -94,8 +91,7 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
                     st.session_state["_scheme_scroll_to_top"] = True
                     navigate_to("scheme_details")
 
-                if st.button("View Scheme", key=f"saved_view_{slug}", type="primary", use_container_width=True, on_click=on_saved_view, args=(slug,)):
-                    on_saved_view(slug)
+                st.button("View Scheme", key=f"saved_view_{slug}", type="primary", use_container_width=True, on_click=on_saved_view, args=(slug,))
             with col2:
                 if st.button("Remove", key=f"saved_rem_{slug}", use_container_width=True):
                     api_client.remove_saved_scheme(scheme_id=scheme_id, user_id=user_id)

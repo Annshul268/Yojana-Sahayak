@@ -106,16 +106,14 @@ def render_eligibility_card(
         # Action Buttons row
         col_act1, col_act2, col_act3, col_ai = st.columns([1.5, 0.9, 1.4, 1.4], gap="small")
         with col_act1:
-            if st.button(
+            st.button(
                 "योजना देखें →" if lang == "hi" else "View Scheme →",
                 key=f"card_view_{slug}",
                 type="primary",
                 use_container_width=True,
                 on_click=on_view_details,
                 args=(slug,) if on_view_details else None,
-            ):
-                if on_view_details:
-                    on_view_details(slug)
+            )
 
         with col_act2:
             save_lbl = "⭐ " + ("सहेजा" if lang == "hi" else "Saved") if is_saved else "☆ " + ("सहेजें" if lang == "hi" else "Save")

@@ -48,16 +48,14 @@ def render_scheme_card(
 
         col1, col2, col3 = st.columns([1.5, 0.9, 1.4], gap="small")
         with col1:
-            if st.button(
+            st.button(
                 "योजना देखें →" if lang == "hi" else "View Scheme →",
                 key=f"dir_det_{slug}",
                 type="primary",
                 use_container_width=True,
                 on_click=on_details,
                 args=(slug,) if on_details else None,
-            ):
-                if on_details:
-                    on_details(slug)
+            )
         with col2:
             save_label = "⭐ " + ("सहेजा" if lang == "hi" else "Saved") if is_saved else "☆ " + ("सहेजें" if lang == "hi" else "Save")
             if st.button(save_label, key=f"dir_save_{slug}", use_container_width=True):

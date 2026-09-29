@@ -60,6 +60,8 @@ def is_in_callback() -> bool:
 
 def navigate_to(page_name: str) -> None:
     cur = st.session_state.get("current_page", "home")
+    if cur == page_name and page_name != "scheme_details":
+        return
     if cur and cur != page_name:
         if cur != "scheme_details":
             st.session_state["_last_rendered_page"] = cur
@@ -111,29 +113,31 @@ main_slot = st.empty()
 main_slot.empty()
 
 with main_slot.container():
-    if page in ("home", "index"):
-        render_home(navigate_to)
-    elif page in ("finder", "questionnaire"):
-        render_scheme_finder(navigate_to)
-    elif page in ("results", "matches"):
-        render_results(navigate_to)
-    elif page in ("schemes", "all_schemes", "directory"):
-        render_schemes_directory(navigate_to)
-    elif page == "scheme_details":
-        render_scheme_details(navigate_to)
-    elif page in ("saved", "saved_schemes"):
-        render_saved_schemes(navigate_to)
-    elif page in ("tracker", "applications", "my_applications"):
-        render_application_tracker(navigate_to)
-    elif page in ("profile", "account"):
-        render_citizen_profile(navigate_to)
-    elif page == "admin":
-        # Protected: Only accessible if is_admin is True
-        if st.session_state.get("is_admin", False):
-            render_admin_dashboard(navigate_to)
+    with st.container(key=f"active_page_view_{page}"):
+        if page in ("home", "index"):
+            render_home(navigate_to)
+        elif page in ("finder", "questionnaire"):
+            render_scheme_finder(navigate_to)
+        elif page in ("results", "matches"):
+            render_results(navigate_to)
+        elif page in ("schemes", "all_schemes", "directory"):
+            render_schemes_directory(navigate_to)
+        elif page == "scheme_details":
+            render_scheme_details(navigate_to)
+        elif page in ("saved", "saved_schemes"):
+            render_saved_schemes(navigate_to)
+        elif page in ("tracker", "applications", "my_applications"):
+            render_application_tracker(navigate_to)
+        elif page in ("profile", "account"):
+            render_citizen_profile(navigate_to)
+        elif page == "admin":
+            # Protected: Only accessible if is_admin is True
+            if st.session_state.get("is_admin", False):
+                render_admin_dashboard(navigate_to)
+            else:
+                st.warning("Staff login required to access Admin Dashboard.")
+                if st.button("← Back to Home", on_click=navigate_to, args=("home",)):
+                    navigate_to("home")
         else:
-            st.warning("Staff login required to access Admin Dashboard.")
-            if st.button("← Back to Home", on_click=navigate_to, args=("home",)):
-                navigate_to("home")
-    else:
-        render_home(navigate_to)
+            render_home(navigate_to)
+

@@ -145,14 +145,12 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             if navigate_to:
                 navigate_to("schemes")
 
-        if st.button(
+        st.button(
             "All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →",
             key="btn_ctr_total",
             use_container_width=True,
             on_click=on_total_schemes_click,
-        ):
-            on_total_schemes_click()
-            return
+        )
 
     with col_c2:
         st.markdown(
@@ -172,14 +170,12 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             if navigate_to:
                 navigate_to("schemes")
 
-        if st.button(
+        st.button(
             "Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →",
             key="btn_ctr_central",
             use_container_width=True,
             on_click=on_central_schemes_click,
-        ):
-            on_central_schemes_click()
-            return
+        )
 
     with col_c3:
         st.markdown(
@@ -199,14 +195,12 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             if navigate_to:
                 navigate_to("schemes")
 
-        if st.button(
+        st.button(
             "State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →",
             key="btn_ctr_state",
             use_container_width=True,
             on_click=on_state_schemes_click,
-        ):
-            on_state_schemes_click()
-            return
+        )
 
     if st.session_state.get("current_page", "home") != "home":
         return
@@ -268,15 +262,13 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             if navigate_to:
                                 navigate_to("schemes")
 
-                        if st.button(
+                        st.button(
                             btn_label,
                             key=f"btn_tab_cat_{r_idx}_{c_idx}",
                             use_container_width=True,
                             on_click=on_cat_click,
                             args=(item["db_category"],),
-                        ):
-                            on_cat_click(item["db_category"])
-                            return
+                        )
                 st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
 
         if st.session_state.get("current_page", "home") != "home":
@@ -330,15 +322,13 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             if navigate_to:
                                 navigate_to("schemes")
 
-                        if st.button(
+                        st.button(
                             "Explore →" if lang != "hi" else "देखें →",
                             key=f"btn_tab_state_{idx}",
                             use_container_width=True,
                             on_click=on_state_click,
                             args=(st_name,),
-                        ):
-                            on_state_click(st_name)
-                            return
+                        )
 
         if st.session_state.get("current_page", "home") != "home":
             return
@@ -391,14 +381,12 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             if navigate_to:
                                 navigate_to("schemes")
 
-                        if st.button(
+                        st.button(
                             "Explore →" if lang != "hi" else "देखें →",
                             key=f"btn_tab_min_{idx}",
                             use_container_width=True,
                             on_click=on_min_click,
-                        ):
-                            on_min_click()
-                            return
+                        )
 
         if st.session_state.get("current_page", "home") != "home":
             return
