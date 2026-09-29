@@ -25,12 +25,16 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
     col_bk, _ = st.columns([2, 8])
     with col_bk:
         back_label = "← " + ("पीछे" if lang == "hi" else "Back")
-        if st.button(back_label, key="tracker_back_btn"):
+
+        def on_tracker_back():
             last_page = st.session_state.get("_last_rendered_page")
             if last_page and last_page not in ("tracker", "applications", "scheme_details", "admin"):
                 navigate_to(last_page)
             else:
                 navigate_to("home")
+
+        if st.button(back_label, key="tracker_back_btn", on_click=on_tracker_back):
+            on_tracker_back()
 
     # Header
     st.markdown(
@@ -107,7 +111,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
         col_emp1, col_emp2, col_emp3 = st.columns([1.5, 2, 1.5])
         with col_emp2:
             browse_label = "सभी योजनाएं ब्राउज़ करें" if lang == "hi" else "Browse All Schemes"
-            if st.button(browse_label, type="primary", use_container_width=True, key="empty_browse_btn"):
+            if st.button(browse_label, type="primary", use_container_width=True, key="empty_browse_btn", on_click=navigate_to, args=("schemes",)):
                 navigate_to("schemes")
         return
 
@@ -186,16 +190,21 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
                 st.rerun()
 
         with col_name:
+            def on_tracker_view(s_slug=slug):
+                st.session_state.selected_scheme_slug = s_slug
+                st.session_state["scheme_navigation_source"] = "applications"
+                st.session_state["_scheme_scroll_to_top"] = True
+                navigate_to("scheme_details")
+
             if st.button(
                 scheme_name,
                 key=f"scheme_name_{tracking_id}",
                 use_container_width=True,
                 help="View Scheme",
+                on_click=on_tracker_view,
+                args=(slug,),
             ):
-                st.session_state.selected_scheme_slug = slug
-                st.session_state["scheme_navigation_source"] = "applications"
-                st.session_state["_scheme_scroll_to_top"] = True
-                navigate_to("scheme_details")
+                on_tracker_view(slug)
 
         with col_link:
             if official_url and official_url.startswith("http"):

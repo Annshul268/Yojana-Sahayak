@@ -17,12 +17,16 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     col_bk, _ = st.columns([2, 8])
     with col_bk:
         back_label = "← " + ("पीछे" if lang == "hi" else "Back")
-        if st.button(back_label, key="profile_back_btn"):
+
+        def on_profile_back():
             last_page = st.session_state.get("_last_rendered_page")
             if last_page and last_page not in ("profile", "scheme_details", "admin"):
                 navigate_to(last_page)
             else:
                 navigate_to("home")
+
+        if st.button(back_label, key="profile_back_btn", on_click=on_profile_back):
+            on_profile_back()
 
     # Header
     st.markdown(

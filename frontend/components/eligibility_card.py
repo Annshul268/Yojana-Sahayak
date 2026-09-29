@@ -111,6 +111,8 @@ def render_eligibility_card(
                 key=f"card_view_{slug}",
                 type="primary",
                 use_container_width=True,
+                on_click=on_view_details,
+                args=(slug,) if on_view_details else None,
             ):
                 if on_view_details:
                     on_view_details(slug)

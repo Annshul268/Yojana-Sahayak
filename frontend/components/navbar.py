@@ -36,24 +36,23 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
     with col_home:
         is_active = (cur_page == "home")
         label = "होम" if lang == "hi" else "Home"
+        def on_nav_home():
+            if navigate_to:
+                navigate_to("home")
+
         if st.button(
             label,
             key="nav_home_btn",
             type="primary" if is_active else "secondary",
             use_container_width=True,
+            on_click=on_nav_home,
         ):
-            if navigate_to:
-                navigate_to("home")
+            on_nav_home()
 
     with col_apps:
         is_active = (cur_page in ("tracker", "applications"))
         label = "मेरे आवेदन" if lang == "hi" else "My Applications"
-        if st.button(
-            label,
-            key="nav_apps_btn",
-            type="primary" if is_active else "secondary",
-            use_container_width=True,
-        ):
+        def on_nav_apps():
             if not st.session_state.get("is_authenticated", False):
                 st.session_state.auth_redirect_target = "tracker"
                 if navigate_to:
@@ -62,18 +61,31 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                 if navigate_to:
                     navigate_to("tracker")
 
+        if st.button(
+            label,
+            key="nav_apps_btn",
+            type="primary" if is_active else "secondary",
+            use_container_width=True,
+            on_click=on_nav_apps,
+        ):
+            on_nav_apps()
+
     with col_lang:
         # Phone keyboard-style globe language switcher
         st.markdown("<div class='nav-globe-wrapper'>", unsafe_allow_html=True)
         help_text = "Change language"
+        def on_lang_toggle():
+            st.session_state.lang = "hi" if lang == "en" else "en"
+
         if st.button(
             "",
             key="nav_lang_toggle_btn",
             icon=":material/language:",
             help=help_text,
             use_container_width=True,
+            on_click=on_lang_toggle,
         ):
-            st.session_state.lang = "hi" if lang == "en" else "en"
+            on_lang_toggle()
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -82,8 +94,17 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         is_logged_in = bool(st.session_state.get("is_authenticated", False))
         auth_label = user_name[:8] if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign in")
         btn_type = "primary" if not is_logged_in else "secondary"
-        if st.button(auth_label, key="nav_auth_btn", type=btn_type, use_container_width=True):
+        def on_nav_auth():
             if navigate_to:
                 navigate_to("profile")
+
+        if st.button(
+            auth_label,
+            key="nav_auth_btn",
+            type=btn_type,
+            use_container_width=True,
+            on_click=on_nav_auth,
+        ):
+            on_nav_auth()
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.5rem 0 1rem 0;' />", unsafe_allow_html=True)

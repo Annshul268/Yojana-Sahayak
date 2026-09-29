@@ -172,6 +172,25 @@ class TestFeaturedCarouselRenderingAndNavigation:
     @patch("streamlit.button")
     @patch("streamlit.columns")
     @patch("streamlit.markdown")
+    def test_carousel_does_not_render_when_not_on_home_page(self, mock_markdown, mock_columns, mock_button, sample_schemes):
+        import streamlit as st
+        old_page = st.session_state.get("current_page", "home")
+        try:
+            st.session_state["current_page"] = "scheme_details"
+            mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+            mock_button.return_value = False
+
+            carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+            carousel_fn(sample_schemes, lang="en")
+
+            assert mock_markdown.call_count == 0
+            assert mock_button.call_count == 0
+        finally:
+            st.session_state["current_page"] = old_page
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
     def test_carousel_auto_scroll_tick_advances_scheme(self, mock_markdown, mock_columns, mock_button, sample_schemes):
         import streamlit as st
         st.session_state["featured_carousel_index"] = 0

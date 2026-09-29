@@ -37,6 +37,15 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             unsafe_allow_html=True,
         )
 
+        def on_check_eligibility_click():
+            reset_eligibility_session()
+            if navigate_to:
+                navigate_to("finder")
+
+        def on_browse_schemes_click():
+            if navigate_to:
+                navigate_to("schemes")
+
         col_b1, col_b2 = st.columns([1.1, 1], gap="small")
         with col_b1:
             if st.button(
@@ -44,9 +53,9 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 type="primary",
                 use_container_width=True,
                 key="hero_check_eligibility_btn",
+                on_click=on_check_eligibility_click,
             ):
-                reset_eligibility_session()
-                navigate_to("finder")
+                on_check_eligibility_click()
 
         with col_b2:
             if st.button(
@@ -54,8 +63,9 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 type="secondary",
                 use_container_width=True,
                 key="hero_browse_schemes_btn",
+                on_click=on_browse_schemes_click,
             ):
-                navigate_to("schemes")
+                on_browse_schemes_click()
 
         st.markdown(
             f"""
@@ -117,8 +127,17 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →", key="btn_ctr_total", use_container_width=True):
-            navigate_to("schemes")
+        def on_total_schemes_click():
+            if navigate_to:
+                navigate_to("schemes")
+
+        if st.button(
+            "All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →",
+            key="btn_ctr_total",
+            use_container_width=True,
+            on_click=on_total_schemes_click,
+        ):
+            on_total_schemes_click()
 
     with col_c2:
         st.markdown(
@@ -133,9 +152,18 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →", key="btn_ctr_central", use_container_width=True):
+        def on_central_schemes_click():
             st.session_state.selected_level_filter = "Central"
-            navigate_to("schemes")
+            if navigate_to:
+                navigate_to("schemes")
+
+        if st.button(
+            "Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →",
+            key="btn_ctr_central",
+            use_container_width=True,
+            on_click=on_central_schemes_click,
+        ):
+            on_central_schemes_click()
 
     with col_c3:
         st.markdown(
@@ -150,9 +178,18 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →", key="btn_ctr_state", use_container_width=True):
+        def on_state_schemes_click():
             st.session_state.selected_level_filter = "State"
-            navigate_to("schemes")
+            if navigate_to:
+                navigate_to("schemes")
+
+        if st.button(
+            "State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →",
+            key="btn_ctr_state",
+            use_container_width=True,
+            on_click=on_state_schemes_click,
+        ):
+            on_state_schemes_click()
 
     st.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
 
@@ -206,9 +243,19 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             unsafe_allow_html=True,
                         )
                         btn_label = f"देखें ({count})" if lang == "hi" else f"Explore ({count}) →"
-                        if st.button(btn_label, key=f"btn_tab_cat_{r_idx}_{c_idx}", use_container_width=True):
-                            st.session_state.selected_category_filter = item["db_category"]
-                            navigate_to("schemes")
+                        def on_cat_click(cat_val=item["db_category"]):
+                            st.session_state.selected_category_filter = cat_val
+                            if navigate_to:
+                                navigate_to("schemes")
+
+                        if st.button(
+                            btn_label,
+                            key=f"btn_tab_cat_{r_idx}_{c_idx}",
+                            use_container_width=True,
+                            on_click=on_cat_click,
+                            args=(item["db_category"],),
+                        ):
+                            on_cat_click(item["db_category"])
                 st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
 
     # TAB 2: States/UTs
@@ -251,9 +298,19 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             unsafe_allow_html=True,
                         )
                     with c_btn:
-                        if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_tab_state_{idx}", use_container_width=True):
-                            st.session_state.selected_state_filter = st_name
-                            navigate_to("schemes")
+                        def on_state_click(s_name=st_name):
+                            st.session_state.selected_state_filter = s_name
+                            if navigate_to:
+                                navigate_to("schemes")
+
+                        if st.button(
+                            "Explore →" if lang != "hi" else "देखें →",
+                            key=f"btn_tab_state_{idx}",
+                            use_container_width=True,
+                            on_click=on_state_click,
+                            args=(st_name,),
+                        ):
+                            on_state_click(st_name)
 
     # TAB 3: Central Ministries
     with tab_min:
@@ -295,9 +352,18 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             unsafe_allow_html=True,
                         )
                     with c_btn:
-                        if st.button("Explore →" if lang != "hi" else "देखें →", key=f"btn_tab_min_{idx}", use_container_width=True):
+                        def on_min_click():
                             st.session_state.selected_level_filter = "Central"
-                            navigate_to("schemes")
+                            if navigate_to:
+                                navigate_to("schemes")
+
+                        if st.button(
+                            "Explore →" if lang != "hi" else "देखें →",
+                            key=f"btn_tab_min_{idx}",
+                            use_container_width=True,
+                            on_click=on_min_click,
+                        ):
+                            on_min_click()
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 40px 0 28px 0;' />", unsafe_allow_html=True)
 

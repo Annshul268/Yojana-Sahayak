@@ -31,9 +31,11 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         source = st.session_state.get("scheme_navigation_source")
         target_page = SOURCE_TO_PAGE.get(str(source).lower().strip() if source else "", "home")
         back_text = "← " + ("होम पर वापस" if st.session_state.get("lang") == "hi" else "Back to Home") if target_page == "home" else ("← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back"))
-        if st.button(back_text):
+        def on_no_slug_back(t_page=target_page):
             st.session_state.pop("scheme_navigation_source", None)
-            navigate_to(target_page)
+            navigate_to(t_page)
+        if st.button(back_text, on_click=on_no_slug_back, args=(target_page,)):
+            on_no_slug_back(target_page)
         return
 
     # Check whether viewport scroll-to-top is needed on this navigation
@@ -60,7 +62,8 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     col_bk, _ = st.columns([2, 8])
     with col_bk:
         back_label = "← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back")
-        if st.button(back_label, key="scheme_det_back_btn"):
+
+        def on_back_click():
             source = st.session_state.get("scheme_navigation_source")
             if not source:
                 source = st.session_state.get("_last_rendered_page")
@@ -75,6 +78,9 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
             st.session_state.pop("scheme_navigation_source", None)
             st.session_state.pop("selected_scheme_slug", None)
             navigate_to(target_page)
+
+        if st.button(back_label, key="scheme_det_back_btn", on_click=on_back_click):
+            on_back_click()
 
     # Fetch scheme data
     res = api_client.get_scheme(slug)
@@ -191,7 +197,14 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
                 st.button(badge_label, disabled=True, use_container_width=True, key=f"app_status_btn_{scheme['id']}")
             with col_b2:
                 view_apps_label = "मेरे आवेदन" if lang == "hi" else "View My Applications"
-                if st.button(view_apps_label, type="primary", use_container_width=True, key=f"view_apps_btn_{scheme['id']}"):
+                if st.button(
+                    view_apps_label,
+                    type="primary",
+                    use_container_width=True,
+                    key=f"view_apps_btn_{scheme['id']}",
+                    on_click=navigate_to,
+                    args=("tracker",),
+                ):
                     navigate_to("tracker")
         else:
             add_label = ("आवेदनों में जोड़ें" if lang == "hi" else "Add to My Applications")

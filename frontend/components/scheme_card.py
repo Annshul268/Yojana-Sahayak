@@ -53,6 +53,8 @@ def render_scheme_card(
                 key=f"dir_det_{slug}",
                 type="primary",
                 use_container_width=True,
+                on_click=on_details,
+                args=(slug,) if on_details else None,
             ):
                 if on_details:
                     on_details(slug)

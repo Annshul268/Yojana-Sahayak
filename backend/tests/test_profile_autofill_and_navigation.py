@@ -6,6 +6,7 @@ import streamlit as st
 
 from frontend.pages.profile import render_citizen_profile
 from frontend.pages.saved import render_saved_schemes
+from frontend.pages.scheme_details import render_scheme_details
 from frontend.pages.schemes import render_schemes_directory
 from frontend.pages.tracker import render_application_tracker
 from frontend.pages.scheme_finder import (
@@ -129,6 +130,39 @@ class TestNavigationBackButtons:
 
         render_saved_schemes(navigate_mock)
         navigate_mock.assert_called_with("home")
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("frontend.services.api_client.api_client.get_scheme")
+    def test_scheme_details_back_button_source_aware_navigation(
+        self, mock_get_scheme, mock_markdown, mock_columns, mock_button
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "scheme_det_back_btn"
+        mock_get_scheme.return_value = {
+            "ok": True,
+            "data": {
+                "id": "pm-kisan-id",
+                "slug": "pm-kisan",
+                "name": "PM Kisan",
+                "category": "Agriculture",
+                "benefits": ["Benefit 1"],
+                "documents": ["Doc 1"],
+                "application_steps": ["Step 1"],
+            }
+        }
+
+        navigate_mock = MagicMock()
+        st.session_state["selected_scheme_slug"] = "pm-kisan"
+        st.session_state["scheme_navigation_source"] = "featured"
+
+        render_scheme_details(navigate_mock)
+        navigate_mock.assert_called_with("home")
+        assert "scheme_navigation_source" not in st.session_state
+        assert "selected_scheme_slug" not in st.session_state
 
     @patch("streamlit.rerun")
     @patch("streamlit.toast")

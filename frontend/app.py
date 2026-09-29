@@ -96,32 +96,34 @@ if "scheme" in st.query_params:
 # Render Clean Top Header with Navigation Tabs
 render_navbar(navigate_to)
 
-# Route to Current Page
+# Route to Current Page (rendered atomically inside dedicated container)
 page = st.session_state.current_page
+main_slot = st.empty()
 
-if page == "home":
-    render_home(navigate_to)
-elif page == "finder":
-    render_scheme_finder(navigate_to)
-elif page == "results":
-    render_results(navigate_to)
-elif page == "schemes":
-    render_schemes_directory(navigate_to)
-elif page == "scheme_details":
-    render_scheme_details(navigate_to)
-elif page == "saved":
-    render_saved_schemes(navigate_to)
-elif page in ("tracker", "applications"):
-    render_application_tracker(navigate_to)
-elif page == "profile":
-    render_citizen_profile(navigate_to)
-elif page == "admin":
-    # Protected: Only accessible if is_admin is True
-    if st.session_state.get("is_admin", False):
-        render_admin_dashboard(navigate_to)
+with main_slot.container():
+    if page == "home":
+        render_home(navigate_to)
+    elif page == "finder":
+        render_scheme_finder(navigate_to)
+    elif page == "results":
+        render_results(navigate_to)
+    elif page == "schemes":
+        render_schemes_directory(navigate_to)
+    elif page == "scheme_details":
+        render_scheme_details(navigate_to)
+    elif page == "saved":
+        render_saved_schemes(navigate_to)
+    elif page in ("tracker", "applications"):
+        render_application_tracker(navigate_to)
+    elif page == "profile":
+        render_citizen_profile(navigate_to)
+    elif page == "admin":
+        # Protected: Only accessible if is_admin is True
+        if st.session_state.get("is_admin", False):
+            render_admin_dashboard(navigate_to)
+        else:
+            st.warning("Staff login required to access Admin Dashboard.")
+            if st.button("← Back to Home", on_click=navigate_to, args=("home",)):
+                navigate_to("home")
     else:
-        st.warning("Staff login required to access Admin Dashboard.")
-        if st.button("← Back to Home"):
-            navigate_to("home")
-else:
-    render_home(navigate_to)
+        render_home(navigate_to)

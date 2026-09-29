@@ -53,6 +53,10 @@ def render_featured_carousel(
     if not schemes:
         return
 
+    # Critical: Do not execute or render carousel if the user has navigated away from home
+    if st.session_state.get("current_page", "home") != "home":
+        return
+
     total = len(schemes)
 
     # Initialize index and timer
@@ -247,13 +251,8 @@ def render_featured_carousel(
     )
 
     with col_view:
-        if st.button(
-            view_btn_text,
-            key=f"feat_view_{current_idx}_{slug}",
-            type="primary",
-            use_container_width=True,
-        ):
-            st.session_state.selected_scheme_slug = slug
+        def on_view_scheme_click(slug_val=slug):
+            st.session_state.selected_scheme_slug = slug_val
             st.session_state["scheme_navigation_source"] = "featured"
             st.session_state["_scheme_scroll_to_top"] = True
             if navigate_to:
@@ -261,6 +260,16 @@ def render_featured_carousel(
             else:
                 st.session_state.current_page = "scheme_details"
                 st.rerun()
+
+        if st.button(
+            view_btn_text,
+            key=f"feat_view_{current_idx}_{slug}",
+            type="primary",
+            use_container_width=True,
+            on_click=on_view_scheme_click,
+            args=(slug,),
+        ):
+            on_view_scheme_click(slug)
 
     with col_prev:
         if st.button("←", key=f"feat_prev_{current_idx}", use_container_width=True):
