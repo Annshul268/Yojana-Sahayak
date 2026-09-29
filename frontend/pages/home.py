@@ -88,7 +88,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             featured_schemes = featured_res.get("data", []) if featured_res.get("ok") else []
 
         if featured_schemes:
-            render_featured_carousel(featured_schemes, lang=lang)
+            render_featured_carousel(featured_schemes, lang=lang, navigate_to=navigate_to)
         else:
             st.info("Featured schemes are currently loading...")
 

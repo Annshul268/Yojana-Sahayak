@@ -11,11 +11,11 @@ from backend.app.schemas.ai import AskAIRequest, ExplainEligibilityRequest
 
 
 class TestFeaturedCarouselRenderingAndNavigation:
-    """Verifies that the featured carousel renders proper Streamlit-compatible navigation."""
+    """Verifies that the featured carousel renders proper Streamlit-compatible navigation and state synchronization."""
 
-    @patch("streamlit.components.v1.html")
-    def test_carousel_html_contains_open_scheme_navigation(self, mock_components_html):
-        schemes = [
+    @pytest.fixture
+    def sample_schemes(self):
+        return [
             {
                 "slug": "pm-kisan",
                 "name": "PM Kisan Samman Nidhi",
@@ -42,34 +42,111 @@ class TestFeaturedCarouselRenderingAndNavigation:
             },
         ]
 
-        render_featured_carousel(schemes, lang="en")
-        assert mock_components_html.called
-        html_code = mock_components_html.call_args[0][0]
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_renders_synchronized_active_scheme(self, mock_markdown, mock_columns, mock_button, sample_schemes):
+        import streamlit as st
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
 
-        # 1. Ensure openScheme navigation function is present
-        assert "function openScheme(slug, officialUrl)" in html_code
-        assert "pUrl.searchParams.set(\"scheme\", slug)" in html_code
-        assert "pWin.location.href = pUrl.toString()" in html_code
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.return_value = False
 
-        # 2. Ensure card is div and banner is clickable
-        assert "const card = document.createElement(\"div\")" in html_code
-        assert "banner.setAttribute(\"role\", \"button\")" in html_code
-        assert "openScheme(s.slug, s.official_url)" in html_code
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
 
-        # 3. Ensure View button is a clickable button element
-        assert "const btn = document.createElement(\"button\")" in html_code
-        assert "btn.addEventListener(\"click\"" in html_code
+        # Check markdown calls for card and image link
+        markdown_calls = [c[0][0] for c in mock_markdown.call_args_list]
+        card_html = next(html for html in markdown_calls if '<div class="carousel-card-wrap">' in html)
 
-        # 4. Ensure arrows stop propagation and only change slides
-        assert "prevArrow.addEventListener(\"click\"" in html_code
-        assert "e.stopPropagation()" in html_code
-        assert "prevSlide()" in html_code
-        assert "nextSlide()" in html_code
+        assert "href=\"?scheme=pm-kisan\"" in card_html
+        assert "PM Kisan Samman Nidhi" in card_html
+        assert "Financial support to farmer families." in card_html
+        assert "Agriculture" in card_html
+        assert "Central Scheme" in card_html
 
-        # 5. Ensure all 3 schemes are included
-        assert "pm-kisan" in html_code
-        assert "ayushman-bharat-pmjay" in html_code
-        assert "pmay-gramin" in html_code
+    @patch("streamlit.rerun")
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_next_arrow_navigation(self, mock_markdown, mock_columns, mock_button, mock_rerun, sample_schemes):
+        import streamlit as st
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "feat_next_0"
+
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
+
+        assert st.session_state.featured_carousel_index == 1
+        mock_rerun.assert_called_once_with(scope="fragment")
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_prev_arrow_navigation(self, mock_markdown, mock_columns, mock_button, mock_rerun, sample_schemes):
+        import streamlit as st
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "feat_prev_0"
+
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
+
+        # Loops from 0 backwards to 2 (last scheme)
+        assert st.session_state.featured_carousel_index == 2
+        mock_rerun.assert_called_once_with(scope="fragment")
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_view_scheme_button_navigation(self, mock_markdown, mock_columns, mock_button, sample_schemes):
+        import streamlit as st
+        st.session_state["featured_carousel_index"] = 1
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "feat_view_1_ayushman-bharat-pmjay"
+
+        navigate_mock = MagicMock()
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en", navigate_to=navigate_mock)
+
+        assert st.session_state.selected_scheme_slug == "ayushman-bharat-pmjay"
+        navigate_mock.assert_called_once_with("scheme_details")
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_auto_scroll_tick_advances_scheme(self, mock_markdown, mock_columns, mock_button, sample_schemes):
+        import streamlit as st
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.return_value = False
+
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        # When 4.5 seconds elapse, timer advances index
+        with patch("time.time", return_value=1004.5):
+            carousel_fn(sample_schemes, lang="en")
+
+        assert st.session_state.featured_carousel_index == 1
 
 
 class TestBackendURLResolution:

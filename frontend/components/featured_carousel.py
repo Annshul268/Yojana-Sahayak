@@ -1,13 +1,14 @@
 """Single-Scheme Featured Government Schemes responsive auto-scrolling carousel component.
 
 Displays exactly ONE scheme card at a time with real photographic banner image,
-smooth transitions, previous/next navigation arrows, indicator dots, touch/mouse swipe,
-auto-scroll every 4.5 seconds, and direct links to official government portals.
+smooth transitions, previous/next navigation arrows, indicator dots,
+auto-scroll every 4.5 seconds, and direct synchronization between displayed scheme,
+banner image, text, and navigation target.
 """
 
-import json
-from typing import Any, Dict, List
-import streamlit.components.v1 as components
+import time
+from typing import Any, Callable, Dict, List, Optional
+import streamlit as st
 
 # Real high-resolution photographic banners for government sectors
 DEFAULT_BANNER_IMAGES = {
@@ -42,564 +43,223 @@ def get_scheme_banner_image(category: str, slug: str, existing_url: str = None) 
     return FALLBACK_IMAGE
 
 
-def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") -> None:
-    """Renders a single-scheme carousel showing exactly ONE card at a time with navigation."""
+@st.fragment(run_every=4.5)
+def render_featured_carousel(
+    schemes: List[Dict[str, Any]],
+    lang: str = "en",
+    navigate_to: Optional[Callable[[str], None]] = None,
+) -> None:
+    """Renders a single-scheme carousel showing exactly ONE card at a time with synchronized navigation."""
     if not schemes:
         return
 
-    items = []
-    for s in schemes:
-        slug = s.get("slug", "")
-        category = s.get("category", "General")
-        level = s.get("level", "Central")
-        states = s.get("states", ["ALL"])
-        state_label = ""
-        if level != "Central" and states and "ALL" not in states:
-            state_label = states[0]
+    total = len(schemes)
 
-        banner_url = get_scheme_banner_image(category, slug, s.get("image_url"))
-        official_url = s.get("official_url", "")
+    # Initialize index and timer
+    if "featured_carousel_index" not in st.session_state:
+        st.session_state.featured_carousel_index = 0
 
-        name = s.get("name_hi") if lang == "hi" and s.get("name_hi") else s.get("name", "")
-        desc = s.get("description_hi") if lang == "hi" and s.get("description_hi") else s.get("description", "")
-        if len(desc) > 140:
-            desc = desc[:137] + "..."
+    current_idx = st.session_state.featured_carousel_index % total
 
-        items.append({
-            "slug": slug,
-            "name": name,
-            "desc": desc,
-            "category": category,
-            "level": level,
-            "state_label": state_label,
-            "banner_url": banner_url,
-            "official_url": official_url,
-            "has_url": bool(official_url and official_url.startswith("http")),
-        })
+    # Auto-scroll interval check
+    now = time.time()
+    last_tick = st.session_state.get("_carousel_last_tick")
+    if last_tick is None:
+        st.session_state["_carousel_last_tick"] = now
+    elif now - last_tick >= 3.8:
+        # Automatic tick: advance to next scheme
+        current_idx = (current_idx + 1) % total
+        st.session_state.featured_carousel_index = current_idx
+        st.session_state["_carousel_last_tick"] = now
+
+    s = schemes[current_idx]
+    slug = s.get("slug", "")
+    category = s.get("category", "General")
+    level = s.get("level", "Central")
+    states = s.get("states", ["ALL"])
+    state_label = states[0] if (level != "Central" and states and "ALL" not in states) else ""
+
+    banner_url = get_scheme_banner_image(category, slug, s.get("image_url"))
+
+    name = s.get("name_hi") if (lang == "hi" and s.get("name_hi")) else s.get("name", "")
+    desc = s.get("description_hi") if (lang == "hi" and s.get("description_hi")) else s.get("description", "")
+    if len(desc) > 140:
+        desc = desc[:137] + "..."
 
     view_btn_text = "योजना देखें →" if lang == "hi" else "View Scheme →"
-    no_url_text = "आधिकारिक पोर्टल" if lang == "hi" else "Official Portal"
     central_badge = "केंद्रीय योजना" if lang == "hi" else "Central Scheme"
     state_badge = "राज्य योजना" if lang == "hi" else "State Scheme"
+    level_badge_text = central_badge if level == "Central" else (state_label or state_badge)
 
-    items_json = json.dumps(items)
+    # Scoped styles for the featured carousel component
+    st.markdown(
+        """
+        <style>
+        .carousel-card-wrap {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+            width: 100%;
+            margin-bottom: 0px;
+        }
+        .carousel-banner-anchor {
+            display: block;
+            width: 100%;
+            height: 185px;
+            overflow: hidden;
+            background: #0F172A;
+            position: relative;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .carousel-banner-anchor img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.35s ease;
+        }
+        .carousel-banner-anchor:hover img {
+            transform: scale(1.05);
+        }
+        .carousel-body-box {
+            padding: 16px 20px 10px 20px;
+        }
+        .carousel-badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .carousel-badge-pill {
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            line-height: 1.2;
+        }
+        .carousel-badge-cat {
+            background: #EFF6FF;
+            color: #1D4ED8;
+            border: 1px solid #DBEAFE;
+        }
+        .carousel-badge-lvl {
+            background: #F8FAFC;
+            color: #334155;
+            border: 1px solid #E2E8F0;
+        }
+        .carousel-card-heading {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0F172A;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.7em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+        .carousel-card-heading:hover {
+            color: #2563EB;
+        }
+        .carousel-card-summary {
+            font-size: 0.88rem;
+            color: #64748B;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .carousel-dots-cluster {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 38px;
+        }
+        .carousel-dot-marker {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #CBD5E1;
+            transition: all 0.2s ease;
+        }
+        .carousel-dot-marker.active {
+            width: 20px;
+            border-radius: 9999px;
+            background: #2563EB;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    html_code = f"""
-    <!DOCTYPE html>
-    <html lang="{lang}">
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        * {{
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }}
-        body {{
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          background: transparent;
-          color: #0F172A;
-          user-select: none;
-          -webkit-user-select: none;
-          overflow: hidden;
-        }}
-
-        .single-carousel-wrapper {{
-          position: relative;
-          width: 100%;
-          max-width: 100%;
-          margin: 0 auto;
-        }}
-
-        .carousel-viewport {{
-          overflow: hidden;
-          width: 100%;
-          border-radius: 14px;
-          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-          border: 1px solid #E2E8F0;
-          background: #FFFFFF;
-        }}
-
-        .carousel-track {{
-          display: flex;
-          width: 100%;
-          transition: transform 0.42s cubic-bezier(0.25, 1, 0.5, 1);
-          will-change: transform;
-        }}
-
-        /* Exactly ONE card takes 100% of viewport */
-        .scheme-card {{
-          flex: 0 0 100%;
-          width: 100%;
-          background: #FFFFFF;
-          display: flex;
-          flex-direction: column;
-          color: inherit;
-        }}
-
-        .card-banner {{
-          width: 100%;
-          height: 185px;
-          overflow: hidden;
-          background: #0F172A;
-          position: relative;
-          cursor: pointer;
-          touch-action: manipulation;
-        }}
-
-        .card-banner img {{
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.35s ease;
-        }}
-
-        .card-banner:hover img {{
-          transform: scale(1.05);
-        }}
-
-        .card-body {{
-          padding: 18px 20px 14px 20px;
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }}
-
-        .card-badges {{
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 10px;
-        }}
-
-        .badge {{
-          font-size: 0.74rem;
-          font-weight: 700;
-          padding: 3px 9px;
-          border-radius: 9999px;
-          line-height: 1.2;
-        }}
-
-        .badge-cat {{
-          background: #EFF6FF;
-          color: #1D4ED8;
-          border: 1px solid #DBEAFE;
-        }}
-
-        .badge-level {{
-          background: #F8FAFC;
-          color: #334155;
-          border: 1px solid #E2E8F0;
-        }}
-
-        .card-title {{
-          font-size: 1.15rem;
-          font-weight: 800;
-          color: #0F172A;
-          line-height: 1.35;
-          margin-bottom: 8px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          min-height: 2.7em;
-          cursor: pointer;
-          transition: color 0.15s ease;
-        }}
-
-        .card-title:hover {{
-          color: #2563EB;
-        }}
-
-        .card-desc {{
-          font-size: 0.88rem;
-          color: #64748B;
-          line-height: 1.5;
-          margin-bottom: 14px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }}
-
-        .card-footer {{
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 10px;
-          border-top: 1px solid #F1F5F9;
-        }}
-
-        .btn-view {{
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 0.86rem;
-          font-weight: 700;
-          color: #2563EB;
-          padding: 6px 14px;
-          background: #EFF6FF;
-          border-radius: 6px;
-          border: 1px solid #DBEAFE;
-          cursor: pointer;
-          touch-action: manipulation;
-          font-family: inherit;
-          transition: all 0.15s ease;
-        }}
-
-        .btn-view:hover {{
-          background: #2563EB;
-          color: #FFFFFF;
-          border-color: #2563EB;
-          transform: translateY(-1px);
-        }}
-
-        /* Carousel Navigation Controls */
-        .controls-row {{
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }}
-
-        .nav-arrow {{
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: #F1F5F9;
-          border: 1px solid #CBD5E1;
-          color: #1E293B;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }}
-
-        .nav-arrow:hover {{
-          background: #1E293B;
-          color: #FFFFFF;
-          border-color: #1E293B;
-          transform: scale(1.08);
-        }}
-
-        .dots-row {{
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }}
-
-        .dot {{
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #CBD5E1;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }}
-
-        .dot.active {{
-          width: 20px;
-          border-radius: 9999px;
-          background: #2563EB;
-        }}
-      </style>
-    </head>
-    <body>
-      <div class="single-carousel-wrapper" id="carouselWrapper">
-        <div class="carousel-viewport" id="viewport">
-          <div class="carousel-track" id="track"></div>
+    # 1. Main Scheme Card Content (Banner Image, Badges, Title, Description)
+    card_html = f"""
+    <div class="carousel-card-wrap">
+        <a href="?scheme={slug}" target="_self" class="carousel-banner-anchor" aria-label="View {name}">
+            <img src="{banner_url}" alt="{name}" onerror="this.src='{FALLBACK_IMAGE}'" />
+        </a>
+        <div class="carousel-body-box">
+            <div class="carousel-badges-row">
+                <span class="carousel-badge-pill carousel-badge-cat">{category}</span>
+                <span class="carousel-badge-pill carousel-badge-lvl">{level_badge_text}</span>
+            </div>
+            <a href="?scheme={slug}" target="_self" style="text-decoration: none; color: inherit;">
+                <div class="carousel-card-heading">{name}</div>
+            </a>
+            <div class="carousel-card-summary">{desc}</div>
         </div>
-      </div>
-
-      <script>
-        const schemes = {items_json};
-        const viewBtnText = "{view_btn_text}";
-        const noUrlText = "{no_url_text}";
-        const centralBadge = "{central_badge}";
-        const stateBadge = "{state_badge}";
-
-        const track = document.getElementById("track");
-        const viewport = document.getElementById("viewport");
-        const wrapper = document.getElementById("carouselWrapper");
-
-        let currentIndex = 0;
-        let autoScrollTimer = null;
-        let isHovered = false;
-        const total = schemes.length;
-
-        // Reliable scheme navigation for Streamlit applications
-        function openScheme(slug, officialUrl) {{
-          if (!slug) {{
-            if (officialUrl && officialUrl.startsWith("http")) {{
-              window.open(officialUrl, "_blank", "noopener,noreferrer");
-            }}
-            return;
-          }}
-
-          // 1. Primary: Direct navigation of the parent Streamlit window
-          try {{
-            const pWin = (window.parent && window.parent !== window) ? window.parent : window;
-            const pUrl = new URL(pWin.location.href);
-            pUrl.searchParams.set("scheme", slug);
-            pWin.location.href = pUrl.toString();
-            return;
-          }} catch (e) {{
-            console.warn("Direct pWin.location.href navigation failed:", e);
-          }}
-
-          // 2. Secondary fallback using document.referrer or window.top
-          try {{
-            const ref = document.referrer ? new URL(document.referrer) : new URL(window.location.href);
-            ref.searchParams.set("scheme", slug);
-            window.top.location.href = ref.toString();
-            return;
-          }} catch (e) {{
-            console.warn("window.top navigation failed:", e);
-          }}
-
-          // 3. Tertiary fallback: programmatic anchor with target="_top"
-          try {{
-            const a = document.createElement("a");
-            a.target = "_top";
-            const origin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "";
-            a.href = origin + "/?scheme=" + encodeURIComponent(slug);
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }} catch (e) {{
-            console.error("Top link click fallback failed:", e);
-          }}
-        }}
-
-        // Build single scheme cards
-        schemes.forEach((s, idx) => {{
-          const card = document.createElement("div");
-          card.className = "scheme-card";
-          card.id = "scheme-slide-" + idx;
-
-          // 1. Photographic Banner Image (Clickable)
-          const banner = document.createElement("div");
-          banner.className = "card-banner";
-          banner.setAttribute("role", "button");
-          banner.setAttribute("tabindex", "0");
-          banner.setAttribute("aria-label", "View " + s.name);
-          banner.title = s.name;
-          banner.addEventListener("click", (e) => {{
-            e.preventDefault();
-            e.stopPropagation();
-            openScheme(s.slug, s.official_url);
-          }});
-          banner.addEventListener("keydown", (e) => {{
-            if (e.key === "Enter" || e.key === " ") {{
-              e.preventDefault();
-              openScheme(s.slug, s.official_url);
-            }}
-          }});
-
-          const img = document.createElement("img");
-          img.src = s.banner_url;
-          img.alt = s.name;
-          img.loading = "lazy";
-          img.onerror = function() {{
-            this.src = "{FALLBACK_IMAGE}";
-          }};
-          banner.appendChild(img);
-          card.appendChild(banner);
-
-          // 2. Card Body
-          const body = document.createElement("div");
-          body.className = "card-body";
-
-          // Badges
-          const badges = document.createElement("div");
-          badges.className = "card-badges";
-
-          const badgeCat = document.createElement("span");
-          badgeCat.className = "badge badge-cat";
-          badgeCat.textContent = s.category;
-          badges.appendChild(badgeCat);
-
-          const badgeLevel = document.createElement("span");
-          badgeLevel.className = "badge badge-level";
-          badgeLevel.textContent = s.level === "Central" 
-            ? centralBadge 
-            : (s.state_label ? s.state_label : stateBadge);
-          badges.appendChild(badgeLevel);
-
-          body.appendChild(badges);
-
-          // Title (Clickable)
-          const title = document.createElement("div");
-          title.className = "card-title";
-          title.title = s.name;
-          title.textContent = s.name;
-          title.addEventListener("click", (e) => {{
-            e.preventDefault();
-            e.stopPropagation();
-            openScheme(s.slug, s.official_url);
-          }});
-          body.appendChild(title);
-
-          // Description
-          const desc = document.createElement("div");
-          desc.className = "card-desc";
-          desc.textContent = s.desc;
-          body.appendChild(desc);
-
-          // Footer with View button & Arrows / Dots
-          const footer = document.createElement("div");
-          footer.className = "card-footer";
-
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = (s.slug || s.has_url) ? "btn-view" : "btn-disabled";
-          btn.textContent = (s.slug || s.has_url) ? viewBtnText : noUrlText;
-          btn.setAttribute("aria-label", "View Scheme " + s.name);
-          btn.addEventListener("click", (e) => {{
-            e.preventDefault();
-            e.stopPropagation();
-            openScheme(s.slug, s.official_url);
-          }});
-          footer.appendChild(btn);
-
-          // Controls row: [ ← ] [ ● ● ● ] [ → ]
-          const controls = document.createElement("div");
-          controls.className = "controls-row";
-
-          const prevArrow = document.createElement("button");
-          prevArrow.className = "nav-arrow";
-          prevArrow.type = "button";
-          prevArrow.setAttribute("aria-label", "Previous");
-          prevArrow.textContent = "←";
-          prevArrow.addEventListener("click", (e) => {{
-            e.preventDefault();
-            e.stopPropagation();
-            prevSlide();
-            resetAutoScroll();
-          }});
-          controls.appendChild(prevArrow);
-
-          const dotsContainer = document.createElement("div");
-          dotsContainer.className = "dots-row";
-          dotsContainer.id = "dots-" + idx;
-          controls.appendChild(dotsContainer);
-
-          const nextArrow = document.createElement("button");
-          nextArrow.className = "nav-arrow";
-          nextArrow.type = "button";
-          nextArrow.setAttribute("aria-label", "Next");
-          nextArrow.textContent = "→";
-          nextArrow.addEventListener("click", (e) => {{
-            e.preventDefault();
-            e.stopPropagation();
-            nextSlide();
-            resetAutoScroll();
-          }});
-          controls.appendChild(nextArrow);
-
-          footer.appendChild(controls);
-          body.appendChild(footer);
-          card.appendChild(body);
-
-          track.appendChild(card);
-        }});
-
-        function updateDots() {{
-          for (let idx = 0; idx < total; idx++) {{
-            const dotsEl = document.getElementById("dots-" + idx);
-            if (!dotsEl) continue;
-            dotsEl.innerHTML = "";
-            for (let i = 0; i < total; i++) {{
-              const dot = document.createElement("div");
-              dot.className = "dot" + (i === currentIndex ? " active" : "");
-              dot.addEventListener("click", (e) => {{
-                e.preventDefault();
-                e.stopPropagation();
-                currentIndex = i;
-                updatePosition();
-                resetAutoScroll();
-              }});
-              dotsEl.appendChild(dot);
-            }}
-          }}
-        }}
-
-        function updatePosition() {{
-          track.style.transform = `translateX(-${{currentIndex * 100}}%)`;
-          updateDots();
-        }}
-
-        function nextSlide() {{
-          currentIndex = (currentIndex + 1) % total;
-          updatePosition();
-        }}
-
-        function prevSlide() {{
-          currentIndex = (currentIndex - 1 + total) % total;
-          updatePosition();
-        }}
-
-        function startAutoScroll() {{
-          stopAutoScroll();
-          autoScrollTimer = setInterval(() => {{
-            if (!isHovered) {{
-              nextSlide();
-            }}
-          }}, 4500);
-        }}
-
-        function stopAutoScroll() {{
-          if (autoScrollTimer) {{
-            clearInterval(autoScrollTimer);
-            autoScrollTimer = null;
-          }}
-        }}
-
-        function resetAutoScroll() {{
-          stopAutoScroll();
-          startAutoScroll();
-        }}
-
-        // Hover pause
-        wrapper.addEventListener("mouseenter", () => {{
-          isHovered = true;
-        }});
-        wrapper.addEventListener("mouseleave", () => {{
-          isHovered = false;
-        }});
-
-        // Touch & Swipe Support
-        let startX = 0;
-        let isSwiping = false;
-
-        viewport.addEventListener("touchstart", (e) => {{
-          startX = e.touches[0].clientX;
-          isSwiping = true;
-          stopAutoScroll();
-        }}, {{ passive: true }});
-
-        viewport.addEventListener("touchend", (e) => {{
-          if (!isSwiping) return;
-          const endX = e.changedTouches[0].clientX;
-          const diff = startX - endX;
-          if (Math.abs(diff) > 40) {{
-            if (diff > 0) nextSlide();
-            else prevSlide();
-          }}
-          isSwiping = false;
-          startAutoScroll();
-        }}, {{ passive: true }});
-
-        // Init
-        updatePosition();
-        startAutoScroll();
-      </script>
-    </body>
-    </html>
+    </div>
     """
+    st.markdown(card_html, unsafe_allow_html=True)
 
-    components.html(html_code, height=450)
+    # 2. Controls & Actions Footer Row
+    col_view, col_prev, col_dots, col_next = st.columns(
+        [4.2, 1.2, 2.2, 1.2],
+        gap="small",
+        vertical_alignment="center",
+    )
+
+    with col_view:
+        if st.button(
+            view_btn_text,
+            key=f"feat_view_{current_idx}_{slug}",
+            type="primary",
+            use_container_width=True,
+        ):
+            st.session_state.selected_scheme_slug = slug
+            st.session_state["_scheme_scroll_to_top"] = True
+            if navigate_to:
+                navigate_to("scheme_details")
+            else:
+                st.session_state.current_page = "scheme_details"
+                st.rerun()
+
+    with col_prev:
+        if st.button("←", key=f"feat_prev_{current_idx}", use_container_width=True):
+            st.session_state.featured_carousel_index = (current_idx - 1 + total) % total
+            st.session_state["_carousel_last_tick"] = time.time()
+            st.rerun(scope="fragment")
+
+    with col_dots:
+        dots_html = f"""
+        <div class="carousel-dots-cluster">
+            {"".join(f'<span class="carousel-dot-marker{" active" if i == current_idx else ""}"></span>' for i in range(total))}
+        </div>
+        """
+        st.markdown(dots_html, unsafe_allow_html=True)
+
+    with col_next:
+        if st.button("→", key=f"feat_next_{current_idx}", use_container_width=True):
+            st.session_state.featured_carousel_index = (current_idx + 1) % total
+            st.session_state["_carousel_last_tick"] = time.time()
+            st.rerun(scope="fragment")
