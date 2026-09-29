@@ -50,6 +50,17 @@ MAJOR_STATES = [
 def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
 
+    # Back Link button
+    col_bk, _ = st.columns([2, 8])
+    with col_bk:
+        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+        if st.button(back_label, key="schemes_dir_back_btn"):
+            last_page = st.session_state.get("_last_rendered_page")
+            if last_page and last_page not in ("schemes", "admin"):
+                navigate_to(last_page)
+            else:
+                navigate_to("home")
+
     st.markdown(
         f"""
         <div style="margin-bottom: 1.5rem;">

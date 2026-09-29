@@ -51,7 +51,9 @@ if "is_authenticated" not in st.session_state:
 
 
 def navigate_to(page_name: str) -> None:
-    st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "")
+    cur = st.session_state.get("current_page", "home")
+    if cur and cur != page_name:
+        st.session_state["_last_rendered_page"] = cur
     if page_name == "scheme_details":
         st.session_state["_scheme_scroll_to_top"] = True
     st.session_state.current_page = page_name
@@ -79,8 +81,6 @@ render_navbar(navigate_to)
 
 # Route to Current Page
 page = st.session_state.current_page
-if page != "scheme_details":
-    st.session_state["_last_rendered_page"] = page
 
 if page == "home":
     render_home(navigate_to)

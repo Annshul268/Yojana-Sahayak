@@ -21,6 +21,17 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
     user_id = st.session_state.get("user_id", "")
     user_name = st.session_state.get("user_name", "Citizen")
 
+    # Back Link button
+    col_bk, _ = st.columns([2, 8])
+    with col_bk:
+        back_label = "← " + ("पीछे" if lang == "hi" else "Back")
+        if st.button(back_label, key="tracker_back_btn"):
+            last_page = st.session_state.get("_last_rendered_page")
+            if last_page and last_page not in ("tracker", "applications", "admin"):
+                navigate_to(last_page)
+            else:
+                navigate_to("home")
+
     # Header
     st.markdown(
         f"""

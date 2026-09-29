@@ -1,6 +1,6 @@
 """Sector-Aware Grouped Eligibility Questionnaire with Stable State & Validation."""
 
-from typing import Callable
+from typing import Any, Callable, Dict, Optional
 import streamlit as st
 from frontend.services.api_client import api_client
 from frontend.services.questionnaire_engine import (
@@ -12,6 +12,214 @@ from frontend.services.questionnaire_engine import (
 )
 from frontend.utils.i18n import get_current_language
 from frontend.utils.ui import inject_scroll_to_top
+
+
+def reset_eligibility_session(keep_intent: Optional[str] = None) -> None:
+    """Completely resets the questionnaire answers, results, and widget keys for a clean session."""
+    if keep_intent:
+        st.session_state.eligibility_answers = {"intent": keep_intent}
+    else:
+        st.session_state.eligibility_answers = {}
+    st.session_state.adaptive_answers = st.session_state.eligibility_answers
+
+    st.session_state.pop("match_results", None)
+    st.session_state.pop("matched_profile", None)
+    st.session_state.pop("eligibility_profile", None)
+    st.session_state.pop("pending_category_intent", None)
+    st.session_state.pop("finder_answers", None)
+    st.session_state.validation_error = None
+
+    # Clear all dynamic field widget keys so Streamlit does not preserve stale inputs
+    for key in list(st.session_state.keys()):
+        if key.startswith("field_"):
+            st.session_state.pop(key, None)
+
+    st.session_state.questionnaire_step = 1 if keep_intent else 0
+    st.session_state["_scroll_to_top_needed"] = True
+
+
+def apply_profile_to_answers(prof: Dict[str, Any], answers: Dict[str, Any]) -> None:
+    """Populates questionnaire answers from Citizen Profile data safely.
+
+    Does NOT mutate or save back to the Citizen Profile in database.
+    Leaves missing fields blank so standard questionnaire validation continues to apply.
+    """
+    if not prof:
+        return
+
+    # 1. State
+    state_val = prof.get("state")
+    if state_val and state_val in INDIAN_STATES:
+        answers["state"] = state_val
+
+    # 2. District
+    district_val = prof.get("district")
+    if district_val:
+        answers["district"] = str(district_val).strip()
+
+    # 3. Residence Area (Rural / Urban)
+    area_val = prof.get("area")
+    if area_val:
+        area_str = str(area_val).strip().capitalize()
+        if area_str in ("Rural", "Urban"):
+            answers["area"] = area_str
+
+    # 4. Age
+    age_val = prof.get("age")
+    if age_val is not None and age_val != "":
+        try:
+            answers["age"] = float(age_val)
+        except (ValueError, TypeError):
+            pass
+
+    # 5. Gender
+    gender_val = str(prof.get("gender", "")).lower().strip()
+    if "female" in gender_val:
+        answers["gender"] = "female"
+    elif "male" in gender_val:
+        answers["gender"] = "male"
+    elif "trans" in gender_val or "other" in gender_val:
+        answers["gender"] = "other"
+    elif "prefer" in gender_val:
+        answers["gender"] = "prefer_not_to_say"
+
+    # 6. Annual Income
+    income_val = prof.get("annual_income") if prof.get("annual_income") is not None else prof.get("income")
+    if income_val is not None and income_val != "":
+        try:
+            answers["annual_income"] = float(income_val)
+        except (ValueError, TypeError):
+            pass
+
+    # 7. Social Category
+    cat_val = prof.get("category") or prof.get("social_category")
+    if cat_val:
+        valid_cats = ["General", "OBC", "SC", "ST", "EWS"]
+        for c in valid_cats:
+            if c.lower() == str(cat_val).lower().strip():
+                answers["social_category"] = c
+                break
+
+    # 8. Disability
+    dis_val = prof.get("disability")
+    if isinstance(dis_val, bool):
+        answers["disability"] = "yes" if dis_val else "no"
+    elif isinstance(dis_val, str) and dis_val.strip():
+        if dis_val.lower().strip() in ("yes", "true", "1"):
+            answers["disability"] = "yes"
+        elif dis_val.lower().strip() in ("no", "false", "0"):
+            answers["disability"] = "no"
+
+    # 9. Marital Status
+    marital_val = str(prof.get("marital_status", "")).lower().strip()
+    valid_marital = ["single", "married", "widowed", "divorced", "prefer_not_to_say"]
+    if marital_val in valid_marital:
+        answers["marital_status"] = marital_val
+
+    # 10. Minority Status
+    min_val = prof.get("minority_status") if prof.get("minority_status") is not None else prof.get("minority")
+    if isinstance(min_val, bool):
+        answers["minority_status"] = "yes" if min_val else "no"
+    elif isinstance(min_val, str) and min_val.strip():
+        if min_val.lower().strip() in ("yes", "true", "1"):
+            answers["minority_status"] = "yes"
+        elif min_val.lower().strip() in ("no", "false", "0"):
+            answers["minority_status"] = "no"
+
+    # 11. Occupation
+    occ_val = prof.get("occupation")
+    if occ_val:
+        answers["occupation"] = str(occ_val).strip()
+
+
+def handle_manual_fill(category_key: str) -> None:
+    reset_eligibility_session(keep_intent=category_key)
+    st.session_state.fill_mode = "manual"
+    st.session_state.pop("pending_category_intent", None)
+    st.session_state.questionnaire_step = 1
+    st.session_state["_scroll_to_top_needed"] = True
+    st.rerun()
+
+
+def handle_auto_fill(category_key: str) -> None:
+    reset_eligibility_session(keep_intent=category_key)
+    st.session_state.fill_mode = "autofill"
+
+    user_id = st.session_state.get("user_id", "citizen_user_1")
+    prof = {}
+    try:
+        res = api_client.get_profile(user_id=user_id)
+        if res and res.get("ok"):
+            prof = res.get("data", {}) or {}
+    except Exception:
+        prof = {}
+
+    apply_profile_to_answers(prof, st.session_state.eligibility_answers)
+    st.session_state.pop("pending_category_intent", None)
+    st.session_state.questionnaire_step = 1
+    st.session_state["_scroll_to_top_needed"] = True
+    st.rerun()
+
+
+def _render_autofill_dialog_content(category_key: str, lang: str) -> None:
+    st.markdown(
+        f"""
+        <div style="font-size: 0.95rem; color: #475569; margin-bottom: 1.25rem; line-height: 1.5;">
+            {"कृपया चुनें कि आप अपनी पात्रता जांचने के लिए फॉर्म कैसे भरना चाहते हैं:" if lang == "hi" else "Choose how you would like to complete your details for scheme eligibility:"}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Option 1: Fill Manually
+    st.markdown(
+        f"""
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem; margin-bottom: 0.6rem;">
+            <div style="font-weight: 700; color: #0F172A; font-size: 1rem; margin-bottom: 4px;">
+                {"स्वयं भरें" if lang == "hi" else "Fill Manually"}
+            </div>
+            <div style="font-size: 0.85rem; color: #64748B; line-height: 1.4;">
+                {"अपने विवरण स्वयं दर्ज करें।" if lang == "hi" else "Enter your details yourself."}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("स्वयं भरें" if lang == "hi" else "Fill Manually", key="btn_fill_manual", use_container_width=True):
+        handle_manual_fill(category_key)
+
+    st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+
+    # Option 2: Auto Fill
+    st.markdown(
+        f"""
+        <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 1rem; margin-bottom: 0.6rem;">
+            <div style="font-weight: 700; color: #1E3A8A; font-size: 1rem; margin-bottom: 4px;">
+                {"ऑटो फिल" if lang == "hi" else "Auto Fill"}
+            </div>
+            <div style="font-size: 0.85rem; color: #3B82F6; line-height: 1.4;">
+                {"अपनी नागरिक प्रोफ़ाइल में पहले से उपलब्ध जानकारी का उपयोग करें और उपलब्ध फ़ील्ड स्वचालित रूप से भरें।" if lang == "hi" else "Use the information already available in your Citizen Profile and fill the available fields automatically."}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("ऑटो फिल" if lang == "hi" else "Auto Fill", type="primary", key="btn_fill_autofill", use_container_width=True):
+        handle_auto_fill(category_key)
+
+
+def _on_dialog_dismiss() -> None:
+    st.session_state.pop("pending_category_intent", None)
+
+
+@st.dialog("How would you like to fill your details?", width="small", on_dismiss=_on_dialog_dismiss)
+def _autofill_dialog_en(category_key: str) -> None:
+    _render_autofill_dialog_content(category_key, "en")
+
+
+@st.dialog("आप अपने विवरण कैसे भरना चाहते हैं?", width="small", on_dismiss=_on_dialog_dismiss)
+def _autofill_dialog_hi(category_key: str) -> None:
+    _render_autofill_dialog_content(category_key, "hi")
 
 
 def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
@@ -30,28 +238,32 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         home_needs = st.session_state.finder_answers.get("needs", [])
         if home_needs and "intent" not in answers:
             first_need = home_needs[0].lower()
+            mapped = "general"
             if "education" in first_need or "scholarship" in first_need:
-                answers["intent"] = "education"
+                mapped = "education"
             elif "business" in first_need or "loan" in first_need:
-                answers["intent"] = "business"
+                mapped = "business"
             elif "agri" in first_need:
-                answers["intent"] = "agriculture"
+                mapped = "agriculture"
             elif "intern" in first_need:
-                answers["intent"] = "internships"
+                mapped = "internships"
             elif "job" in first_need or "employ" in first_need:
-                answers["intent"] = "jobs"
+                mapped = "jobs"
             elif "skill" in first_need:
-                answers["intent"] = "skills"
+                mapped = "skills"
             elif "housing" in first_need:
-                answers["intent"] = "housing"
+                mapped = "housing"
             elif "health" in first_need:
-                answers["intent"] = "healthcare"
+                mapped = "healthcare"
             elif "pension" in first_need:
-                answers["intent"] = "pension"
+                mapped = "pension"
             elif "women" in first_need or "child" in first_need:
-                answers["intent"] = "women_child"
+                mapped = "women_child"
             elif "disab" in first_need:
-                answers["intent"] = "disability"
+                mapped = "disability"
+
+            st.session_state.pending_category_intent = mapped
+            st.session_state.pop("finder_answers", None)
 
     # Step index initialization
     if "questionnaire_step" not in st.session_state:
@@ -86,6 +298,13 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     # Step 0: Goal / Intent Selection Screen
     # -----------------------------------------------------------------
     if current_step == 0:
+        pending_intent = st.session_state.get("pending_category_intent")
+        if pending_intent:
+            if lang == "hi":
+                _autofill_dialog_hi(pending_intent)
+            else:
+                _autofill_dialog_en(pending_intent)
+
         st.markdown(
             f"""
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -132,11 +351,11 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
                     type="primary" if answers.get("intent") == opt.key else "secondary",
                     use_container_width=True,
                 ):
-                    answers["intent"] = opt.key
-                    st.session_state.validation_error = None
-                    st.session_state.questionnaire_step = 1
-                    st.session_state["_scroll_to_top_needed"] = True
-                    st.rerun()
+                    st.session_state.pending_category_intent = opt.key
+                    if lang == "hi":
+                        _autofill_dialog_hi(opt.key)
+                    else:
+                        _autofill_dialog_en(opt.key)
 
         if should_scroll:
             st.session_state["_scroll_to_top_needed"] = False
@@ -166,9 +385,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         )
     with col_reset:
         if st.button("🔄 " + ("उद्देश्य बदलें" if lang == "hi" else "Change Goal"), key="change_intent_btn"):
-            st.session_state.validation_error = None
-            st.session_state.questionnaire_step = 0
-            st.session_state["_scroll_to_top_needed"] = True
+            reset_eligibility_session()
             st.rerun()
 
     progress_val = display_step / float(max(1, total_steps))

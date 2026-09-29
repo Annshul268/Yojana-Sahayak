@@ -3,6 +3,7 @@
 from typing import Any, Callable, Dict, List
 import streamlit as st
 from frontend.components.featured_carousel import render_featured_carousel
+from frontend.pages.scheme_finder import reset_eligibility_session
 from frontend.services.api_client import api_client
 from frontend.services.scheme_data import get_featured_schemes_db, get_live_db_statistics
 from frontend.utils.i18n import get_current_language
@@ -44,6 +45,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 use_container_width=True,
                 key="hero_check_eligibility_btn",
             ):
+                reset_eligibility_session()
                 navigate_to("finder")
 
         with col_b2:
