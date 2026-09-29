@@ -270,6 +270,10 @@ def render_featured_carousel(
             args=(slug,),
         ):
             on_view_scheme_click(slug)
+            return
+
+        if st.session_state.get("current_page", "home") != "home":
+            return
 
     with col_prev:
         if st.button("←", key=f"feat_prev_{current_idx}", use_container_width=True):

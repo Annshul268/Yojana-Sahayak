@@ -97,25 +97,26 @@ if "scheme" in st.query_params:
 render_navbar(navigate_to)
 
 # Route to Current Page (rendered atomically inside dedicated container)
-page = st.session_state.current_page
+page = st.session_state.get("current_page", "home")
 main_slot = st.empty()
+main_slot.empty()
 
 with main_slot.container():
-    if page == "home":
+    if page in ("home", "index"):
         render_home(navigate_to)
-    elif page == "finder":
+    elif page in ("finder", "questionnaire"):
         render_scheme_finder(navigate_to)
-    elif page == "results":
+    elif page in ("results", "matches"):
         render_results(navigate_to)
-    elif page == "schemes":
+    elif page in ("schemes", "all_schemes", "directory"):
         render_schemes_directory(navigate_to)
     elif page == "scheme_details":
         render_scheme_details(navigate_to)
-    elif page == "saved":
+    elif page in ("saved", "saved_schemes"):
         render_saved_schemes(navigate_to)
-    elif page in ("tracker", "applications"):
+    elif page in ("tracker", "applications", "my_applications"):
         render_application_tracker(navigate_to)
-    elif page == "profile":
+    elif page in ("profile", "account"):
         render_citizen_profile(navigate_to)
     elif page == "admin":
         # Protected: Only accessible if is_admin is True

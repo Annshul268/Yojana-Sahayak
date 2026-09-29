@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import streamlit as st
 
+from frontend.pages.home import render_home
 from frontend.pages.profile import render_citizen_profile
 from frontend.pages.saved import render_saved_schemes
 from frontend.pages.scheme_details import render_scheme_details
@@ -163,6 +164,53 @@ class TestNavigationBackButtons:
         navigate_mock.assert_called_with("home")
         assert "scheme_navigation_source" not in st.session_state
         assert "selected_scheme_slug" not in st.session_state
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_home_does_not_render_when_not_on_home_page(
+        self, mock_markdown, mock_columns, mock_button
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        navigate_mock = MagicMock()
+        old_page = st.session_state.get("current_page", "home")
+        try:
+            st.session_state["current_page"] = "schemes"
+            render_home(navigate_mock)
+            assert mock_markdown.call_count == 0
+            assert mock_button.call_count == 0
+            navigate_mock.assert_not_called()
+        finally:
+            st.session_state["current_page"] = old_page
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_home_browse_schemes_button_stops_execution_immediately(
+        self, mock_markdown, mock_columns, mock_button
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        # Return True for hero_browse_schemes_btn
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "hero_browse_schemes_btn"
+
+        navigate_mock = MagicMock()
+        old_page = st.session_state.get("current_page", "home")
+        try:
+            st.session_state["current_page"] = "home"
+            # When clicked, navigate_to("schemes") is called and render_home returns early
+            def mock_nav(target):
+                st.session_state["current_page"] = target
+                navigate_mock(target)
+
+            render_home(mock_nav)
+            navigate_mock.assert_called_once_with("schemes")
+            assert st.session_state["current_page"] == "schemes"
+        finally:
+            st.session_state["current_page"] = old_page
 
     @patch("streamlit.rerun")
     @patch("streamlit.toast")

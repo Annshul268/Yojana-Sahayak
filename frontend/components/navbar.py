@@ -48,6 +48,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             on_click=on_nav_home,
         ):
             on_nav_home()
+            return
 
     with col_apps:
         is_active = (cur_page in ("tracker", "applications"))
@@ -69,6 +70,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             on_click=on_nav_apps,
         ):
             on_nav_apps()
+            return
 
     with col_lang:
         # Phone keyboard-style globe language switcher
@@ -87,6 +89,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         ):
             on_lang_toggle()
             st.rerun()
+            return
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_auth:
@@ -106,5 +109,6 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             on_click=on_nav_auth,
         ):
             on_nav_auth()
+            return
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.5rem 0 1rem 0;' />", unsafe_allow_html=True)

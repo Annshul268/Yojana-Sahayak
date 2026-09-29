@@ -10,6 +10,9 @@ from frontend.utils.i18n import get_current_language
 
 
 def render_home(navigate_to: Callable[[str], None]) -> None:
+    if st.session_state.get("current_page", "home") != "home":
+        return
+
     lang = get_current_language()
 
     # =========================================================================
@@ -56,6 +59,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 on_click=on_check_eligibility_click,
             ):
                 on_check_eligibility_click()
+                return
 
         with col_b2:
             if st.button(
@@ -66,6 +70,10 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 on_click=on_browse_schemes_click,
             ):
                 on_browse_schemes_click()
+                return
+
+        if st.session_state.get("current_page", "home") != "home":
+            return
 
         st.markdown(
             f"""
@@ -77,6 +85,9 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
         )
 
     with col_right:
+        if st.session_state.get("current_page", "home") != "home":
+            return
+
         st.markdown(
             f"""
             <div class="hero-carousel-header" style="text-align: left; margin: 0 0 8px 0; padding: 0;">
@@ -101,6 +112,9 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             render_featured_carousel(featured_schemes, lang=lang, navigate_to=navigate_to)
         else:
             st.info("Featured schemes are currently loading...")
+
+    if st.session_state.get("current_page", "home") != "home":
+        return
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 34px 0 28px 0;' />", unsafe_allow_html=True)
 
@@ -138,6 +152,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             on_click=on_total_schemes_click,
         ):
             on_total_schemes_click()
+            return
 
     with col_c2:
         st.markdown(
@@ -164,6 +179,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             on_click=on_central_schemes_click,
         ):
             on_central_schemes_click()
+            return
 
     with col_c3:
         st.markdown(
@@ -190,6 +206,10 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
             on_click=on_state_schemes_click,
         ):
             on_state_schemes_click()
+            return
+
+    if st.session_state.get("current_page", "home") != "home":
+        return
 
     st.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
 
@@ -256,10 +276,17 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             args=(item["db_category"],),
                         ):
                             on_cat_click(item["db_category"])
+                            return
                 st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+
+        if st.session_state.get("current_page", "home") != "home":
+            return
 
     # TAB 2: States/UTs
     with tab_states:
+        if st.session_state.get("current_page", "home") != "home":
+            return
+
         st.markdown(
             f"""
             <div style="margin-top: 10px; margin-bottom: 20px;">
@@ -311,9 +338,16 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             args=(st_name,),
                         ):
                             on_state_click(st_name)
+                            return
+
+        if st.session_state.get("current_page", "home") != "home":
+            return
 
     # TAB 3: Central Ministries
     with tab_min:
+        if st.session_state.get("current_page", "home") != "home":
+            return
+
         st.markdown(
             f"""
             <div style="margin-top: 10px; margin-bottom: 20px;">
@@ -364,6 +398,13 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             on_click=on_min_click,
                         ):
                             on_min_click()
+                            return
+
+        if st.session_state.get("current_page", "home") != "home":
+            return
+
+    if st.session_state.get("current_page", "home") != "home":
+        return
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 40px 0 28px 0;' />", unsafe_allow_html=True)
 
