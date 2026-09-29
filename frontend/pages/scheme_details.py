@@ -7,29 +7,47 @@ from frontend.utils.i18n import get_current_language
 from frontend.utils.ui import inject_scheme_details_scroll_to_top
 
 
+SOURCE_TO_PAGE = {
+    "featured": "home",
+    "home": "home",
+    "all_schemes": "schemes",
+    "schemes": "schemes",
+    "directory": "schemes",
+    "saved": "saved",
+    "saved_schemes": "saved",
+    "applications": "tracker",
+    "tracker": "tracker",
+    "my_applications": "tracker",
+    "results": "results",
+    "finder": "finder",
+    "profile": "profile",
+}
+
+
 def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     slug = st.session_state.get("selected_scheme_slug")
     if not slug:
         st.warning("No scheme selected.")
-        if st.button("← Back to Directory"):
-            navigate_to("schemes")
+        source = st.session_state.get("scheme_navigation_source")
+        target_page = SOURCE_TO_PAGE.get(str(source).lower().strip() if source else "", "home")
+        back_text = "← " + ("होम पर वापस" if st.session_state.get("lang") == "hi" else "Back to Home") if target_page == "home" else ("← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back"))
+        if st.button(back_text):
+            st.session_state.pop("scheme_navigation_source", None)
+            navigate_to(target_page)
         return
 
     # Check whether viewport scroll-to-top is needed on this navigation
     cur_slug = slug
     last_viewed_slug = st.session_state.get("_last_viewed_scheme_slug")
-    last_page = st.session_state.get("_last_rendered_page", "")
     explicit_scroll = st.session_state.pop("_scheme_scroll_to_top", False)
 
     should_scroll = (
         explicit_scroll
-        or (last_page != "scheme_details")
         or (last_viewed_slug != cur_slug)
         or ("_scheme_view_initialized" not in st.session_state)
     )
 
     st.session_state["_last_viewed_scheme_slug"] = cur_slug
-    st.session_state["_last_rendered_page"] = "scheme_details"
     st.session_state["_scheme_view_initialized"] = True
 
     # Top anchor element for instant scrolling
@@ -38,17 +56,25 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         unsafe_allow_html=True,
     )
 
-    # Back Link button
+    # Back Link button (Source-aware)
     col_bk, _ = st.columns([2, 8])
     with col_bk:
-        if st.button("← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back"), key="scheme_det_back_btn"):
-            last_page = st.session_state.get("_last_rendered_page")
-            if last_page in ("home", "schemes", "saved", "tracker", "applications", "results"):
-                navigate_to(last_page)
-            elif st.session_state.get("match_results"):
-                navigate_to("results")
-            else:
-                navigate_to("schemes")
+        back_label = "← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back")
+        if st.button(back_label, key="scheme_det_back_btn"):
+            source = st.session_state.get("scheme_navigation_source")
+            if not source:
+                source = st.session_state.get("_last_rendered_page")
+
+            target_page = SOURCE_TO_PAGE.get(str(source).lower().strip() if source else "")
+            if not target_page:
+                if st.session_state.get("match_results"):
+                    target_page = "results"
+                else:
+                    target_page = "home"
+
+            st.session_state.pop("scheme_navigation_source", None)
+            st.session_state.pop("selected_scheme_slug", None)
+            navigate_to(target_page)
 
     # Fetch scheme data
     res = api_client.get_scheme(slug)

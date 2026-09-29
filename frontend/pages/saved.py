@@ -16,7 +16,7 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
         back_label = "← " + ("पीछे" if lang == "hi" else "Back")
         if st.button(back_label, key="saved_back_btn"):
             last_page = st.session_state.get("_last_rendered_page")
-            if last_page and last_page not in ("saved", "admin"):
+            if last_page and last_page not in ("saved", "scheme_details", "admin"):
                 navigate_to(last_page)
             else:
                 navigate_to("home")
@@ -86,6 +86,7 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
             with col1:
                 if st.button("View Scheme", key=f"saved_view_{slug}", type="primary", use_container_width=True):
                     st.session_state.selected_scheme_slug = slug
+                    st.session_state["scheme_navigation_source"] = "saved"
                     st.session_state["_scheme_scroll_to_top"] = True
                     navigate_to("scheme_details")
             with col2:

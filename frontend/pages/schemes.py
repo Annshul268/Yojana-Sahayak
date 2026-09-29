@@ -56,7 +56,7 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
         back_label = "← " + ("पीछे" if lang == "hi" else "Back")
         if st.button(back_label, key="schemes_dir_back_btn"):
             last_page = st.session_state.get("_last_rendered_page")
-            if last_page and last_page not in ("schemes", "admin"):
+            if last_page and last_page not in ("schemes", "scheme_details", "admin"):
                 navigate_to(last_page)
             else:
                 navigate_to("home")
@@ -151,6 +151,7 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
 
     def on_details(slug: str):
         st.session_state.selected_scheme_slug = slug
+        st.session_state["scheme_navigation_source"] = "all_schemes"
         st.session_state["_scheme_scroll_to_top"] = True
         navigate_to("scheme_details")
 

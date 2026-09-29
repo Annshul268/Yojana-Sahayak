@@ -53,9 +53,22 @@ if "is_authenticated" not in st.session_state:
 def navigate_to(page_name: str) -> None:
     cur = st.session_state.get("current_page", "home")
     if cur and cur != page_name:
-        st.session_state["_last_rendered_page"] = cur
+        if cur != "scheme_details":
+            st.session_state["_last_rendered_page"] = cur
     if page_name == "scheme_details":
         st.session_state["_scheme_scroll_to_top"] = True
+        if not st.session_state.get("scheme_navigation_source"):
+            SOURCE_INFERENCE = {
+                "home": "featured",
+                "schemes": "all_schemes",
+                "saved": "saved",
+                "tracker": "applications",
+                "applications": "applications",
+                "results": "results",
+                "finder": "finder",
+                "profile": "profile",
+            }
+            st.session_state["scheme_navigation_source"] = SOURCE_INFERENCE.get(cur, "featured")
     st.session_state.current_page = page_name
     st.rerun()
 
@@ -66,7 +79,11 @@ if "scheme" in st.query_params:
     if isinstance(query_slug, list) and query_slug:
         query_slug = query_slug[0]
     if query_slug:
-        st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "home") or "home"
+        prev = st.session_state.get("current_page", "home") or "home"
+        if prev != "scheme_details":
+            st.session_state["_last_rendered_page"] = prev
+        if not st.session_state.get("scheme_navigation_source"):
+            st.session_state["scheme_navigation_source"] = "featured" if prev == "home" else prev
         st.session_state.selected_scheme_slug = str(query_slug).strip()
         st.session_state["_scheme_scroll_to_top"] = True
         st.session_state.current_page = "scheme_details"

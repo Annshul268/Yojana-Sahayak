@@ -91,6 +91,11 @@ def render_featured_carousel(
     state_badge = "राज्य योजना" if lang == "hi" else "State Scheme"
     level_badge_text = central_badge if level == "Central" else (state_label or state_badge)
 
+    official_url = (s.get("official_url") or s.get("url") or "").strip()
+    has_official_url = bool(official_url and official_url.startswith("http"))
+    image_href = official_url if has_official_url else "#"
+    image_target = 'target="_blank" rel="noopener noreferrer"' if has_official_url else 'target="_self"'
+
     # Scoped styles for the featured carousel component
     st.markdown(
         """
@@ -123,6 +128,24 @@ def render_featured_carousel(
         }
         .carousel-banner-anchor:hover img {
             transform: scale(1.05);
+        }
+        .carousel-external-pill {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(4px);
+            color: #FFFFFF;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            pointer-events: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
         .carousel-body-box {
             padding: 16px 20px 10px 20px;
@@ -162,11 +185,6 @@ def render_featured_carousel(
             overflow: hidden;
             min-height: 2.7em;
             text-decoration: none;
-            cursor: pointer;
-            transition: color 0.15s ease;
-        }
-        .carousel-card-heading:hover {
-            color: #2563EB;
         }
         .carousel-card-summary {
             font-size: 0.88rem;
@@ -202,20 +220,19 @@ def render_featured_carousel(
         unsafe_allow_html=True,
     )
 
-    # 1. Main Scheme Card Content (Banner Image, Badges, Title, Description)
+    # 1. Main Scheme Card Content (Banner Image linking to Official Government Website, Badges, Title, Description)
     card_html = f"""
     <div class="carousel-card-wrap">
-        <a href="?scheme={slug}" target="_self" class="carousel-banner-anchor" aria-label="View {name}">
+        <a href="{image_href}" {image_target} class="carousel-banner-anchor" aria-label="Official Website: {name}" title="{official_url if has_official_url else name}">
             <img src="{banner_url}" alt="{name}" onerror="this.src='{FALLBACK_IMAGE}'" />
+            {f'<div class="carousel-external-pill"><span>🌐 {"आधिकारिक वेबसाइट ↗" if lang == "hi" else "Official Website ↗"}</span></div>' if has_official_url else ''}
         </a>
         <div class="carousel-body-box">
             <div class="carousel-badges-row">
                 <span class="carousel-badge-pill carousel-badge-cat">{category}</span>
                 <span class="carousel-badge-pill carousel-badge-lvl">{level_badge_text}</span>
             </div>
-            <a href="?scheme={slug}" target="_self" style="text-decoration: none; color: inherit;">
-                <div class="carousel-card-heading">{name}</div>
-            </a>
+            <div class="carousel-card-heading">{name}</div>
             <div class="carousel-card-summary">{desc}</div>
         </div>
     </div>
@@ -237,6 +254,7 @@ def render_featured_carousel(
             use_container_width=True,
         ):
             st.session_state.selected_scheme_slug = slug
+            st.session_state["scheme_navigation_source"] = "featured"
             st.session_state["_scheme_scroll_to_top"] = True
             if navigate_to:
                 navigate_to("scheme_details")

@@ -62,11 +62,50 @@ class TestFeaturedCarouselRenderingAndNavigation:
         markdown_calls = [c[0][0] for c in mock_markdown.call_args_list]
         card_html = next(html for html in markdown_calls if '<div class="carousel-card-wrap">' in html)
 
-        assert "href=\"?scheme=pm-kisan\"" in card_html
+        # Image must link to official_url in a new tab, NOT to internal Scheme Detail
+        assert 'href="https://pmkisan.gov.in"' in card_html
+        assert 'target="_blank"' in card_html
+        assert 'rel="noopener noreferrer"' in card_html
         assert "PM Kisan Samman Nidhi" in card_html
         assert "Financial support to farmer families." in card_html
         assert "Agriculture" in card_html
         assert "Central Scheme" in card_html
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    def test_carousel_image_url_synchronization_per_slide(self, mock_markdown, mock_columns, mock_button, sample_schemes):
+        import streamlit as st
+        carousel_fn = getattr(render_featured_carousel, "__wrapped__", render_featured_carousel)
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(len(spec))]
+        mock_button.return_value = False
+
+        # Slide 0: PM Kisan
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        mock_markdown.reset_mock()
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
+        card_html_0 = next(html for html in [c[0][0] for c in mock_markdown.call_args_list] if '<div class="carousel-card-wrap">' in html)
+        assert 'href="https://pmkisan.gov.in"' in card_html_0
+
+        # Slide 1: Ayushman Bharat
+        st.session_state["featured_carousel_index"] = 1
+        st.session_state["_carousel_last_tick"] = 1000.0
+        mock_markdown.reset_mock()
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
+        card_html_1 = next(html for html in [c[0][0] for c in mock_markdown.call_args_list] if '<div class="carousel-card-wrap">' in html)
+        assert 'href="https://pmjay.gov.in"' in card_html_1
+
+        # Slide 2: PMAY Gramin
+        st.session_state["featured_carousel_index"] = 2
+        st.session_state["_carousel_last_tick"] = 1000.0
+        mock_markdown.reset_mock()
+        with patch("time.time", return_value=1001.0):
+            carousel_fn(sample_schemes, lang="en")
+        card_html_2 = next(html for html in [c[0][0] for c in mock_markdown.call_args_list] if '<div class="carousel-card-wrap">' in html)
+        assert 'href="https://pmayg.nic.in"' in card_html_2
 
     @patch("streamlit.rerun")
     @patch("streamlit.button")
@@ -127,6 +166,7 @@ class TestFeaturedCarouselRenderingAndNavigation:
             carousel_fn(sample_schemes, lang="en", navigate_to=navigate_mock)
 
         assert st.session_state.selected_scheme_slug == "ayushman-bharat-pmjay"
+        assert st.session_state.scheme_navigation_source == "featured"
         navigate_mock.assert_called_once_with("scheme_details")
 
     @patch("streamlit.button")
@@ -147,6 +187,46 @@ class TestFeaturedCarouselRenderingAndNavigation:
             carousel_fn(sample_schemes, lang="en")
 
         assert st.session_state.featured_carousel_index == 1
+
+    @pytest.mark.parametrize("source,expected_target", [
+        ("featured", "home"),
+        ("home", "home"),
+        ("all_schemes", "schemes"),
+        ("schemes", "schemes"),
+        ("saved", "saved"),
+        ("saved_schemes", "saved"),
+        ("applications", "tracker"),
+        ("tracker", "tracker"),
+        ("results", "results"),
+        ("finder", "finder"),
+        ("profile", "profile"),
+        (None, "home"),
+    ])
+    @patch("frontend.services.api_client.api_client.get_scheme")
+    @patch("streamlit.columns")
+    @patch("streamlit.button")
+    @patch("streamlit.markdown")
+    def test_scheme_details_source_aware_back_navigation(self, mock_markdown, mock_button, mock_columns, mock_get_scheme, source, expected_target):
+        from frontend.pages.scheme_details import render_scheme_details
+        import streamlit as st
+
+        st.session_state["selected_scheme_slug"] = "pm-kisan"
+        if source is not None:
+            st.session_state["scheme_navigation_source"] = source
+        else:
+            st.session_state.pop("scheme_navigation_source", None)
+            st.session_state.pop("_last_rendered_page", None)
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [MagicMock() for _ in range(spec if isinstance(spec, int) else len(spec))]
+        # Simulate clicking the Back button
+        mock_button.side_effect = lambda label, *args, **kwargs: "Back" in str(label) or "वापस" in str(label)
+        mock_get_scheme.return_value = {"ok": True, "data": {"id": "1", "name": "PM Kisan", "slug": "pm-kisan"}}
+
+        mock_navigate = MagicMock()
+        render_scheme_details(mock_navigate)
+
+        mock_navigate.assert_called_once_with(expected_target)
+        assert "scheme_navigation_source" not in st.session_state
 
 
 class TestBackendURLResolution:

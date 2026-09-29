@@ -27,7 +27,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
         back_label = "← " + ("पीछे" if lang == "hi" else "Back")
         if st.button(back_label, key="tracker_back_btn"):
             last_page = st.session_state.get("_last_rendered_page")
-            if last_page and last_page not in ("tracker", "applications", "admin"):
+            if last_page and last_page not in ("tracker", "applications", "scheme_details", "admin"):
                 navigate_to(last_page)
             else:
                 navigate_to("home")
@@ -193,6 +193,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
                 help="View Scheme",
             ):
                 st.session_state.selected_scheme_slug = slug
+                st.session_state["scheme_navigation_source"] = "applications"
                 st.session_state["_scheme_scroll_to_top"] = True
                 navigate_to("scheme_details")
 
