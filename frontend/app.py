@@ -61,12 +61,17 @@ def navigate_to(page_name: str) -> None:
 # Direct scheme query parameter navigation (e.g. from featured carousel or direct links)
 if "scheme" in st.query_params:
     query_slug = st.query_params.get("scheme")
+    if isinstance(query_slug, list) and query_slug:
+        query_slug = query_slug[0]
     if query_slug:
-        st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "")
-        st.session_state.selected_scheme_slug = query_slug
+        st.session_state["_last_rendered_page"] = st.session_state.get("current_page", "home") or "home"
+        st.session_state.selected_scheme_slug = str(query_slug).strip()
         st.session_state["_scheme_scroll_to_top"] = True
         st.session_state.current_page = "scheme_details"
-    del st.query_params["scheme"]
+    try:
+        del st.query_params["scheme"]
+    except Exception:
+        pass
 
 
 # Render Clean Top Header with Navigation Tabs

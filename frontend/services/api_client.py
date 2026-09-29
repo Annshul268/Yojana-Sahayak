@@ -4,15 +4,38 @@ import os
 from typing import Any, Dict, List, Optional
 import httpx
 
-BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
+BACKEND_API_URL = os.getenv("BACKEND_API_URL") or os.getenv("API_BASE_URL", "http://localhost:8000")
+
+
+def get_backend_api_url() -> str:
+    """Dynamically resolves the backend API URL from env or Streamlit secrets."""
+    url = os.getenv("BACKEND_API_URL") or os.getenv("API_BASE_URL")
+    if url:
+        return url
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets"):
+            if "BACKEND_API_URL" in st.secrets:
+                return str(st.secrets["BACKEND_API_URL"])
+            if "API_BASE_URL" in st.secrets:
+                return str(st.secrets["API_BASE_URL"])
+    except Exception:
+        pass
+    return "http://localhost:8000"
 
 
 class APIClient:
     """Client for communicating with the Yojana Sahayak FastAPI backend."""
 
-    def __init__(self, base_url: str = BACKEND_API_URL, timeout: float = 12.0):
-        self.base_url = base_url.rstrip("/")
+    def __init__(self, base_url: Optional[str] = None, timeout: float = 15.0):
+        self._custom_base_url = base_url
         self.timeout = timeout
+
+    @property
+    def base_url(self) -> str:
+        if self._custom_base_url:
+            return self._custom_base_url.rstrip("/")
+        return get_backend_api_url().rstrip("/")
 
     def _request(
         self,
@@ -180,19 +203,39 @@ class APIClient:
 
     # AI Service
     def explain_eligibility(
-        self, match_result: Dict[str, Any], user_profile: Dict[str, Any], language: str = "en"
+        self,
+        match_result: Optional[Dict[str, Any]] = None,
+        user_profile: Optional[Dict[str, Any]] = None,
+        language: str = "en",
+        scheme_id: Optional[str] = None,
+        scheme_slug: Optional[str] = None,
     ) -> Dict[str, Any]:
-        payload = {
-            "match_result": match_result,
-            "user_profile": user_profile,
-            "language": language,
-        }
+        payload: Dict[str, Any] = {"language": language}
+        if match_result:
+            payload["match_result"] = match_result
+        if user_profile:
+            payload["user_profile"] = user_profile
+        if scheme_id:
+            payload["scheme_id"] = scheme_id
+        if scheme_slug:
+            payload["scheme_slug"] = scheme_slug
         return self._request("POST", "/api/ai/explain", json_data=payload)
 
-    def ask_ai(self, question: str, language: str = "en", category: Optional[str] = None) -> Dict[str, Any]:
-        payload = {"question": question, "language": language}
+    def ask_ai(
+        self,
+        question: str,
+        language: str = "en",
+        category: Optional[str] = None,
+        scheme_id: Optional[str] = None,
+        scheme_slug: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {"question": question, "language": language}
         if category:
             payload["category"] = category
+        if scheme_id:
+            payload["scheme_id"] = scheme_id
+        if scheme_slug:
+            payload["scheme_slug"] = scheme_slug
         return self._request("POST", "/api/ai/ask", json_data=payload)
 
     # Admin Dashboard

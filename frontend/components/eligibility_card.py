@@ -134,22 +134,61 @@ def render_eligibility_card(
 
         # Expandable Grounded AI Explanation
         if st.session_state.get(f"show_ai_explain_{slug}", False):
-            with st.spinner("Generating grounded AI explanation..."):
-                query = f"Explain in simple plain language why an applicant qualifies for {scheme_name} and what documents are required."
-                ai_res = api_client.ask_ai(question=query, language=lang)
-                if ai_res["ok"]:
-                    st.markdown(
-                        f"""
-                        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 12px 14px; margin-top: 8px; margin-bottom: 12px;">
-                            <div style="font-size: 0.82rem; font-weight: 700; color: #166534; margin-bottom: 4px;">
-                                🤖 {"आधिकारिक तथ्यों पर आधारित एआई व्याख्या:" if lang == "hi" else "Grounded AI Explanation:"}
-                            </div>
-                            <div style="font-size: 0.9rem; color: #14532D; line-height: 1.5;">
-                                {ai_res["data"]["answer"]}
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
+            cache_key = f"ai_explain_cache_{slug}_{lang}"
+            cached_explanation = st.session_state.get(cache_key)
+
+            if not cached_explanation:
+                with st.spinner("Generating grounded AI explanation..." if lang != "hi" else "आधिकारिक तथ्यों पर आधारित व्याख्या तैयार हो रही है..."):
+                    user_profile = st.session_state.get("matched_profile") or st.session_state.get("eligibility_profile", {})
+                    # 1. Try explain_eligibility with full match result context
+                    ai_res = api_client.explain_eligibility(
+                        match_result=match,
+                        user_profile=user_profile,
+                        language=lang,
+                        scheme_id=scheme_id,
+                        scheme_slug=slug,
                     )
+                    if ai_res.get("ok"):
+                        cached_explanation = ai_res["data"].get("explanation")
+                        st.session_state[cache_key] = cached_explanation
+                    else:
+                        # 2. Fallback to ask_ai with verified scheme context
+                        query = f"Explain in simple plain language why an applicant qualifies for {scheme_name}, key benefits, and required documents."
+                        fallback_res = api_client.ask_ai(
+                            question=query,
+                            language=lang,
+                            category=match.get("category"),
+                            scheme_id=scheme_id,
+                            scheme_slug=slug,
+                        )
+                        if fallback_res.get("ok"):
+                            cached_explanation = fallback_res["data"].get("answer")
+                            st.session_state[cache_key] = cached_explanation
+                        else:
+                            import logging
+                            logging.getLogger("frontend").error(
+                                "AI Explain request failed for %s: %s", slug, ai_res.get("error") or fallback_res.get("error")
+                            )
+
+            if cached_explanation:
+                st.markdown(
+                    f"""
+                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 12px 14px; margin-top: 8px; margin-bottom: 12px;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: #166534; margin-bottom: 4px;">
+                            🤖 {"आधिकारिक तथ्यों पर आधारित एआई व्याख्या:" if lang == "hi" else "Grounded AI Explanation:"}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #14532D; line-height: 1.5;">
+                            {cached_explanation}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.error(
+                    "एआई सहायक वर्तमान में अनुपलब्ध है। कृपया कुछ समय बाद पुनः प्रयास करें।"
+                    if lang == "hi"
+                    else "AI Assistant is temporarily unavailable. Please try again in a moment."
+                )
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)

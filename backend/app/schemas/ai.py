@@ -6,8 +6,10 @@ from backend.app.matching.models import SchemeMatchResult
 
 
 class ExplainEligibilityRequest(BaseModel):
-    match_result: SchemeMatchResult
-    user_profile: Dict[str, Any]
+    match_result: Optional[SchemeMatchResult] = None
+    user_profile: Optional[Dict[str, Any]] = None
+    scheme_id: Optional[str] = None
+    scheme_slug: Optional[str] = None
     language: str = "en"
 
 
@@ -22,6 +24,8 @@ class AskAIRequest(BaseModel):
     question: str
     language: str = "en"
     category: Optional[str] = None
+    scheme_id: Optional[str] = None
+    scheme_slug: Optional[str] = None
 
 
 class AskAIResponse(BaseModel):

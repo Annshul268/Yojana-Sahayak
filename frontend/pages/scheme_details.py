@@ -42,8 +42,10 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     col_bk, _ = st.columns([2, 8])
     with col_bk:
         if st.button("← " + ("वापस" if st.session_state.get("lang") == "hi" else "Back"), key="scheme_det_back_btn"):
-            # Return to results if results exist, else schemes directory
-            if st.session_state.get("match_results"):
+            last_page = st.session_state.get("_last_rendered_page")
+            if last_page in ("home", "schemes", "saved", "tracker", "applications", "results"):
+                navigate_to(last_page)
+            elif st.session_state.get("match_results"):
                 navigate_to("results")
             else:
                 navigate_to("schemes")
@@ -206,6 +208,13 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         unsafe_allow_html=True,
     )
 
+    # Dedicated AI Explain Scheme button
+    col_ai_exp, _ = st.columns([1.8, 1])
+    with col_ai_exp:
+        ai_exp_btn_text = "💡 " + ("सरल शब्दों में योजना समझें (AI Explain)" if lang == "hi" else "AI Explain This Scheme")
+        if st.button(ai_exp_btn_text, key=f"det_ai_explain_{slug}", use_container_width=True):
+            chosen_query = f"Explain in simple plain language the purpose, key benefits, eligibility criteria, and required documents for {name}."
+
     suggested_q = [
         "What documents do I need to apply?",
         "Who is eligible for this scheme?",
@@ -218,37 +227,59 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
             "सरल हिंदी में मुख्य लाभ बताएं",
         ]
 
-    chosen_query = None
+    chosen_query = chosen_query if 'chosen_query' in locals() and chosen_query else None
     q_cols = st.columns(len(suggested_q), gap="small")
     for idx, sq in enumerate(suggested_q):
         with q_cols[idx]:
-            if st.button(f"💬 {sq}", key=f"sq_btn_{idx}", use_container_width=True):
+            if st.button(f"💬 {sq}", key=f"sq_btn_{idx}_{slug}", use_container_width=True):
                 chosen_query = f"{sq} regarding {name}"
 
     custom_q = st.text_input(
         "Ask Yojana Sahayak:",
         placeholder="e.g. Is there any fee or maximum income limit?",
-        key="ai_custom_q_input",
+        key=f"ai_custom_q_input_{slug}",
         label_visibility="collapsed",
     )
-    if st.button("Ask Assistant" if lang != "hi" else "पूछें", type="secondary", key="ai_submit_q_btn") and custom_q.strip():
+    if st.button("Ask Assistant" if lang != "hi" else "पूछें", type="secondary", key=f"ai_submit_q_btn_{slug}") and custom_q.strip():
         chosen_query = f"{custom_q} regarding {name}"
 
     if chosen_query:
         with st.spinner("Retrieving verified facts from official data..."):
-            ai_res = api_client.ask_ai(question=chosen_query, language=lang)
-            if ai_res["ok"]:
-                st.markdown(
-                    f"""
-                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.25rem; margin-top: 12px;">
-                        <div style="font-size: 0.85rem; font-weight: 700; color: #1E3A8A; margin-bottom: 6px;">💡 Official Answer:</div>
-                        <div style="color: #1E293B; font-size: 0.95rem; line-height: 1.5;">{ai_res["data"]["answer"]}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+            ai_res = api_client.ask_ai(
+                question=chosen_query,
+                language=lang,
+                category=scheme.get("category"),
+                scheme_id=scheme.get("id"),
+                scheme_slug=slug,
+            )
+            if ai_res.get("ok"):
+                st.session_state[f"ai_detail_answer_{slug}"] = ai_res["data"]["answer"]
+                st.session_state.pop(f"ai_detail_error_{slug}", None)
             else:
-                st.error("AI Assistant is temporarily unavailable. Please try again.")
+                import logging
+                logging.getLogger("frontend").error("AI Assistant request failed for %s: %s", slug, ai_res.get("error"))
+                st.session_state[f"ai_detail_error_{slug}"] = (
+                    "एआई सहायक वर्तमान में अनुपलब्ध है। कृपया कुछ समय बाद पुनः प्रयास करें।"
+                    if lang == "hi"
+                    else "AI Assistant is temporarily unavailable. Please try again in a moment."
+                )
+
+    # Display answer strictly for THIS specific scheme
+    active_answer = st.session_state.get(f"ai_detail_answer_{slug}")
+    active_error = st.session_state.get(f"ai_detail_error_{slug}")
+
+    if active_answer:
+        st.markdown(
+            f"""
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.25rem; margin-top: 12px;">
+                <div style="font-size: 0.85rem; font-weight: 700; color: #1E3A8A; margin-bottom: 6px;">💡 Official Answer:</div>
+                <div style="color: #1E293B; font-size: 0.95rem; line-height: 1.5;">{active_answer}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    elif active_error:
+        st.error(active_error)
 
     # Reset viewport scroll position strictly after page elements have completely rendered
     if should_scroll:

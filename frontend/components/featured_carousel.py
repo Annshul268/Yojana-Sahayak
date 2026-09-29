@@ -135,9 +135,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           background: #FFFFFF;
           display: flex;
           flex-direction: column;
-          text-decoration: none;
           color: inherit;
-          cursor: pointer;
         }}
 
         .card-banner {{
@@ -146,6 +144,8 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           overflow: hidden;
           background: #0F172A;
           position: relative;
+          cursor: pointer;
+          touch-action: manipulation;
         }}
 
         .card-banner img {{
@@ -156,7 +156,7 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           transition: transform 0.35s ease;
         }}
 
-        .scheme-card:hover .card-banner img {{
+        .card-banner:hover img {{
           transform: scale(1.05);
         }}
 
@@ -205,6 +205,12 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           -webkit-box-orient: vertical;
           overflow: hidden;
           min-height: 2.7em;
+          cursor: pointer;
+          transition: color 0.15s ease;
+        }}
+
+        .card-title:hover {{
+          color: #2563EB;
         }}
 
         .card-desc {{
@@ -237,13 +243,17 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           background: #EFF6FF;
           border-radius: 6px;
           border: 1px solid #DBEAFE;
+          cursor: pointer;
+          touch-action: manipulation;
+          font-family: inherit;
           transition: all 0.15s ease;
         }}
 
-        .scheme-card:hover .btn-view {{
+        .btn-view:hover {{
           background: #2563EB;
           color: #FFFFFF;
           border-color: #2563EB;
+          transform: translateY(-1px);
         }}
 
         /* Carousel Navigation Controls */
@@ -321,24 +331,75 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
         let isHovered = false;
         const total = schemes.length;
 
-        // Build single scheme cards
-        schemes.forEach((s, idx) => {{
-          const card = document.createElement("a");
-          card.className = "scheme-card";
-          if (s.slug) {{
-            card.href = "?scheme=" + encodeURIComponent(s.slug);
-            card.target = "_top";
-          }} else if (s.has_url) {{
-            card.href = s.official_url;
-            card.target = "_blank";
-            card.rel = "noopener noreferrer";
-          }} else {{
-            card.href = "javascript:void(0)";
+        // Reliable scheme navigation for Streamlit applications
+        function openScheme(slug, officialUrl) {{
+          if (!slug) {{
+            if (officialUrl && officialUrl.startsWith("http")) {{
+              window.open(officialUrl, "_blank", "noopener,noreferrer");
+            }}
+            return;
           }}
 
-          // 1. Photographic Banner Image
+          // 1. Primary: Direct navigation of the parent Streamlit window
+          try {{
+            const pWin = (window.parent && window.parent !== window) ? window.parent : window;
+            const pUrl = new URL(pWin.location.href);
+            pUrl.searchParams.set("scheme", slug);
+            pWin.location.href = pUrl.toString();
+            return;
+          }} catch (e) {{
+            console.warn("Direct pWin.location.href navigation failed:", e);
+          }}
+
+          // 2. Secondary fallback using document.referrer or window.top
+          try {{
+            const ref = document.referrer ? new URL(document.referrer) : new URL(window.location.href);
+            ref.searchParams.set("scheme", slug);
+            window.top.location.href = ref.toString();
+            return;
+          }} catch (e) {{
+            console.warn("window.top navigation failed:", e);
+          }}
+
+          // 3. Tertiary fallback: programmatic anchor with target="_top"
+          try {{
+            const a = document.createElement("a");
+            a.target = "_top";
+            const origin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "";
+            a.href = origin + "/?scheme=" + encodeURIComponent(slug);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }} catch (e) {{
+            console.error("Top link click fallback failed:", e);
+          }}
+        }}
+
+        // Build single scheme cards
+        schemes.forEach((s, idx) => {{
+          const card = document.createElement("div");
+          card.className = "scheme-card";
+          card.id = "scheme-slide-" + idx;
+
+          // 1. Photographic Banner Image (Clickable)
           const banner = document.createElement("div");
           banner.className = "card-banner";
+          banner.setAttribute("role", "button");
+          banner.setAttribute("tabindex", "0");
+          banner.setAttribute("aria-label", "View " + s.name);
+          banner.title = s.name;
+          banner.addEventListener("click", (e) => {{
+            e.preventDefault();
+            e.stopPropagation();
+            openScheme(s.slug, s.official_url);
+          }});
+          banner.addEventListener("keydown", (e) => {{
+            if (e.key === "Enter" || e.key === " ") {{
+              e.preventDefault();
+              openScheme(s.slug, s.official_url);
+            }}
+          }});
+
           const img = document.createElement("img");
           img.src = s.banner_url;
           img.alt = s.name;
@@ -371,11 +432,16 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
 
           body.appendChild(badges);
 
-          // Title
+          // Title (Clickable)
           const title = document.createElement("div");
           title.className = "card-title";
           title.title = s.name;
           title.textContent = s.name;
+          title.addEventListener("click", (e) => {{
+            e.preventDefault();
+            e.stopPropagation();
+            openScheme(s.slug, s.official_url);
+          }});
           body.appendChild(title);
 
           // Description
@@ -388,9 +454,16 @@ def render_featured_carousel(schemes: List[Dict[str, Any]], lang: str = "en") ->
           const footer = document.createElement("div");
           footer.className = "card-footer";
 
-          const btn = document.createElement("span");
+          const btn = document.createElement("button");
+          btn.type = "button";
           btn.className = (s.slug || s.has_url) ? "btn-view" : "btn-disabled";
           btn.textContent = (s.slug || s.has_url) ? viewBtnText : noUrlText;
+          btn.setAttribute("aria-label", "View Scheme " + s.name);
+          btn.addEventListener("click", (e) => {{
+            e.preventDefault();
+            e.stopPropagation();
+            openScheme(s.slug, s.official_url);
+          }});
           footer.appendChild(btn);
 
           // Controls row: [ ← ] [ ● ● ● ] [ → ]

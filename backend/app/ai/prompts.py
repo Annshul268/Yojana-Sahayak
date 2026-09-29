@@ -37,3 +37,17 @@ INSTRUCTIONS:
 - Provide practical next steps and mention the official portal: {official_url}.
 - Language: {language}
 """
+
+SCHEME_EXPLANATION_PROMPT = """Explain clearly and simply to the citizen the official details and eligibility of the scheme '{scheme_name}'.
+
+VERIFIED SCHEME INFORMATION:
+{scheme_details}
+
+INSTRUCTIONS:
+- Explain what this scheme is and its core benefits in simple, accessible language.
+- Clarify who qualifies to apply and the essential criteria.
+- List the key documents required to apply.
+- Guide the citizen on next steps and reference the official portal: {official_url}.
+- Language: {language}
+"""
+
