@@ -4,7 +4,6 @@
 [![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.41+-FF4B4B.svg)](https://streamlit.io/)
-[![Phase](https://img.shields.io/badge/Phase-0%20Foundation-green.svg)](#roadmap)
 
 Yojana Sahayak helps Indian citizens discover government welfare schemes and benefits tailored to their personal circumstances. Built with a strict **accuracy-first** architectural philosophy, deterministic eligibility matching precedes all AI interactions, ensuring the LLM acts as an explanatory layer grounded purely in verified official government data.
 
