@@ -444,3 +444,47 @@ class TestDialogFlows:
         st.session_state.pending_category_intent = "education"
         _on_dialog_dismiss()
         assert "pending_category_intent" not in st.session_state
+
+
+class TestNavigationCallbackSafety:
+    """Tests that navigation functions behave safely inside and outside callbacks."""
+
+    @patch("frontend.app.is_in_callback", return_value=True)
+    @patch("streamlit.rerun")
+    def test_navigate_to_inside_callback_updates_state_without_rerun(self, mock_rerun, mock_in_cb):
+        from frontend.app import navigate_to
+        st.session_state.current_page = "home"
+        navigate_to("schemes")
+        assert st.session_state.current_page == "schemes"
+        mock_rerun.assert_not_called()
+
+    @patch("frontend.app.is_in_callback", return_value=False)
+    @patch("streamlit.rerun")
+    def test_navigate_to_outside_callback_calls_rerun(self, mock_rerun, mock_in_cb):
+        from frontend.app import navigate_to
+        st.session_state.current_page = "home"
+        navigate_to("schemes")
+        assert st.session_state.current_page == "schemes"
+        mock_rerun.assert_called_once()
+
+    def test_apptest_navigation_clean_transitions(self):
+        import subprocess, sys
+        code = """
+from pathlib import Path
+from streamlit.testing.v1 import AppTest
+app_path = Path('frontend/app.py')
+at = AppTest.from_file(str(app_path), default_timeout=30)
+at.run()
+assert at.session_state.current_page == 'home'
+browse_btn = [b for b in at.button if b.key == 'hero_browse_schemes_btn'][0]
+browse_btn.click().run()
+assert at.session_state.current_page == 'schemes'
+assert len(at.warning) == 0
+apps_btn = [b for b in at.button if b.key == 'nav_apps_btn'][0]
+apps_btn.click().run()
+assert at.session_state.current_page == 'tracker'
+assert len(at.warning) == 0
+"""
+        res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        assert res.returncode == 0, f"AppTest failed:\n{res.stdout}\n{res.stderr}"
+

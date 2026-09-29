@@ -40,15 +40,13 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             if navigate_to:
                 navigate_to("home")
 
-        if st.button(
+        st.button(
             label,
             key="nav_home_btn",
             type="primary" if is_active else "secondary",
             use_container_width=True,
             on_click=on_nav_home,
-        ):
-            on_nav_home()
-            return
+        )
 
     with col_apps:
         is_active = (cur_page in ("tracker", "applications"))
@@ -62,15 +60,13 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                 if navigate_to:
                     navigate_to("tracker")
 
-        if st.button(
+        st.button(
             label,
             key="nav_apps_btn",
             type="primary" if is_active else "secondary",
             use_container_width=True,
             on_click=on_nav_apps,
-        ):
-            on_nav_apps()
-            return
+        )
 
     with col_lang:
         # Phone keyboard-style globe language switcher
@@ -79,17 +75,14 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         def on_lang_toggle():
             st.session_state.lang = "hi" if lang == "en" else "en"
 
-        if st.button(
+        st.button(
             "",
             key="nav_lang_toggle_btn",
             icon=":material/language:",
             help=help_text,
             use_container_width=True,
             on_click=on_lang_toggle,
-        ):
-            on_lang_toggle()
-            st.rerun()
-            return
+        )
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_auth:
@@ -101,14 +94,12 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             if navigate_to:
                 navigate_to("profile")
 
-        if st.button(
+        st.button(
             auth_label,
             key="nav_auth_btn",
             type=btn_type,
             use_container_width=True,
             on_click=on_nav_auth,
-        ):
-            on_nav_auth()
-            return
+        )
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.5rem 0 1rem 0;' />", unsafe_allow_html=True)

@@ -261,16 +261,14 @@ def render_featured_carousel(
                 st.session_state.current_page = "scheme_details"
                 st.rerun()
 
-        if st.button(
+        st.button(
             view_btn_text,
             key=f"feat_view_{current_idx}_{slug}",
             type="primary",
             use_container_width=True,
             on_click=on_view_scheme_click,
             args=(slug,),
-        ):
-            on_view_scheme_click(slug)
-            return
+        )
 
         if st.session_state.get("current_page", "home") != "home":
             return

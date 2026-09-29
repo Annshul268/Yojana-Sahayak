@@ -50,6 +50,14 @@ if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = True
 
 
+def is_in_callback() -> bool:
+    try:
+        from streamlit.runtime.state.session_state import ThreadState, RunLocation
+        return ThreadState.get().run_location == RunLocation.CALLBACK
+    except Exception:
+        return False
+
+
 def navigate_to(page_name: str) -> None:
     cur = st.session_state.get("current_page", "home")
     if cur and cur != page_name:
@@ -70,7 +78,8 @@ def navigate_to(page_name: str) -> None:
             }
             st.session_state["scheme_navigation_source"] = SOURCE_INFERENCE.get(cur, "featured")
     st.session_state.current_page = page_name
-    st.rerun()
+    if not is_in_callback():
+        st.rerun()
 
 
 # Direct scheme query parameter navigation (e.g. from featured carousel or direct links)
