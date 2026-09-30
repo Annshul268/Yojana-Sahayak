@@ -622,3 +622,46 @@ def delete_user_application_db(tracking_id: str, user_id: str) -> bool:
         return deleted
     except Exception:
         return False
+
+
+def get_scheme_by_slug_db(slug_or_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieve full scheme record directly from SQLite or bundled JSON fallback."""
+    if not slug_or_id:
+        return None
+    db_path = find_db_path()
+    if db_path:
+        try:
+            conn = sqlite3.connect(db_path, timeout=5.0)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM schemes WHERE slug = ? OR id = ? LIMIT 1",
+                (slug_or_id, slug_or_id),
+            )
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                d = dict(row)
+                for field in ("states", "eligibility_rules", "benefits", "documents", "application_steps", "tags", "intents"):
+                    val = d.get(field)
+                    if isinstance(val, str):
+                        try:
+                            d[field] = json.loads(val)
+                        except Exception:
+                            pass
+                return d
+        except Exception:
+            pass
+
+    # JSON fallback
+    json_path = _find_schemes_json_path()
+    if json_path:
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                schemes = json.load(f)
+            for s in schemes:
+                if s.get("slug") == slug_or_id or s.get("id") == slug_or_id:
+                    return s
+        except Exception:
+            pass
+    return None

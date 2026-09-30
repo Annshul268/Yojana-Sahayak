@@ -55,6 +55,10 @@ def render_featured_carousel(
 
     # Critical: Do not execute or render carousel if the user has navigated away from home
     if st.session_state.get("current_page", "home") != "home":
+        try:
+            st.rerun(scope="app")
+        except Exception:
+            pass
         return
 
     total = len(schemes)
@@ -252,25 +256,44 @@ def render_featured_carousel(
 
     with col_view:
         def on_view_scheme_click(slug_val=slug):
-            st.session_state.selected_scheme_slug = slug_val
+            scheme_id_val = s.get("id") or slug_val
+            scheme_name_val = s.get("name_hi") if (lang == "hi" and s.get("name_hi")) else s.get("name", "")
+            print(
+                f"\n[CAROUSEL CLICK]\n"
+                f"scheme_id = {scheme_id_val}\n"
+                f"scheme_name = {scheme_name_val}\n"
+                f"navigation_source = featured\n"
+                f"target_page = scheme_details\n"
+            )
+            st.session_state["selected_scheme_slug"] = slug_val
+            st.session_state["selected_scheme_id"] = scheme_id_val
             st.session_state["scheme_navigation_source"] = "featured"
+            st.session_state["navigation_source"] = "featured"
             st.session_state["_scheme_scroll_to_top"] = True
             if navigate_to:
                 navigate_to("scheme_details")
             else:
                 st.session_state.current_page = "scheme_details"
-                st.rerun()
 
-        st.button(
+        if st.button(
             view_btn_text,
             key=f"feat_view_{current_idx}_{slug}",
             type="primary",
             use_container_width=True,
             on_click=on_view_scheme_click,
             args=(slug,),
-        )
+        ):
+            on_view_scheme_click(slug)
+            try:
+                st.rerun(scope="app")
+            except Exception:
+                pass
 
         if st.session_state.get("current_page", "home") != "home":
+            try:
+                st.rerun(scope="app")
+            except Exception:
+                pass
             return
 
     with col_prev:

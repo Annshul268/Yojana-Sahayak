@@ -25,8 +25,9 @@ SOURCE_TO_PAGE = {
 
 
 def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
-    slug = st.session_state.get("selected_scheme_slug")
+    slug = st.session_state.get("selected_scheme_slug") or st.session_state.get("selected_scheme_id")
     if not slug:
+        print("\nSCHEME DETAIL ERROR:\nselected_scheme_id is missing\n")
         st.warning("No scheme selected.")
         source = st.session_state.get("scheme_navigation_source")
         target_page = SOURCE_TO_PAGE.get(str(source).lower().strip() if source else "", "home")
@@ -81,9 +82,14 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
 
     # Fetch scheme data
     res = api_client.get_scheme(slug)
-    if not res["ok"]:
-        st.error("Could not load scheme details right now. Please try again.")
-        return
+    if not res.get("ok") or not res.get("data"):
+        from frontend.services.scheme_data import get_scheme_by_slug_db
+        db_scheme = get_scheme_by_slug_db(slug)
+        if db_scheme:
+            res = {"ok": True, "data": db_scheme}
+        else:
+            st.error("Could not load scheme details right now. Please try again.")
+            return
 
     scheme = res["data"]
     lang = get_current_language()

@@ -65,7 +65,7 @@ def navigate_to(page_name: str) -> None:
     if cur and cur != page_name:
         if cur != "scheme_details":
             st.session_state["_last_rendered_page"] = cur
-    if page_name == "scheme_details":
+    if page_name in ("scheme_details", "scheme_detail"):
         st.session_state["_scheme_scroll_to_top"] = True
         if not st.session_state.get("scheme_navigation_source"):
             SOURCE_INFERENCE = {
@@ -91,11 +91,12 @@ if "scheme" in st.query_params:
         query_slug = query_slug[0]
     if query_slug:
         prev = st.session_state.get("current_page", "home") or "home"
-        if prev != "scheme_details":
+        if prev not in ("scheme_details", "scheme_detail"):
             st.session_state["_last_rendered_page"] = prev
         if not st.session_state.get("scheme_navigation_source"):
             st.session_state["scheme_navigation_source"] = "featured" if prev == "home" else prev
         st.session_state.selected_scheme_slug = str(query_slug).strip()
+        st.session_state.selected_scheme_id = str(query_slug).strip()
         st.session_state["_scheme_scroll_to_top"] = True
         st.session_state.current_page = "scheme_details"
     try:
@@ -109,6 +110,10 @@ render_navbar(navigate_to)
 
 # Route to Current Page (rendered atomically inside dedicated container)
 page = st.session_state.get("current_page", "home")
+selected_id = st.session_state.get("selected_scheme_id") or st.session_state.get("selected_scheme_slug")
+nav_src = st.session_state.get("scheme_navigation_source") or st.session_state.get("navigation_source")
+print(f"\nCURRENT PAGE = {page}\nSELECTED SCHEME ID = {selected_id}\nNAVIGATION SOURCE = {nav_src}\n")
+
 main_slot = st.empty()
 main_slot.empty()
 
@@ -122,7 +127,7 @@ with main_slot.container():
             render_results(navigate_to)
         elif page in ("schemes", "all_schemes", "directory"):
             render_schemes_directory(navigate_to)
-        elif page == "scheme_details":
+        elif page in ("scheme_details", "scheme_detail"):
             render_scheme_details(navigate_to)
         elif page in ("saved", "saved_schemes"):
             render_saved_schemes(navigate_to)

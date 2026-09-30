@@ -13,6 +13,17 @@ from backend.app.schemas.ai import AskAIRequest, ExplainEligibilityRequest
 class TestFeaturedCarouselRenderingAndNavigation:
     """Verifies that the featured carousel renders proper Streamlit-compatible navigation and state synchronization."""
 
+    @pytest.fixture(autouse=True)
+    def reset_carousel_test_state(self):
+        import streamlit as st
+        st.session_state["current_page"] = "home"
+        st.session_state["featured_carousel_index"] = 0
+        st.session_state["_carousel_last_tick"] = 1000.0
+        st.session_state["selected_scheme_slug"] = None
+        st.session_state["selected_scheme_id"] = None
+        yield
+        st.session_state["current_page"] = "home"
+
     @pytest.fixture
     def sample_schemes(self):
         return [
