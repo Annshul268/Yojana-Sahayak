@@ -5,11 +5,13 @@ ensuring zero network latency and 100% availability even when the FastAPI backen
 is restarting or offline.
 """
 
+from datetime import datetime, timezone
 import json
 import os
-import sqlite3
 from pathlib import Path
+import sqlite3
 from typing import Any, Dict, List, Optional
+import uuid
 
 
 def find_db_path() -> Optional[str]:
@@ -665,3 +667,112 @@ def get_scheme_by_slug_db(slug_or_id: str) -> Optional[Dict[str, Any]]:
         except Exception:
             pass
     return None
+
+
+def get_user_profile_db(user_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieve citizen profile directly from SQLite."""
+    if not user_id:
+        return None
+    db_path = find_db_path()
+    if not db_path:
+        return None
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, user_id, name, state, district, age, gender, annual_income, occupation, category, area, disability
+            FROM profiles
+            WHERE user_id = ?
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return None
+        return {
+            "id": row[0],
+            "user_id": row[1],
+            "name": row[2] or "",
+            "state": row[3] or "",
+            "district": row[4] or "",
+            "age": row[5],
+            "gender": row[6] or "",
+            "annual_income": row[7],
+            "occupation": row[8] or "",
+            "category": row[9] or "",
+            "area": row[10] or "",
+            "disability": bool(row[11]),
+        }
+    except Exception:
+        return None
+
+
+def upsert_user_profile_db(profile_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Create or update citizen profile directly in SQLite."""
+    user_id = profile_data.get("user_id")
+    if not user_id:
+        return {"ok": False, "error": "Missing user_id"}
+    db_path = find_db_path()
+    if not db_path:
+        return {"ok": False, "error": "Database not found"}
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM profiles WHERE user_id = ? LIMIT 1", (user_id,))
+        existing = cursor.fetchone()
+        now_str = datetime.now(timezone.utc).isoformat()
+        if existing:
+            cursor.execute(
+                """
+                UPDATE profiles
+                SET name = ?, state = ?, district = ?, age = ?, gender = ?, annual_income = ?, occupation = ?, category = ?, area = ?, disability = ?, updated_at = ?
+                WHERE user_id = ?
+                """,
+                (
+                    profile_data.get("name"),
+                    profile_data.get("state"),
+                    profile_data.get("district", ""),
+                    profile_data.get("age"),
+                    profile_data.get("gender"),
+                    profile_data.get("annual_income"),
+                    profile_data.get("occupation"),
+                    profile_data.get("category"),
+                    profile_data.get("area"),
+                    1 if profile_data.get("disability") else 0,
+                    now_str,
+                    user_id,
+                ),
+            )
+        else:
+            new_id = str(uuid.uuid4())
+            cursor.execute(
+                """
+                INSERT INTO profiles (id, user_id, name, state, district, age, gender, annual_income, occupation, category, area, disability, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    new_id,
+                    user_id,
+                    profile_data.get("name"),
+                    profile_data.get("state"),
+                    profile_data.get("district", ""),
+                    profile_data.get("age"),
+                    profile_data.get("gender"),
+                    profile_data.get("annual_income"),
+                    profile_data.get("occupation"),
+                    profile_data.get("category"),
+                    profile_data.get("area"),
+                    1 if profile_data.get("disability") else 0,
+                    now_str,
+                    now_str,
+                ),
+            )
+        conn.commit()
+        conn.close()
+        return {"ok": True, "data": profile_data}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+

@@ -38,56 +38,67 @@ def reset_eligibility_session(keep_intent: Optional[str] = None) -> None:
     st.session_state["_scroll_to_top_needed"] = True
 
 
-def apply_profile_to_answers(prof: Dict[str, Any], answers: Dict[str, Any]) -> None:
+def apply_profile_to_answers(
+    prof: Dict[str, Any],
+    answers: Dict[str, Any],
+    overwrite: bool = True,
+) -> None:
     """Populates questionnaire answers from Citizen Profile data safely.
 
     Does NOT mutate or save back to the Citizen Profile in database.
-    Leaves missing fields blank so standard questionnaire validation continues to apply.
+    If overwrite is False, existing non-empty user answers are preserved.
+    Synchronizes field_* widget keys in session state for instant UI update.
     """
     if not prof:
         return
 
+    def _set_val(key: str, val: Any) -> None:
+        if val is None or val == "":
+            return
+        if overwrite or key not in answers or answers[key] in (None, ""):
+            answers[key] = val
+
     # 1. State
     state_val = prof.get("state")
     if state_val and state_val in INDIAN_STATES:
-        answers["state"] = state_val
+        _set_val("state", state_val)
 
     # 2. District
     district_val = prof.get("district")
     if district_val:
-        answers["district"] = str(district_val).strip()
+        _set_val("district", str(district_val).strip())
 
     # 3. Residence Area (Rural / Urban)
     area_val = prof.get("area")
     if area_val:
         area_str = str(area_val).strip().capitalize()
         if area_str in ("Rural", "Urban"):
-            answers["area"] = area_str
+            _set_val("area", area_str)
 
     # 4. Age
     age_val = prof.get("age")
     if age_val is not None and age_val != "":
         try:
-            answers["age"] = float(age_val)
+            _set_val("age", float(age_val))
         except (ValueError, TypeError):
             pass
 
     # 5. Gender
     gender_val = str(prof.get("gender", "")).lower().strip()
     if "female" in gender_val:
-        answers["gender"] = "female"
+        _set_val("gender", "female")
     elif "male" in gender_val:
-        answers["gender"] = "male"
+        _set_val("gender", "male")
     elif "trans" in gender_val or "other" in gender_val:
-        answers["gender"] = "other"
+        _set_val("gender", "other")
     elif "prefer" in gender_val:
-        answers["gender"] = "prefer_not_to_say"
+        _set_val("gender", "prefer_not_to_say")
 
     # 6. Annual Income
     income_val = prof.get("annual_income") if prof.get("annual_income") is not None else prof.get("income")
     if income_val is not None and income_val != "":
         try:
-            answers["annual_income"] = float(income_val)
+            _set_val("annual_income", float(income_val))
         except (ValueError, TypeError):
             pass
 
@@ -97,71 +108,243 @@ def apply_profile_to_answers(prof: Dict[str, Any], answers: Dict[str, Any]) -> N
         valid_cats = ["General", "OBC", "SC", "ST", "EWS"]
         for c in valid_cats:
             if c.lower() == str(cat_val).lower().strip():
-                answers["social_category"] = c
+                _set_val("social_category", c)
                 break
 
     # 8. Disability
     dis_val = prof.get("disability")
     if isinstance(dis_val, bool):
-        answers["disability"] = "yes" if dis_val else "no"
+        _set_val("disability", "yes" if dis_val else "no")
     elif isinstance(dis_val, str) and dis_val.strip():
         if dis_val.lower().strip() in ("yes", "true", "1"):
-            answers["disability"] = "yes"
+            _set_val("disability", "yes")
         elif dis_val.lower().strip() in ("no", "false", "0"):
-            answers["disability"] = "no"
+            _set_val("disability", "no")
 
     # 9. Marital Status
     marital_val = str(prof.get("marital_status", "")).lower().strip()
     valid_marital = ["single", "married", "widowed", "divorced", "prefer_not_to_say"]
     if marital_val in valid_marital:
-        answers["marital_status"] = marital_val
+        _set_val("marital_status", marital_val)
 
     # 10. Minority Status
     min_val = prof.get("minority_status") if prof.get("minority_status") is not None else prof.get("minority")
     if isinstance(min_val, bool):
-        answers["minority_status"] = "yes" if min_val else "no"
+        _set_val("minority_status", "yes" if min_val else "no")
     elif isinstance(min_val, str) and min_val.strip():
         if min_val.lower().strip() in ("yes", "true", "1"):
-            answers["minority_status"] = "yes"
+            _set_val("minority_status", "yes")
         elif min_val.lower().strip() in ("no", "false", "0"):
-            answers["minority_status"] = "no"
+            _set_val("minority_status", "no")
 
     # 11. Occupation
     occ_val = prof.get("occupation")
     if occ_val:
-        answers["occupation"] = str(occ_val).strip()
+        _set_val("occupation", str(occ_val).strip())
+
+
+def store_auth_return_context(
+    category: str,
+    step: int = 1,
+    answers: Optional[Dict[str, Any]] = None,
+    mode: str = "autofill",
+) -> None:
+    """Stores the specific questionnaire context before redirecting to authentication."""
+    st.session_state["auth_return_page"] = "finder"
+    st.session_state["auth_return_category"] = category
+    st.session_state["auth_return_step"] = max(1, step)
+    st.session_state["auth_return_mode"] = mode
+    st.session_state["auth_return_autofill"] = True
+    st.session_state["auth_return_answers"] = dict(answers or {})
+
+
+def clear_auth_return_context() -> None:
+    """Safely clears temporary auth return state after it has been consumed."""
+    st.session_state.pop("auth_return_page", None)
+    st.session_state.pop("auth_return_category", None)
+    st.session_state.pop("auth_return_step", None)
+    st.session_state.pop("auth_return_mode", None)
+    st.session_state.pop("auth_return_autofill", None)
+    st.session_state.pop("auth_return_answers", None)
+    st.session_state.pop("autofill_prompt_active", None)
+    st.session_state.pop("autofill_prompt_type", None)
+
+
+def get_saved_profile_for_autofill() -> tuple[bool, Dict[str, Any]]:
+    """Checks if the active user is authenticated and has a saved citizen profile.
+
+    Returns:
+        (has_saved_profile, profile_dict)
+    """
+    is_auth = bool(st.session_state.get("is_authenticated", False))
+    user_id = st.session_state.get("user_id")
+    if not is_auth or not user_id:
+        return False, {}
+
+    try:
+        res = api_client.get_profile(user_id=user_id)
+        if res and res.get("ok"):
+            prof = res.get("data") or {}
+            # Verify profile has meaningful user data
+            has_data = any([
+                prof.get("state"),
+                prof.get("age"),
+                prof.get("gender"),
+                prof.get("name"),
+                prof.get("annual_income"),
+                prof.get("occupation"),
+            ])
+            if has_data:
+                return True, prof
+    except Exception:
+        pass
+    return False, {}
 
 
 def handle_manual_fill(category_key: str) -> None:
     reset_eligibility_session(keep_intent=category_key)
     st.session_state.fill_mode = "manual"
     st.session_state.pop("pending_category_intent", None)
+    st.session_state.pop("autofill_prompt_active", None)
+    st.session_state.pop("autofill_prompt_type", None)
     st.session_state.questionnaire_step = 1
     st.session_state["_scroll_to_top_needed"] = True
     st.rerun()
 
 
-def handle_auto_fill(category_key: str) -> None:
-    reset_eligibility_session(keep_intent=category_key)
+def handle_auto_fill(
+    category_key: str,
+    prof: Optional[Dict[str, Any]] = None,
+    overwrite: bool = True,
+) -> None:
+    if overwrite:
+        reset_eligibility_session(keep_intent=category_key)
+    else:
+        if "eligibility_answers" not in st.session_state:
+            st.session_state.eligibility_answers = {}
+        st.session_state.eligibility_answers["intent"] = category_key
+        st.session_state.adaptive_answers = st.session_state.eligibility_answers
+
     st.session_state.fill_mode = "autofill"
 
-    user_id = st.session_state.get("user_id", "citizen_user_1")
-    prof = {}
-    try:
-        res = api_client.get_profile(user_id=user_id)
-        if res and res.get("ok"):
-            prof = res.get("data", {}) or {}
-    except Exception:
-        prof = {}
+    if prof is None:
+        user_id = st.session_state.get("user_id") or "citizen_user_1"
+        try:
+            res = api_client.get_profile(user_id=user_id)
+            if res and res.get("ok"):
+                prof = res.get("data", {}) or {}
+        except Exception:
+            prof = {}
 
-    apply_profile_to_answers(prof, st.session_state.eligibility_answers)
+    if prof:
+        apply_profile_to_answers(prof, st.session_state.eligibility_answers, overwrite=overwrite)
+
     st.session_state.pop("pending_category_intent", None)
-    st.session_state.questionnaire_step = 1
+    st.session_state.pop("autofill_prompt_active", None)
+    st.session_state.pop("autofill_prompt_type", None)
+    if "questionnaire_step" not in st.session_state or st.session_state.questionnaire_step == 0:
+        st.session_state.questionnaire_step = 1
     st.session_state["_scroll_to_top_needed"] = True
     st.rerun()
 
 
 def _render_autofill_dialog_content(category_key: str, lang: str) -> None:
+    # 1. Check if an auth / incomplete profile prompt is active for this category
+    prompt_active = (st.session_state.get("autofill_prompt_active") == category_key)
+    prompt_type = st.session_state.get("autofill_prompt_type", "not_signed_in")
+
+    if prompt_active:
+        if prompt_type == "not_signed_in":
+            st.markdown(
+                f"""
+                <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <div style="font-weight: 700; color: #0F172A; font-size: 1.15rem; margin-bottom: 6px;">
+                        {"आपकी प्रोफ़ाइल अभी सहेजी नहीं गई है" if lang == "hi" else "Your profile isn't saved yet"}
+                    </div>
+                    <div style="font-size: 0.92rem; color: #475569; line-height: 1.5;">
+                        {"अपनी सहेजी गई प्रोफ़ाइल जानकारी के साथ ऑटो फिल का उपयोग करने के लिए साइन इन करें।" if lang == "hi" else "Sign in to use Auto Fill with your saved profile information."}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            if st.button("साइन इन करें" if lang == "hi" else "Sign In", type="primary", key="btn_prompt_signin", use_container_width=True):
+                store_auth_return_context(
+                    category=category_key,
+                    step=st.session_state.get("questionnaire_step", 1),
+                    answers=st.session_state.get("eligibility_answers", {}),
+                    mode="autofill",
+                )
+                st.session_state.pop("pending_category_intent", None)
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                nav_fn = st.session_state.get("_nav_fn")
+                if nav_fn:
+                    nav_fn("profile")
+                else:
+                    st.session_state.current_page = "profile"
+                    st.rerun()
+
+            st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+            if st.button("स्वयं भरें" if lang == "hi" else "Continue Manually", type="secondary", key="btn_prompt_continue_manual", use_container_width=True):
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                handle_manual_fill(category_key)
+
+            st.markdown("<div style='height: 0.25rem;'></div>", unsafe_allow_html=True)
+            if st.button("← " + ("विकल्पों पर वापस जाएं" if lang == "hi" else "Back to options"), key="btn_prompt_back_opt", use_container_width=True):
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                st.rerun()
+            return
+
+        elif prompt_type == "incomplete_profile":
+            st.markdown(
+                f"""
+                <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <div style="font-weight: 700; color: #92400E; font-size: 1.15rem; margin-bottom: 6px;">
+                        {"आपकी प्रोफ़ाइल अभी पूरी नहीं है" if lang == "hi" else "Your profile isn't complete yet"}
+                    </div>
+                    <div style="font-size: 0.92rem; color: #B45309; line-height: 1.5;">
+                        {"ऑटो फिल का उपयोग करने के लिए अपनी प्रोफ़ाइल पूरी करें।" if lang == "hi" else "Complete your profile to use Auto Fill with your saved information."}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            if st.button("प्रोफ़ाइल पूरी करें" if lang == "hi" else "Complete Profile", type="primary", key="btn_prompt_complete_prof", use_container_width=True):
+                store_auth_return_context(
+                    category=category_key,
+                    step=st.session_state.get("questionnaire_step", 1),
+                    answers=st.session_state.get("eligibility_answers", {}),
+                    mode="autofill",
+                )
+                st.session_state.pop("pending_category_intent", None)
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                nav_fn = st.session_state.get("_nav_fn")
+                if nav_fn:
+                    nav_fn("profile")
+                else:
+                    st.session_state.current_page = "profile"
+                    st.rerun()
+
+            st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+            if st.button("स्वयं भरें" if lang == "hi" else "Continue Manually", type="secondary", key="btn_prompt_inc_manual", use_container_width=True):
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                handle_manual_fill(category_key)
+
+            st.markdown("<div style='height: 0.25rem;'></div>", unsafe_allow_html=True)
+            if st.button("← " + ("विकल्पों पर वापस जाएं" if lang == "hi" else "Back to options"), key="btn_prompt_back_opt2", use_container_width=True):
+                st.session_state.pop("autofill_prompt_active", None)
+                st.session_state.pop("autofill_prompt_type", None)
+                st.rerun()
+            return
+
+    # 2. Standard Selection Dialog (Option 1: Fill Manually, Option 2: Auto Fill)
     st.markdown(
         f"""
         <div style="font-size: 0.95rem; color: #475569; margin-bottom: 1.25rem; line-height: 1.5;">
@@ -205,11 +388,23 @@ def _render_autofill_dialog_content(category_key: str, lang: str) -> None:
         unsafe_allow_html=True,
     )
     if st.button("ऑटो फिल" if lang == "hi" else "Auto Fill", type="primary", key="btn_fill_autofill", use_container_width=True):
-        handle_auto_fill(category_key)
+        has_profile, prof = get_saved_profile_for_autofill()
+        if not st.session_state.get("is_authenticated", False):
+            st.session_state["autofill_prompt_active"] = category_key
+            st.session_state["autofill_prompt_type"] = "not_signed_in"
+            st.rerun()
+        elif not has_profile:
+            st.session_state["autofill_prompt_active"] = category_key
+            st.session_state["autofill_prompt_type"] = "incomplete_profile"
+            st.rerun()
+        else:
+            handle_auto_fill(category_key, prof=prof, overwrite=True)
 
 
 def _on_dialog_dismiss() -> None:
     st.session_state.pop("pending_category_intent", None)
+    st.session_state.pop("autofill_prompt_active", None)
+    st.session_state.pop("autofill_prompt_type", None)
 
 
 @st.dialog("How would you like to fill your details?", width="small", on_dismiss=_on_dialog_dismiss)
@@ -224,6 +419,7 @@ def _autofill_dialog_hi(category_key: str) -> None:
 
 def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
+    st.session_state["_nav_fn"] = navigate_to
 
     # 1. Initialize Single Canonical Answer Store
     if "eligibility_answers" not in st.session_state:
@@ -232,6 +428,23 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     # Alias for backward-compatibility
     st.session_state.adaptive_answers = st.session_state.eligibility_answers
     answers = st.session_state.eligibility_answers
+
+    # 2. Check if returning from authentication with saved context
+    if st.session_state.get("auth_return_page") == "finder" and st.session_state.get("is_authenticated", False):
+        has_profile, prof = get_saved_profile_for_autofill()
+        if has_profile:
+            ret_category = st.session_state.get("auth_return_category")
+            if ret_category:
+                st.session_state.eligibility_answers["intent"] = ret_category
+            ret_answers = st.session_state.get("auth_return_answers") or {}
+            for k, v in ret_answers.items():
+                st.session_state.eligibility_answers[k] = v
+            apply_profile_to_answers(prof, st.session_state.eligibility_answers, overwrite=False)
+            ret_step = st.session_state.get("auth_return_step", 1)
+            st.session_state.questionnaire_step = max(1, ret_step)
+            st.session_state.fill_mode = "autofill"
+            st.session_state["_scroll_to_top_needed"] = True
+            clear_auth_return_context()
 
     # Check if arrived from home category chip
     if "finder_answers" in st.session_state and "needs" in st.session_state.finder_answers:
@@ -294,17 +507,18 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         unsafe_allow_html=True,
     )
 
+    # Render autofill dialog if there is a pending category intent
+    pending_intent = st.session_state.get("pending_category_intent")
+    if pending_intent:
+        if lang == "hi":
+            _autofill_dialog_hi(pending_intent)
+        else:
+            _autofill_dialog_en(pending_intent)
+
     # -----------------------------------------------------------------
     # Step 0: Goal / Intent Selection Screen
     # -----------------------------------------------------------------
     if current_step == 0:
-        pending_intent = st.session_state.get("pending_category_intent")
-        if pending_intent:
-            if lang == "hi":
-                _autofill_dialog_hi(pending_intent)
-            else:
-                _autofill_dialog_en(pending_intent)
-
         st.markdown(
             f"""
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -374,8 +588,8 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     total_steps = len(active_groups) - 1  # excluding intent selection step
     display_step = current_step
 
-    # Header with dynamic group progress and change-goal button
-    col_prog, col_reset = st.columns([3, 1.3])
+    # Header with dynamic group progress, autofill button, and change-goal button
+    col_prog, col_autofill, col_reset = st.columns([2.5, 1.2, 1.3])
     with col_prog:
         st.markdown(
             f"""
@@ -385,6 +599,25 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
             """,
             unsafe_allow_html=True,
         )
+    with col_autofill:
+        if st.button("⚡ " + ("ऑटो फिल" if lang == "hi" else "Auto Fill"), key="step_autofill_btn"):
+            cat_key = answers.get("intent") or "education"
+            has_profile, prof = get_saved_profile_for_autofill()
+            if not st.session_state.get("is_authenticated", False):
+                st.session_state.pending_category_intent = cat_key
+                st.session_state["autofill_prompt_active"] = cat_key
+                st.session_state["autofill_prompt_type"] = "not_signed_in"
+                st.rerun()
+            elif not has_profile:
+                st.session_state.pending_category_intent = cat_key
+                st.session_state["autofill_prompt_active"] = cat_key
+                st.session_state["autofill_prompt_type"] = "incomplete_profile"
+                st.rerun()
+            else:
+                apply_profile_to_answers(prof, answers, overwrite=False)
+                st.session_state.fill_mode = "autofill"
+                st.toast("Profile details applied to unfilled fields!")
+                st.rerun()
     with col_reset:
         if st.button("🔄 " + ("उद्देश्य बदलें" if lang == "hi" else "Change Goal"), key="change_intent_btn"):
             reset_eligibility_session()

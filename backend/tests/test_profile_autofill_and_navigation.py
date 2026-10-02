@@ -522,3 +522,130 @@ assert auth_btn.label == 'Sign In'
             assert "overflow: visible" in block, f"Column 2 should have overflow: visible: {block}"
 
 
+class TestAuthAwareAutoFillAndReturnFlow:
+    """Tests authentication-aware Auto Fill, context preservation, and seamless return."""
+
+    def test_store_and_clear_auth_return_context(self):
+        from frontend.pages.scheme_finder import store_auth_return_context, clear_auth_return_context
+        st.session_state.clear()
+        store_auth_return_context(
+            category="education",
+            step=2,
+            answers={"intent": "education", "age": 21.0, "gender": "male"},
+            mode="autofill",
+        )
+        assert st.session_state.get("auth_return_page") == "finder"
+        assert st.session_state.get("auth_return_category") == "education"
+        assert st.session_state.get("auth_return_step") == 2
+        assert st.session_state.get("auth_return_answers") == {
+            "intent": "education",
+            "age": 21.0,
+            "gender": "male",
+        }
+        assert st.session_state.get("auth_return_mode") == "autofill"
+
+        clear_auth_return_context()
+        assert "auth_return_page" not in st.session_state
+        assert "auth_return_category" not in st.session_state
+        assert "auth_return_step" not in st.session_state
+        assert "auth_return_answers" not in st.session_state
+
+    def test_autofill_preserves_existing_manual_inputs(self):
+        profile_data = {
+            "state": "Maharashtra",
+            "age": 45,
+            "gender": "Female",
+            "annual_income": 500000.0,
+            "category": "General",
+        }
+        # User already manually answered Age=22 and Gender=male before Auto Fill
+        answers = {
+            "intent": "education",
+            "age": 22.0,
+            "gender": "male",
+        }
+        apply_profile_to_answers(profile_data, answers, overwrite=False)
+
+        # Existing manual answers must NOT be overwritten
+        assert answers["age"] == 22.0
+        assert answers["gender"] == "male"
+        # Missing answers from profile MUST be populated
+        assert answers["state"] == "Maharashtra"
+        assert answers["annual_income"] == 500000.0
+        assert answers["social_category"] == "General"
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_profile_signin_redirects_to_finder_when_profile_exists(
+        self, mock_get_profile, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        # Simulate clicking Sign in as Citizen 1 (Aarav Sharma)
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_demo_u1"
+        mock_get_profile.return_value = {
+            "ok": True,
+            "data": {"name": "Aarav Sharma", "state": "Delhi", "age": 25, "gender": "Male"},
+        }
+
+        st.session_state.clear()
+        st.session_state["auth_return_page"] = "finder"
+        st.session_state["auth_return_category"] = "education"
+        st.session_state["auth_return_step"] = 1
+
+        nav_mock = MagicMock()
+        render_citizen_profile(nav_mock)
+
+        # Should navigate directly back to finder!
+        nav_mock.assert_called_with("finder")
+        assert st.session_state.is_authenticated is True
+        assert st.session_state.user_id == "citizen_user_1"
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_profile_signin_stays_for_new_user_without_profile(
+        self, mock_get_profile, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        # Simulate clicking Sign in as Citizen 2 (Priya Patel with empty profile)
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_demo_u2"
+        mock_get_profile.return_value = {"ok": True, "data": {}}
+
+        st.session_state.clear()
+        st.session_state["auth_return_page"] = "finder"
+        st.session_state["auth_return_category"] = "education"
+
+        nav_mock = MagicMock()
+        render_citizen_profile(nav_mock)
+
+        # Should NOT navigate to finder yet since profile is incomplete
+        nav_mock.assert_not_called()
+        mock_rerun.assert_called_once()
+        assert st.session_state.is_authenticated is True
+        assert st.session_state.user_id == "citizen_user_2"
+
+    @patch("streamlit.rerun")
+    def test_guest_manual_fill_does_not_prompt_for_auth(self, mock_rerun):
+        st.session_state.clear()
+        st.session_state.is_authenticated = False
+        handle_manual_fill("agriculture")
+
+        assert st.session_state.fill_mode == "manual"
+        assert st.session_state.eligibility_answers == {"intent": "agriculture"}
+        assert st.session_state.questionnaire_step == 1
+        assert "autofill_prompt_active" not in st.session_state
+        assert "auth_return_page" not in st.session_state
+
+
+

@@ -2,7 +2,7 @@
 
 from typing import Callable
 import streamlit as st
-from frontend.pages.scheme_finder import INDIAN_STATES, OCCUPATION_OPTIONS
+from frontend.pages.scheme_finder import INDIAN_STATES, OCCUPATION_OPTIONS, clear_auth_return_context
 from frontend.services.api_client import api_client
 from frontend.utils.i18n import get_current_language, t
 
@@ -13,10 +13,29 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     user_id = st.session_state.get("user_id", "")
     user_name = st.session_state.get("user_name", "Citizen")
 
+    def handle_eligibility_return(uid: str, profile_just_saved: bool = False) -> bool:
+        if st.session_state.get("auth_return_page") == "finder":
+            if profile_just_saved:
+                navigate_to("finder")
+                return True
+            res = api_client.get_profile(user_id=uid)
+            p = res.get("data") if res and res.get("ok") else None
+            if p and any([p.get("state"), p.get("age"), p.get("gender"), p.get("occupation")]):
+                navigate_to("finder")
+                return True
+            else:
+                st.toast("Signed in! Please fill in your profile details below to complete Auto Fill.")
+                st.rerun()
+                return True
+        return False
+
     # Back Link button
     back_label = "← " + ("पीछे" if lang == "hi" else "Back")
 
     def on_profile_back():
+        if st.session_state.get("auth_return_page") == "finder":
+            navigate_to("finder")
+            return
         last_page = st.session_state.get("_last_rendered_page")
         if last_page and last_page not in ("profile", "scheme_details", "admin"):
             navigate_to(last_page)
@@ -40,6 +59,28 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    # Eligibility Return Guidance Banner
+    if st.session_state.get("auth_return_page") == "finder":
+        ret_cat = st.session_state.get("auth_return_category", "").capitalize()
+        st.markdown(
+            f"""
+            <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 1.1rem 1.35rem; margin-bottom: 1.5rem;">
+                <div style="font-weight: 700; color: #1E3A8A; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                    <span>⚡</span>
+                    <span>{"पात्रता जांच पर वापस जाएं" if lang == "hi" else "Return to Eligibility Check"}</span>
+                </div>
+                <div style="font-size: 0.88rem; color: #2563EB; margin-top: 4px; line-height: 1.45;">
+                    {"साइन इन करें या अपनी प्रोफ़ाइल सहेजें ताकि आपके विवरण योजना पात्रता फॉर्म में अपने आप भर जाएं।" if lang == "hi" else f"Sign in or complete your profile below to automatically fill your details for {ret_cat or 'your selected category'}."}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("← " + ("बिना प्रोफ़ाइल पात्रता जांच जारी रखें" if lang == "hi" else "Continue Eligibility Manually without Profile"), key="btn_return_manual_from_prof"):
+            clear_auth_return_context()
+            navigate_to("finder")
+            return
 
     # 1. Authentication Status / Sign In Box
     if not is_authenticated:
@@ -69,8 +110,10 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = sign_uid or "citizen_user_1"
                 st.session_state.user_name = sign_name or "Citizen"
-                target = st.session_state.pop("auth_redirect_target", None)
                 st.toast(f"Welcome, {sign_name}!")
+                if handle_eligibility_return(st.session_state.user_id):
+                    return
+                target = st.session_state.pop("auth_redirect_target", None)
                 if target:
                     navigate_to(target)
                 else:
@@ -84,8 +127,10 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = "citizen_user_1"
                 st.session_state.user_name = "Aarav Sharma"
-                target = st.session_state.pop("auth_redirect_target", None)
                 st.toast("Signed in as Aarav Sharma!")
+                if handle_eligibility_return("citizen_user_1"):
+                    return
+                target = st.session_state.pop("auth_redirect_target", None)
                 if target:
                     navigate_to(target)
                 else:
@@ -95,8 +140,10 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                 st.session_state.is_authenticated = True
                 st.session_state.user_id = "citizen_user_2"
                 st.session_state.user_name = "Priya Patel"
-                target = st.session_state.pop("auth_redirect_target", None)
                 st.toast("Signed in as Priya Patel!")
+                if handle_eligibility_return("citizen_user_2"):
+                    return
+                target = st.session_state.pop("auth_redirect_target", None)
                 if target:
                     navigate_to(target)
                 else:
@@ -194,6 +241,8 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             api_client.upsert_profile(updated_data)
             st.session_state.user_name = name
             st.toast("Profile saved successfully!")
+            if handle_eligibility_return(user_id, profile_just_saved=True):
+                return
             st.rerun()
 
     # Subtle Admin Login / Switcher in footer of profile for administrators

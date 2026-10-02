@@ -134,10 +134,23 @@ class APIClient:
 
     # Citizen Profile
     def get_profile(self, user_id: str) -> Dict[str, Any]:
-        return self._request("GET", "/api/profile", params={"user_id": user_id})
+        res = self._request("GET", "/api/profile", params={"user_id": user_id})
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import get_user_profile_db
+        prof = get_user_profile_db(user_id=user_id)
+        if prof:
+            return {"ok": True, "data": prof}
+        return {"ok": False, "data": None, "error": "Profile not found"}
 
     def upsert_profile(self, profile_data: Dict[str, Any]) -> Dict[str, Any]:
-        return self._request("POST", "/api/profile", json_data=profile_data)
+        res = self._request("POST", "/api/profile", json_data=profile_data)
+        if res.get("ok"):
+            return res
+        # Fallback to direct DB
+        from frontend.services.scheme_data import upsert_user_profile_db
+        return upsert_user_profile_db(profile_data)
 
     # Saved Schemes
     def list_saved(self, user_id: str) -> Dict[str, Any]:
