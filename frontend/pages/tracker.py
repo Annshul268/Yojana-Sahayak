@@ -115,7 +115,8 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
     # 4. Simple Row-Based List (Status | Scheme Name | Official Link | Remove)
     st.markdown("<div class='applications-table'>", unsafe_allow_html=True)
 
-    # Table Header
+    # Table Header (desktop table header, hidden on mobile)
+    st.markdown("<div class='app-table-header-row'>", unsafe_allow_html=True)
     col_h_status, col_h_name, col_h_link, col_h_remove = st.columns(
         [2.2, 5.0, 1.6, 1.2],
         gap="medium",
@@ -143,6 +144,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
         )
 
     st.markdown("<hr style='border: none; border-top: 1px solid #CBD5E1; margin: 8px 0 12px 0;' />", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # Application Rows
     for idx, entry in enumerate(entries):
@@ -157,6 +159,7 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
         slug = scheme.get("slug", "")
         official_url = scheme.get("official_url") or "#"
 
+        st.markdown(f"<div class='app-table-row' id='app-row-{tracking_id}'>", unsafe_allow_html=True)
         col_status, col_name, col_link, col_remove = st.columns(
             [2.2, 5.0, 1.6, 1.2],
             gap="medium",
@@ -225,5 +228,6 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
                 st.rerun()
 
         st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 8px 0;' />", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)

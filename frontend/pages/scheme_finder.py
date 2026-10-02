@@ -324,6 +324,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
         )
 
         intent_field = active_groups[0].fields[0]
+        st.markdown("<div class='intent-grid-container'>", unsafe_allow_html=True)
         cols = st.columns(2, gap="medium")
         for idx, opt in enumerate(intent_field.options):
             label = opt.label_hi if lang == "hi" else opt.label_en
@@ -331,7 +332,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
             with cols[idx % 2]:
                 st.markdown(
                     f"""
-                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.1rem; margin-bottom: 0.85rem; height: 115px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.1rem; margin-bottom: 0.85rem; min-height: 115px; display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
                             <div style="font-size: 1.05rem; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 8px;">
                                 <span>{opt.icon}</span>
@@ -356,6 +357,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
                         _autofill_dialog_hi(opt.key)
                     else:
                         _autofill_dialog_en(opt.key)
+        st.markdown("</div>", unsafe_allow_html=True)
 
         if should_scroll:
             st.session_state["_scroll_to_top_needed"] = False
@@ -515,6 +517,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
 
     # Navigation Buttons: Back and Continue
+    st.markdown("<div class='questionnaire-nav-container'>", unsafe_allow_html=True)
     is_last = (current_step == len(active_groups) - 1)
     col_back, col_spacer, col_next = st.columns([1.2, 2, 1.8], gap="small")
 
@@ -564,6 +567,7 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
                             st.session_state.validation_error = f"API Error: {res.get('error', 'Unable to evaluate schemes')}"
                             st.session_state["_scroll_to_top_needed"] = True
                             st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if should_scroll:
         st.session_state["_scroll_to_top_needed"] = False

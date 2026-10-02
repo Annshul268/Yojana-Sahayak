@@ -137,6 +137,7 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
             )
 
     st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='results-bottom-actions'>", unsafe_allow_html=True)
     c_btn1, c_btn2 = st.columns([1.5, 2])
     with c_btn1:
         def on_edit_answers():
@@ -158,3 +159,4 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
             use_container_width=True,
             on_click=on_browse_schemes_results,
         )
+    st.markdown("</div>", unsafe_allow_html=True)

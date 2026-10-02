@@ -104,15 +104,15 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     # Scheme Title & Ministry Header
     st.markdown(
         f"""
-        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 2rem; margin-top: 10px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <div class="scheme-details-header-card" style="background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 2rem; margin-top: 10px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
                 <span class="category-badge-pill">{category}</span>
                 <span style="font-size: 0.85rem; color: #64748B;">• {ministry}</span>
             </div>
-            <h1 style="color: #0F172A; font-size: 2.1rem; font-weight: 800; margin: 6px 0 12px 0; line-height: 1.25;">
+            <h1 class="scheme-details-heading" style="color: #0F172A; font-size: 2.1rem; font-weight: 800; margin: 6px 0 12px 0; line-height: 1.25;">
                 {name}
             </h1>
-            <p style="color: #475569; font-size: 1.05rem; line-height: 1.6; margin: 0;">
+            <p class="scheme-details-desc" style="color: #475569; font-size: 1.05rem; line-height: 1.6; margin: 0;">
                 {desc}
             </p>
         </div>
@@ -177,6 +177,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     st.markdown("</div>", unsafe_allow_html=True)
 
     # 4. Primary Actions (Official Link & Add to Tracker)
+    st.markdown("<div class='scheme-details-actions'>", unsafe_allow_html=True)
     col_act1, col_act2 = st.columns(2, gap="medium")
     with col_act1:
         st.link_button(
@@ -228,6 +229,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
                         st.rerun()
                     else:
                         st.error("Could not add to My Applications. Please try again.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height: 2.5rem;'></div>", unsafe_allow_html=True)
 
@@ -269,11 +271,13 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
         ]
 
     chosen_query = chosen_query if 'chosen_query' in locals() and chosen_query else None
+    st.markdown("<div class='suggested-q-container'>", unsafe_allow_html=True)
     q_cols = st.columns(len(suggested_q), gap="small")
     for idx, sq in enumerate(suggested_q):
         with q_cols[idx]:
             if st.button(f"💬 {sq}", key=f"sq_btn_{idx}_{slug}", use_container_width=True):
                 chosen_query = f"{sq} regarding {name}"
+    st.markdown("</div>", unsafe_allow_html=True)
 
     custom_q = st.text_input(
         "Ask Yojana Sahayak:",

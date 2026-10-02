@@ -83,6 +83,7 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
                 unsafe_allow_html=True,
             )
 
+            st.markdown("<div class='saved-card-actions'>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns([4, 2, 4])
             with col1:
                 def on_saved_view(s_slug=slug):
@@ -99,5 +100,6 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
                     st.rerun()
             with col3:
                 st.link_button("Official Website 🔗", official_url, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)

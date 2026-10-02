@@ -223,6 +223,58 @@ def render_featured_carousel(
             border-radius: 9999px;
             background: #2563EB;
         }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            .carousel-banner-anchor {
+                height: 165px;
+                max-height: 180px;
+            }
+            .carousel-body-box {
+                padding: 12px 14px 8px 14px;
+            }
+            .carousel-card-heading {
+                font-size: 1.02rem;
+                min-height: unset;
+                margin-bottom: 4px;
+            }
+            .carousel-card-summary {
+                font-size: 0.84rem;
+                line-height: 1.45;
+                margin-bottom: 6px;
+            }
+            .carousel-controls-container [data-testid="stHorizontalBlock"] {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                align-items: center !important;
+            }
+            .carousel-controls-container [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(1) {
+                width: 100% !important;
+                min-width: 100% !important;
+                flex: 1 1 100% !important;
+                order: 1 !important;
+                margin-bottom: 2px !important;
+            }
+            .carousel-controls-container [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2) {
+                width: 24% !important;
+                min-width: 0 !important;
+                flex: 1 1 24% !important;
+                order: 2 !important;
+            }
+            .carousel-controls-container [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(3) {
+                width: 46% !important;
+                min-width: 0 !important;
+                flex: 1 1 46% !important;
+                order: 3 !important;
+            }
+            .carousel-controls-container [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(4) {
+                width: 24% !important;
+                min-width: 0 !important;
+                flex: 1 1 24% !important;
+                order: 4 !important;
+            }
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -248,6 +300,7 @@ def render_featured_carousel(
     st.markdown(card_html, unsafe_allow_html=True)
 
     # 2. Controls & Actions Footer Row
+    st.markdown("<div class='carousel-controls-container'>", unsafe_allow_html=True)
     col_view, col_prev, col_dots, col_next = st.columns(
         [4.2, 1.2, 2.2, 1.2],
         gap="small",
@@ -315,3 +368,5 @@ def render_featured_carousel(
             st.session_state.featured_carousel_index = (current_idx + 1) % total
             st.session_state["_carousel_last_tick"] = time.time()
             st.rerun(scope="fragment")
+
+    st.markdown("</div>", unsafe_allow_html=True)

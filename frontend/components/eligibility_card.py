@@ -54,8 +54,8 @@ def render_eligibility_card(
         st.markdown(
             f"""
             <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.5rem; margin-bottom: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span class="category-badge-pill">{category}</span>
                         <span style="font-size: 0.8rem; color: #94A3B8;">• {ministry}</span>
                     </div>
@@ -104,6 +104,7 @@ def render_eligibility_card(
             )
 
         # Action Buttons row
+        st.markdown("<div class='eligibility-card-actions'>", unsafe_allow_html=True)
         col_act1, col_act2, col_act3, col_ai = st.columns([1.5, 0.9, 1.4, 1.4], gap="small")
         with col_act1:
             st.button(
@@ -131,6 +132,7 @@ def render_eligibility_card(
         with col_ai:
             if st.button("💡 " + ("एआई व्याख्या" if lang == "hi" else "AI Explain"), key=f"card_ai_{slug}", use_container_width=True):
                 st.session_state[f"show_ai_explain_{slug}"] = not st.session_state.get(f"show_ai_explain_{slug}", False)
+        st.markdown("</div>", unsafe_allow_html=True)
 
         # Expandable Grounded AI Explanation
         if st.session_state.get(f"show_ai_explain_{slug}", False):

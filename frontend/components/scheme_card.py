@@ -27,8 +27,8 @@ def render_scheme_card(
         st.markdown(
             f"""
             <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.4rem; margin-bottom: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span class="category-badge-pill">{category}</span>
                         <span style="font-size: 0.8rem; color: #94A3B8;">• {ministry}</span>
                     </div>
@@ -46,6 +46,7 @@ def render_scheme_card(
             unsafe_allow_html=True,
         )
 
+        st.markdown("<div class='scheme-card-actions'>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1.5, 0.9, 1.4], gap="small")
         with col1:
             st.button(
@@ -67,5 +68,6 @@ def render_scheme_card(
                 official_url,
                 use_container_width=True,
             )
+        st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)

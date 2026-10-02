@@ -19,99 +19,101 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     # 1. TOP ROW: BENEFITS (LEFT) & FEATURED SCHEMES CAROUSEL (RIGHT)
     # Side-by-side on desktop, naturally stacking on mobile
     # =========================================================================
-    col_left, col_right = st.columns([5.2, 4.8], gap="large")
+    with st.container(key="hero_top_row"):
+        col_left, col_right = st.columns([5.2, 4.8], gap="large")
 
-    with col_left:
-        st.markdown(
-            f"""
-            <div style="padding: 0; margin: 0;">
-                <div class="hero-tag-pill" style="display: inline-flex; margin: 0 0 10px 0;">
-                    <span>✓</span>
-                    <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
+        with col_left:
+            st.markdown(
+                f"""
+                <div style="padding: 0; margin: 0;">
+                    <div class="hero-tag-pill" style="display: inline-flex; margin: 0 0 10px 0;">
+                        <span>✓</span>
+                        <span>{"वे सरकारी योजनाएं खोजें जिनके लिए आप वास्तव में पात्र हैं" if lang == "hi" else "Find the government schemes you actually qualify for"}</span>
+                    </div>
+                    <h1 class="hero-headline" style="margin: 0 0 12px 0; text-align: left;">
+                        {"सरकारी लाभ, सरल भाषा में समझें" if lang == "hi" else "Government benefits, explained in plain language"}
+                    </h1>
+                    <p class="hero-subhead" style="margin: 0 0 18px 0; text-align: left; max-width: 100%;">
+                        {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
+                    </p>
                 </div>
-                <h1 class="hero-headline" style="font-size: 2.45rem; font-weight: 800; margin: 0 0 12px 0; line-height: 1.2; text-align: left;">
-                    {"सरकारी लाभ, सरल भाषा में समझें" if lang == "hi" else "Government benefits, explained in plain language"}
-                </h1>
-                <p class="hero-subhead" style="font-size: 1.05rem; line-height: 1.6; margin: 0 0 18px 0; text-align: left; max-width: 100%;">
-                    {"अपने बारे में कुछ सरल प्रश्नों के उत्तर दें। हम आधिकारिक केंद्रीय एवं राज्य योजनाओं के साथ आपके विवरण का मिलान करते हैं और बताते हैं कि आप क्यों पात्र हैं, कौन से दस्तावेज चाहिए, और आवेदन कैसे करें।" if lang == "hi" else "Answer a few simple questions about yourself. We match you against official central and state schemes and tell you why you qualify, which documents you need, and exactly how to apply."}
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )
 
-        def on_check_eligibility_click():
-            reset_eligibility_session()
-            if navigate_to:
-                navigate_to("finder")
+            def on_check_eligibility_click():
+                reset_eligibility_session()
+                if navigate_to:
+                    navigate_to("finder")
 
-        def on_browse_schemes_click():
-            if navigate_to:
-                navigate_to("schemes")
+            def on_browse_schemes_click():
+                if navigate_to:
+                    navigate_to("schemes")
 
-        col_b1, col_b2 = st.columns([1.1, 1], gap="small")
-        with col_b1:
-            if st.button(
-                "पात्रता जांचें →" if lang == "hi" else "Check my eligibility →",
-                type="primary",
-                use_container_width=True,
-                key="hero_check_eligibility_btn",
-                on_click=on_check_eligibility_click,
-            ):
-                on_check_eligibility_click()
+            with st.container(key="hero_actions_row"):
+                col_b1, col_b2 = st.columns([1.1, 1], gap="small")
+                with col_b1:
+                    if st.button(
+                        "पात्रता जांचें →" if lang == "hi" else "Check my eligibility →",
+                        type="primary",
+                        use_container_width=True,
+                        key="hero_check_eligibility_btn",
+                        on_click=on_check_eligibility_click,
+                    ):
+                        on_check_eligibility_click()
+                        return
+
+                with col_b2:
+                    if st.button(
+                        "सभी योजनाएं" if lang == "hi" else "Browse all schemes",
+                        type="secondary",
+                        use_container_width=True,
+                        key="hero_browse_schemes_btn",
+                        on_click=on_browse_schemes_click,
+                    ):
+                        on_browse_schemes_click()
+                        return
+
+            if st.session_state.get("current_page", "home") != "home":
                 return
 
-        with col_b2:
-            if st.button(
-                "सभी योजनाएं" if lang == "hi" else "Browse all schemes",
-                type="secondary",
-                use_container_width=True,
-                key="hero_browse_schemes_btn",
-                on_click=on_browse_schemes_click,
-            ):
-                on_browse_schemes_click()
+            st.markdown(
+                f"""
+                <div class="hero-footnote" style="text-align: left; margin-top: 12px; margin-bottom: 6px;">
+                    {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with col_right:
+            if st.session_state.get("current_page", "home") != "home":
                 return
 
-        if st.session_state.get("current_page", "home") != "home":
-            return
+            st.markdown(
+                f"""
+                <div class="hero-carousel-header" style="text-align: left; margin: 0 0 8px 0; padding: 0;">
+                    <h2 class="discovery-title" style="font-size: 1.12rem; font-weight: 800; color: #1E3A8A; margin: 0 0 4px 0; letter-spacing: 0.04em; text-transform: uppercase;">
+                        {"प्रमुख सरकारी योजनाएं" if lang == "hi" else "FEATURED GOVERNMENT SCHEMES"}
+                    </h2>
+                    <p class="discovery-subtitle" style="font-size: 0.90rem; color: #475569; margin: 0; line-height: 1.4;">
+                        {"भारत भर में उपलब्ध महत्वपूर्ण सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore important government schemes available across India"}
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        st.markdown(
-            f"""
-            <div class="hero-footnote" style="text-align: left; margin-top: 12px; margin-bottom: 6px;">
-                {"प्रत्येक परिणाम आधिकारिक सरकारी स्रोत से जुड़ा है। हम कभी कोई योजना नहीं बनाते।" if lang == "hi" else "Every result links to an official government source. We never invent a scheme."}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            # Resilient featured schemes retrieval with verified images
+            featured_schemes = get_featured_schemes_db(limit=5)
+            if not featured_schemes:
+                featured_res = api_client.get_featured_schemes(limit=5)
+                featured_schemes = featured_res.get("data", []) if featured_res.get("ok") else []
 
-    with col_right:
-        if st.session_state.get("current_page", "home") != "home":
-            return
-
-        st.markdown(
-            f"""
-            <div class="hero-carousel-header" style="text-align: left; margin: 0 0 8px 0; padding: 0;">
-                <h2 class="discovery-title" style="font-size: 1.12rem; font-weight: 800; color: #1E3A8A; margin: 0 0 4px 0; letter-spacing: 0.04em; text-transform: uppercase;">
-                    {"प्रमुख सरकारी योजनाएं" if lang == "hi" else "FEATURED GOVERNMENT SCHEMES"}
-                </h2>
-                <p class="discovery-subtitle" style="font-size: 0.90rem; color: #475569; margin: 0; line-height: 1.4;">
-                    {"भारत भर में उपलब्ध महत्वपूर्ण सरकारी योजनाओं का अन्वेषण करें" if lang == "hi" else "Explore important government schemes available across India"}
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Resilient featured schemes retrieval with verified images
-        featured_schemes = get_featured_schemes_db(limit=5)
-        if not featured_schemes:
-            featured_res = api_client.get_featured_schemes(limit=5)
-            featured_schemes = featured_res.get("data", []) if featured_res.get("ok") else []
-
-        if featured_schemes:
-            render_featured_carousel(featured_schemes, lang=lang, navigate_to=navigate_to)
-        else:
-            st.info("Featured schemes are currently loading...")
+            if featured_schemes:
+                render_featured_carousel(featured_schemes, lang=lang, navigate_to=navigate_to)
+            else:
+                st.info("Featured schemes are currently loading...")
 
     if st.session_state.get("current_page", "home") != "home":
         return
@@ -126,81 +128,82 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     central_schemes = stats.get("central", 109)
     state_schemes = stats.get("state", 329)
 
-    col_c1, col_c2, col_c3 = st.columns(3, gap="medium")
+    with st.container(key="scheme_counters_container"):
+        col_c1, col_c2, col_c3 = st.columns(3, gap="medium")
 
-    with col_c1:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{total_schemes}+</div>
-                <div class="stat-label-hero">
-                    <span>{"कुल योजनाएं" if lang == "hi" else "Total Schemes"}</span>
-                    <span class="arrow">→</span>
+        with col_c1:
+            st.markdown(
+                f"""
+                <div class="stat-box-hero">
+                    <div class="stat-num-hero">{total_schemes}+</div>
+                    <div class="stat-label-hero">
+                        <span>{"कुल योजनाएं" if lang == "hi" else "Total Schemes"}</span>
+                        <span class="arrow">→</span>
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        def on_total_schemes_click():
-            if navigate_to:
-                navigate_to("schemes")
+                """,
+                unsafe_allow_html=True,
+            )
+            def on_total_schemes_click():
+                if navigate_to:
+                    navigate_to("schemes")
 
-        st.button(
-            "All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →",
-            key="btn_ctr_total",
-            use_container_width=True,
-            on_click=on_total_schemes_click,
-        )
+            st.button(
+                "All Schemes →" if lang != "hi" else "सभी योजनाएं देखें →",
+                key="btn_ctr_total",
+                use_container_width=True,
+                on_click=on_total_schemes_click,
+            )
 
-    with col_c2:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{central_schemes}+</div>
-                <div class="stat-label-hero">
-                    <span>{"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"}</span>
-                    <span class="arrow">→</span>
+        with col_c2:
+            st.markdown(
+                f"""
+                <div class="stat-box-hero">
+                    <div class="stat-num-hero">{central_schemes}+</div>
+                    <div class="stat-label-hero">
+                        <span>{"केंद्रीय योजनाएं" if lang == "hi" else "Central Schemes"}</span>
+                        <span class="arrow">→</span>
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        def on_central_schemes_click():
-            st.session_state.selected_level_filter = "Central"
-            if navigate_to:
-                navigate_to("schemes")
+                """,
+                unsafe_allow_html=True,
+            )
+            def on_central_schemes_click():
+                st.session_state.selected_level_filter = "Central"
+                if navigate_to:
+                    navigate_to("schemes")
 
-        st.button(
-            "Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →",
-            key="btn_ctr_central",
-            use_container_width=True,
-            on_click=on_central_schemes_click,
-        )
+            st.button(
+                "Central Schemes →" if lang != "hi" else "केंद्रीय योजनाएं देखें →",
+                key="btn_ctr_central",
+                use_container_width=True,
+                on_click=on_central_schemes_click,
+            )
 
-    with col_c3:
-        st.markdown(
-            f"""
-            <div class="stat-box-hero">
-                <div class="stat-num-hero">{state_schemes}+</div>
-                <div class="stat-label-hero">
-                    <span>{"राज्य / केंद्रशासित योजनाएं" if lang == "hi" else "State/UT Schemes"}</span>
-                    <span class="arrow">→</span>
+        with col_c3:
+            st.markdown(
+                f"""
+                <div class="stat-box-hero">
+                    <div class="stat-num-hero">{state_schemes}+</div>
+                    <div class="stat-label-hero">
+                        <span>{"राज्य / केंद्रशासित योजनाएं" if lang == "hi" else "State/UT Schemes"}</span>
+                        <span class="arrow">→</span>
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        def on_state_schemes_click():
-            st.session_state.selected_level_filter = "State"
-            if navigate_to:
-                navigate_to("schemes")
+                """,
+                unsafe_allow_html=True,
+            )
+            def on_state_schemes_click():
+                st.session_state.selected_level_filter = "State"
+                if navigate_to:
+                    navigate_to("schemes")
 
-        st.button(
-            "State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →",
-            key="btn_ctr_state",
-            use_container_width=True,
-            on_click=on_state_schemes_click,
-        )
+            st.button(
+                "State/UT Schemes →" if lang != "hi" else "राज्य योजनाएं देखें →",
+                key="btn_ctr_state",
+                use_container_width=True,
+                on_click=on_state_schemes_click,
+            )
 
     if st.session_state.get("current_page", "home") != "home":
         return
@@ -234,6 +237,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
 
         category_items = stats.get("category_items", [])
         if category_items:
+            st.markdown("<div class='home-category-grid'>", unsafe_allow_html=True)
             num_cols = 4
             cat_rows = [category_items[i : i + num_cols] for i in range(0, len(category_items), num_cols)]
 
@@ -270,6 +274,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             args=(item["db_category"],),
                         )
                 st.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.get("current_page", "home") != "home":
             return
@@ -305,6 +310,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 target_col = col_st_left if idx < half else col_st_right
 
                 with target_col:
+                    st.markdown("<div class='state-item-row'>", unsafe_allow_html=True)
                     c_info, c_btn = st.columns([7, 3])
                     with c_info:
                         st.markdown(
@@ -329,6 +335,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             on_click=on_state_click,
                             args=(st_name,),
                         )
+                    st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.get("current_page", "home") != "home":
             return
@@ -364,6 +371,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 target_col = col_min_left if idx < half else col_min_right
 
                 with target_col:
+                    st.markdown("<div class='state-item-row'>", unsafe_allow_html=True)
                     c_info, c_btn = st.columns([7, 3])
                     with c_info:
                         st.markdown(
@@ -387,6 +395,7 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                             use_container_width=True,
                             on_click=on_min_click,
                         )
+                    st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.get("current_page", "home") != "home":
             return
@@ -400,49 +409,50 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     # =========================================================================
     # 5. HOW YOJANA SAHAYAK WORKS (3-STEP GUIDED PROCESS)
     # =========================================================================
-    col_s1, col_s2, col_s3 = st.columns(3, gap="medium")
+    with st.container(key="steps_container"):
+        col_s1, col_s2, col_s3 = st.columns(3, gap="medium")
 
-    with col_s1:
-        st.markdown(
-            f"""
-            <div class="step-card">
-                <div class="step-icon-box">📋</div>
-                <div class="step-label">{"चरण 1" if lang == "hi" else "Step 1"}</div>
-                <div class="step-title">{"अपने बारे में बताएं" if lang == "hi" else "Tell us about yourself"}</div>
-                <div class="step-desc">
-                    {"एक मार्गदर्शित प्रपत्र: राज्य, आयु, कार्य, आय, सामाजिक श्रेणी और आवश्यक सहायता।" if lang == "hi" else "A guided form: state, age, work, income, category and what you need help with."}
+        with col_s1:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <div class="step-icon-box">📋</div>
+                    <div class="step-label">{"चरण 1" if lang == "hi" else "Step 1"}</div>
+                    <div class="step-title">{"अपने बारे में बताएं" if lang == "hi" else "Tell us about yourself"}</div>
+                    <div class="step-desc">
+                        {"एक मार्गदर्शित प्रपत्र: राज्य, आयु, कार्य, आय, सामाजिक श्रेणी और आवश्यक सहायता।" if lang == "hi" else "A guided form: state, age, work, income, category and what you need help with."}
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )
 
-    with col_s2:
-        st.markdown(
-            f"""
-            <div class="step-card">
-                <div class="step-icon-box">🔍</div>
-                <div class="step-label">{"चरण 2" if lang == "hi" else "Step 2"}</div>
-                <div class="step-title">{"हम आधिकारिक नियमों से मिलाते हैं" if lang == "hi" else "We match official rules"}</div>
-                <div class="step-desc">
-                    {"हम प्रत्येक योजना के नियमों के अनुसार जांचते हैं। कोई अनुमान नहीं। केवल वास्तविक पात्रता।" if lang == "hi" else "We check every scheme against its official eligibility rules. No guessing. Only real eligibility."}
+        with col_s2:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <div class="step-icon-box">🔍</div>
+                    <div class="step-label">{"चरण 2" if lang == "hi" else "Step 2"}</div>
+                    <div class="step-title">{"हम आधिकारिक नियमों से मिलाते हैं" if lang == "hi" else "We match official rules"}</div>
+                    <div class="step-desc">
+                        {"हम प्रत्येक योजना के नियमों के अनुसार जांचते हैं। कोई अनुमान नहीं। केवल वास्तविक पात्रता।" if lang == "hi" else "We check every scheme against its official eligibility rules. No guessing. Only real eligibility."}
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )
 
-    with col_s3:
-        st.markdown(
-            f"""
-            <div class="step-card">
-                <div class="step-icon-box">🎯</div>
-                <div class="step-label">{"चरण 3" if lang == "hi" else "Step 3"}</div>
-                <div class="step-title">{"चरण-दर-चरण मार्गदर्शन" if lang == "hi" else "Step-by-step guidance"}</div>
-                <div class="step-desc">
-                    {"जानिए आपको क्या मिलेगा, कौन से दस्तावेज चाहिए, और सीधे आधिकारिक पोर्टल पर आवेदन कैसे करें।" if lang == "hi" else "See what you get, what documents you need, and how to apply directly on official portals."}
+        with col_s3:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <div class="step-icon-box">🎯</div>
+                    <div class="step-label">{"चरण 3" if lang == "hi" else "Step 3"}</div>
+                    <div class="step-title">{"चरण-दर-चरण मार्गदर्शन" if lang == "hi" else "Step-by-step guidance"}</div>
+                    <div class="step-desc">
+                        {"जानिए आपको क्या मिलेगा, कौन से दस्तावेज चाहिए, और सीधे आधिकारिक पोर्टल पर आवेदन कैसे करें।" if lang == "hi" else "See what you get, what documents you need, and how to apply directly on official portals."}
+                    </div>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )

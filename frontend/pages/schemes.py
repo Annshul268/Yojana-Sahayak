@@ -78,6 +78,7 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
     )
 
     # 1. Search and State Filter Row
+    st.markdown("<div class='schemes-search-row'>", unsafe_allow_html=True)
     col_search, col_state = st.columns([7, 3])
 
     with col_search:
@@ -102,6 +103,7 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
             label_visibility="collapsed",
             key="schemes_state_select",
         )
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # 2. Category Filter Radio
     cat_keys = [k for k, en, hi in CATEGORY_MAP]
