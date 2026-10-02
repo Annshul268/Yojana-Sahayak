@@ -262,6 +262,16 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             st.session_state.user_id = ""
             st.session_state.user_name = None
             st.session_state.pop("auth_mode", None)
+            st.session_state.pop("eligibility_answers", None)
+            st.session_state.pop("adaptive_answers", None)
+            st.session_state.pop("match_results", None)
+            st.session_state.pop("matched_profile", None)
+            st.session_state.pop("eligibility_profile", None)
+            st.session_state.pop("finder_answers", None)
+            st.session_state.pop("pending_category_intent", None)
+            for k in list(st.session_state.keys()):
+                if k.startswith("field_") or k.startswith("auth_"):
+                    st.session_state.pop(k, None)
             st.toast("Signed out successfully.")
             st.rerun()
 
@@ -269,59 +279,118 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
 
     # 2. Profile Details Form
     res = api_client.get_profile(user_id=user_id)
-    prof = res["data"] if res.get("ok") else {}
+    prof = res["data"] if res.get("ok") and isinstance(res.get("data"), dict) else {}
 
     st.markdown("### " + ("व्यक्तिगत विवरण" if lang == "hi" else "Personal Eligibility Profile"))
 
     with st.form("clean_profile_form"):
         col1, col2 = st.columns(2)
         with col1:
-            name = st.text_input("Name", value=prof.get("name") or user_name or "")
-            age = st.number_input("Age", min_value=0, max_value=120, value=int(prof.get("age") or 25))
+            name_val = prof.get("name") or user_name or ""
+            name = st.text_input("Name" if lang != "hi" else "नाम", value=name_val)
+
+            raw_age = prof.get("age")
+            age_val = int(raw_age) if raw_age is not None and str(raw_age).isdigit() else None
+            age = st.number_input(
+                "Age" if lang != "hi" else "आयु",
+                min_value=0,
+                max_value=120,
+                value=age_val,
+                placeholder="e.g. 25" if lang != "hi" else "उदा. 25",
+            )
+
             genders = ["Female", "Male", "Transgender", "Prefer not to say"]
-            g_idx = genders.index(prof.get("gender")) if prof.get("gender") in genders else 0
-            gender = st.selectbox("Gender", genders, index=g_idx)
+            cur_gender = prof.get("gender")
+            g_idx = genders.index(cur_gender) if cur_gender in genders else None
+            gender = st.selectbox(
+                "Gender" if lang != "hi" else "लिंग",
+                genders,
+                index=g_idx,
+                placeholder="Select Gender" if lang != "hi" else "लिंग चुनें",
+            )
+
+            raw_inc = prof.get("annual_income")
+            inc_val = float(raw_inc) if raw_inc is not None and str(raw_inc).strip() != "" else None
             income = st.number_input(
-                "Annual Income (₹)",
+                "Annual Income (₹)" if lang != "hi" else "वार्षिक आय (₹)",
                 min_value=0.0,
                 max_value=10000000.0,
                 step=10000.0,
-                value=float(prof.get("annual_income") or 200000.0),
+                value=inc_val,
+                placeholder="e.g. 150000" if lang != "hi" else "उदा. 150000",
             )
 
         with col2:
-            st_idx = INDIAN_STATES.index(prof.get("state")) if prof.get("state") in INDIAN_STATES else 0
-            state = st.selectbox("State / UT", INDIAN_STATES, index=st_idx)
+            cur_state = prof.get("state")
+            st_idx = INDIAN_STATES.index(cur_state) if cur_state in INDIAN_STATES else None
+            state = st.selectbox(
+                "State / UT" if lang != "hi" else "राज्य / केंद्र शासित प्रदेश",
+                INDIAN_STATES,
+                index=st_idx,
+                placeholder="Select State / UT" if lang != "hi" else "राज्य / केंद्र शासित प्रदेश चुनें",
+            )
+
+            district_val = prof.get("district") or ""
+            district = st.text_input(
+                "District" if lang != "hi" else "जिला",
+                value=district_val,
+                placeholder="e.g. Lucknow" if lang != "hi" else "उदा. लखनऊ",
+            )
+
             occ_keys = [k for k, en, hi in OCCUPATION_OPTIONS]
             occ_labels = [hi if lang == "hi" else en for k, en, hi in OCCUPATION_OPTIONS]
-            cur_occ = prof.get("occupation", "student")
-            cur_occ_idx = occ_keys.index(cur_occ) if cur_occ in occ_keys else 0
-            chosen_occ_lbl = st.selectbox("Occupation", occ_labels, index=cur_occ_idx)
-            occupation = occ_keys[occ_labels.index(chosen_occ_lbl)]
+            cur_occ = prof.get("occupation")
+            cur_occ_idx = occ_keys.index(cur_occ) if cur_occ in occ_keys else None
+            chosen_occ_lbl = st.selectbox(
+                "Occupation" if lang != "hi" else "व्यवसाय",
+                occ_labels,
+                index=cur_occ_idx,
+                placeholder="Select Occupation" if lang != "hi" else "व्यवसाय चुनें",
+            )
+            occupation = occ_keys[occ_labels.index(chosen_occ_lbl)] if chosen_occ_lbl in occ_labels else None
 
             categories = ["General", "OBC", "SC", "ST", "EWS", "Prefer not to say"]
-            c_idx = categories.index(prof.get("category")) if prof.get("category") in categories else 0
-            category = st.selectbox("Category", categories, index=c_idx)
-            area = st.radio("Area", ["Rural", "Urban"], index=0 if prof.get("area") == "Rural" else 1, horizontal=True)
+            cur_cat = prof.get("category")
+            c_idx = categories.index(cur_cat) if cur_cat in categories else None
+            category = st.selectbox(
+                "Category" if lang != "hi" else "सामाजिक श्रेणी",
+                categories,
+                index=c_idx,
+                placeholder="Select Category" if lang != "hi" else "श्रेणी चुनें",
+            )
 
-        disability = st.checkbox("Person with Disability (Divyangjan)?", value=bool(prof.get("disability", False)))
+            cur_area = str(prof.get("area") or "").capitalize()
+            area_idx = 0 if cur_area == "Rural" else (1 if cur_area == "Urban" else None)
+            area = st.radio(
+                "Area" if lang != "hi" else "क्षेत्र",
+                ["Rural", "Urban"],
+                index=area_idx,
+                horizontal=True,
+            )
+
+        dis_val = bool(prof.get("disability", False))
+        disability = st.checkbox(
+            "Person with Disability (Divyangjan)?" if lang != "hi" else "दिव्यांगजन (Person with Disability)?",
+            value=dis_val,
+        )
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
         if st.form_submit_button("Save Profile" if lang != "hi" else "प्रोफ़ाइल सहेजें", type="primary", use_container_width=True):
             updated_data = {
                 "user_id": user_id,
-                "name": name,
-                "state": state,
-                "age": age,
-                "gender": gender,
-                "annual_income": income,
-                "occupation": occupation,
-                "category": category,
-                "area": area,
-                "disability": disability,
+                "name": name.strip() if name else user_name,
+                "state": state if state else None,
+                "district": district.strip() if district else None,
+                "age": int(age) if age is not None else None,
+                "gender": gender if gender else None,
+                "annual_income": float(income) if income is not None else None,
+                "occupation": occupation if occupation else None,
+                "category": category if category else None,
+                "area": area if area else None,
+                "disability": bool(disability),
             }
             api_client.upsert_profile(updated_data)
-            st.session_state.user_name = name
+            st.session_state.user_name = updated_data["name"]
             st.toast("Profile saved successfully!")
             if handle_eligibility_return(user_id, profile_just_saved=True):
                 return

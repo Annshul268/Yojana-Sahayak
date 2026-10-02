@@ -950,5 +950,231 @@ class TestSupabaseAuthAndDatabaseFlow:
             assert prof["state"] == "Delhi"
 
 
+class TestPersonalEligibilityProfileBehavior:
+    """Verifies that fresh accounts only populate Name, while all eligibility fields remain empty/unselected."""
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_fresh_signup_populates_only_name_and_all_other_fields_empty(
+        self,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_form_submit_btn.return_value = False
+
+        # Fresh user who just created an account with Full Name "Anshul Kumar Gupta"
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "user_fresh_123"
+        st.session_state.user_name = "Anshul Kumar Gupta"
+
+        # Database profile only has name and user_id, all eligibility fields are None/empty
+        mock_get_profile.return_value = {
+            "ok": True,
+            "data": {
+                "user_id": "user_fresh_123",
+                "name": "Anshul Kumar Gupta",
+                "state": "",
+                "district": "",
+                "age": None,
+                "gender": "",
+                "annual_income": None,
+                "occupation": "",
+                "category": "",
+                "area": "",
+                "disability": False,
+            },
+        }
+
+        render_citizen_profile(MagicMock())
+
+        # 1. Name is populated with signup name
+        name_call = [c for c in mock_text_input.call_args_list if c[0][0] in ("Name", "नाम")][0]
+        assert name_call[1]["value"] == "Anshul Kumar Gupta"
+
+        # 2. District is empty
+        district_call = [c for c in mock_text_input.call_args_list if c[0][0] in ("District", "जिला")][0]
+        assert district_call[1]["value"] == ""
+
+        # 3. Age is None (empty)
+        age_call = [c for c in mock_number_input.call_args_list if c[0][0] in ("Age", "आयु")][0]
+        assert age_call[1]["value"] is None
+
+        # 4. Income is None (empty)
+        inc_call = [c for c in mock_number_input.call_args_list if "Income" in c[0][0] or "आय" in c[0][0]][0]
+        assert inc_call[1]["value"] is None
+
+        # 5. Gender is unselected (index is None)
+        gender_call = [c for c in mock_selectbox.call_args_list if c[0][0] in ("Gender", "लिंग")][0]
+        assert gender_call[1]["index"] is None
+
+        # 6. State is unselected (index is None)
+        state_call = [c for c in mock_selectbox.call_args_list if "State" in c[0][0] or "राज्य" in c[0][0]][0]
+        assert state_call[1]["index"] is None
+
+        # 7. Occupation is unselected (index is None)
+        occ_call = [c for c in mock_selectbox.call_args_list if "Occupation" in c[0][0] or "व्यवसाय" in c[0][0]][0]
+        assert occ_call[1]["index"] is None
+
+        # 8. Category is unselected (index is None)
+        cat_call = [c for c in mock_selectbox.call_args_list if "Category" in c[0][0] or "श्रेणी" in c[0][0]][0]
+        assert cat_call[1]["index"] is None
+
+        # 9. Area radio is unselected (index is None)
+        area_call = [c for c in mock_radio.call_args_list if "Area" in c[0][0] or "क्षेत्र" in c[0][0]][0]
+        assert area_call[1]["index"] is None
+
+        # 10. Disability is unchecked (False)
+        dis_call = [c for c in mock_checkbox.call_args_list if "Disability" in c[0][0] or "दिव्यांगजन" in c[0][0]][0]
+        assert dis_call[1]["value"] is False
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_saved_profile_loads_saved_eligibility_information(
+        self,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_form_submit_btn.return_value = False
+
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "user_saved_456"
+        st.session_state.user_name = "Test User"
+
+        # User previously saved: Age=21, Gender=Male, State=Uttar Pradesh, Occupation=student, Income=150000, Area=Urban
+        mock_get_profile.return_value = {
+            "ok": True,
+            "data": {
+                "user_id": "user_saved_456",
+                "name": "Test User",
+                "state": "Uttar Pradesh",
+                "district": "",
+                "age": 21,
+                "gender": "Male",
+                "annual_income": 150000.0,
+                "occupation": "student",
+                "category": "OBC",
+                "area": "Urban",
+                "disability": False,
+            },
+        }
+
+        render_citizen_profile(MagicMock())
+
+        # Age is loaded
+        age_call = [c for c in mock_number_input.call_args_list if c[0][0] in ("Age", "आयु")][0]
+        assert age_call[1]["value"] == 21
+
+        # Gender index for "Male"
+        gender_call = [c for c in mock_selectbox.call_args_list if c[0][0] in ("Gender", "लिंग")][0]
+        genders = gender_call[0][1]
+        assert genders[gender_call[1]["index"]] == "Male"
+
+        # State index for "Uttar Pradesh"
+        state_call = [c for c in mock_selectbox.call_args_list if "State" in c[0][0] or "राज्य" in c[0][0]][0]
+        states = state_call[0][1]
+        assert states[state_call[1]["index"]] == "Uttar Pradesh"
+
+        # Income is loaded
+        inc_call = [c for c in mock_number_input.call_args_list if "Income" in c[0][0] or "आय" in c[0][0]][0]
+        assert inc_call[1]["value"] == 150000.0
+
+        # Area index for "Urban" is 1
+        area_call = [c for c in mock_radio.call_args_list if "Area" in c[0][0] or "क्षेत्र" in c[0][0]][0]
+        assert area_call[1]["index"] == 1
+
+        # Field that was never entered (District) still remains empty
+        district_call = [c for c in mock_text_input.call_args_list if c[0][0] in ("District", "जिला")][0]
+        assert district_call[1]["value"] == ""
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_sign_out_clears_session_state_and_user_isolation(
+        self,
+        mock_get_profile,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        # Simulate clicking Sign Out button
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "prof_signout_btn"
+
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "user_alice_789"
+        st.session_state.user_name = "Alice"
+        st.session_state.eligibility_answers = {"age": 30, "state": "Bihar"}
+        st.session_state.field_age = 30
+
+        render_citizen_profile(MagicMock())
+
+        assert st.session_state.is_authenticated is False
+        assert st.session_state.user_id == ""
+        assert st.session_state.user_name is None
+        assert "eligibility_answers" not in st.session_state
+        assert "field_age" not in st.session_state
+
+
 
 

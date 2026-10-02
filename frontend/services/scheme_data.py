@@ -813,27 +813,26 @@ def upsert_user_profile_db(profile_data: Dict[str, Any]) -> Dict[str, Any]:
         existing = cursor.fetchone()
         now_str = datetime.now(timezone.utc).isoformat()
         if existing:
-            cursor.execute(
-                """
-                UPDATE profiles
-                SET name = ?, state = ?, district = ?, age = ?, gender = ?, annual_income = ?, occupation = ?, category = ?, area = ?, disability = ?, updated_at = ?
-                WHERE user_id = ?
-                """,
-                (
-                    profile_data.get("name"),
-                    profile_data.get("state"),
-                    profile_data.get("district", ""),
-                    profile_data.get("age"),
-                    profile_data.get("gender"),
-                    profile_data.get("annual_income"),
-                    profile_data.get("occupation"),
-                    profile_data.get("category"),
-                    profile_data.get("area"),
-                    1 if profile_data.get("disability") else 0,
-                    now_str,
-                    user_id,
-                ),
-            )
+            fields = []
+            vals = []
+            allowed_fields = [
+                "name", "state", "district", "age", "gender",
+                "annual_income", "occupation", "category", "area"
+            ]
+            for col in allowed_fields:
+                if col in profile_data:
+                    fields.append(f"{col} = ?")
+                    vals.append(profile_data.get(col))
+            if "disability" in profile_data:
+                fields.append("disability = ?")
+                vals.append(1 if profile_data.get("disability") else 0)
+
+            fields.append("updated_at = ?")
+            vals.append(now_str)
+            vals.append(user_id)
+
+            sql = f"UPDATE profiles SET {', '.join(fields)} WHERE user_id = ?"
+            cursor.execute(sql, tuple(vals))
         else:
             new_id = str(uuid.uuid4())
             cursor.execute(
@@ -846,7 +845,7 @@ def upsert_user_profile_db(profile_data: Dict[str, Any]) -> Dict[str, Any]:
                     user_id,
                     profile_data.get("name"),
                     profile_data.get("state"),
-                    profile_data.get("district", ""),
+                    profile_data.get("district"),
                     profile_data.get("age"),
                     profile_data.get("gender"),
                     profile_data.get("annual_income"),
