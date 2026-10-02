@@ -52,13 +52,8 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             is_active = (cur_page in ("tracker", "applications"))
             label = "मेरे आवेदन" if lang == "hi" else "My Applications"
             def on_nav_apps():
-                if not st.session_state.get("is_authenticated", False):
-                    st.session_state.auth_redirect_target = "tracker"
-                    if navigate_to:
-                        navigate_to("profile")
-                else:
-                    if navigate_to:
-                        navigate_to("tracker")
+                if navigate_to:
+                    navigate_to("tracker")
 
             st.button(
                 label,
@@ -87,7 +82,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
         with col_auth:
             user_name = st.session_state.get("user_name")
             is_logged_in = bool(st.session_state.get("is_authenticated", False))
-            auth_label = user_name[:8] if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign in")
+            auth_label = user_name[:8] if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign In")
             btn_type = "primary" if not is_logged_in else "secondary"
             def on_nav_auth():
                 if navigate_to:
@@ -108,6 +103,7 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             [1.0, 5.0, 1.0, 1.8],
             gap="small",
             vertical_alignment="center",
+            wrap=False,
         )
 
         with col_m_menu:
@@ -136,32 +132,18 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                         navigate_to("saved")
                 # 5. My Applications
                 if st.button("मेरे आवेदन" if lang == "hi" else "My Applications", key="mob_menu_apps", use_container_width=True, type="primary" if cur_page in ("tracker", "applications", "my_applications") else "secondary"):
-                    if not is_logged_in:
-                        st.session_state.auth_redirect_target = "tracker"
-                        if navigate_to:
-                            navigate_to("profile")
-                    else:
-                        if navigate_to:
-                            navigate_to("tracker")
+                    if navigate_to:
+                        navigate_to("tracker")
                 # 6. Citizen Profile / Sign In
                 st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 8px 0;' />", unsafe_allow_html=True)
-                prof_label = user_name if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Citizen Profile / Sign In")
+                prof_label = user_name if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign In")
                 if st.button(prof_label, key="mob_menu_profile", use_container_width=True, type="primary" if cur_page == "profile" else "secondary"):
                     if navigate_to:
                         navigate_to("profile")
 
         with col_m_logo:
             st.markdown(
-                """
-                <div class="mob-brand-box" style="display: flex; align-items: center; gap: 7px; cursor: pointer;">
-                    <span class="mob-logo-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #1E3A8A; color: white; border-radius: 7px; font-size: 13px; font-weight: 800; flex-shrink: 0;">
-                        YS
-                    </span>
-                    <span class="mob-logo-title" style="font-size: 1.02rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; white-space: nowrap;">
-                        Yojana Sahayak
-                    </span>
-                </div>
-                """,
+                """<div class="mob-brand-box" style="display: flex; align-items: center; gap: 7px; cursor: pointer;"><span class="mob-logo-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #1E3A8A; color: white; border-radius: 7px; font-size: 13px; font-weight: 800; flex-shrink: 0;">YS</span><span class="mob-logo-title" style="font-size: 1.02rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; white-space: nowrap;">Yojana Sahayak</span></div>""",
                 unsafe_allow_html=True,
             )
 

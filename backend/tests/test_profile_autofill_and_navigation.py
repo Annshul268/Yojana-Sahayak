@@ -488,3 +488,37 @@ assert len(at.warning) == 0
         res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
         assert res.returncode == 0, f"AppTest failed:\n{res.stdout}\n{res.stderr}"
 
+
+class TestMobileNavbarLayout:
+    """Tests mobile navbar rendering, auth default state, and CSS integrity."""
+
+    def test_apptest_auth_defaults_unauthenticated(self):
+        import subprocess, sys
+        code = """
+from pathlib import Path
+from streamlit.testing.v1 import AppTest
+app_path = Path('frontend/app.py')
+at = AppTest.from_file(str(app_path), default_timeout=30)
+at.run()
+assert at.session_state.is_authenticated is False
+assert at.session_state.user_name is None
+# Verify mobile navbar auth button shows Sign In when logged out
+auth_btn = [b for b in at.button if b.key == 'mob_nav_auth_btn'][0]
+assert auth_btn.label == 'Sign In'
+"""
+        res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        assert res.returncode == 0, f"AppTest failed:\n{res.stdout}\n{res.stderr}"
+
+    def test_mobile_navbar_css_no_column2_overflow_hidden(self):
+        css_path = "frontend/styles/main.css"
+        with open(css_path, "r", encoding="utf-8") as f:
+            css = f.read()
+
+        # Ensure Column 2 does not have overflow: hidden
+        import re
+        col2_blocks = re.findall(r'(\.st-key-mobile_nav_wrapper[^\{]*:nth-child\(2\)[^\{]*\{[^}]*\})', css)
+        for block in col2_blocks:
+            assert "overflow: hidden" not in block, f"Column 2 should not have overflow: hidden: {block}"
+            assert "overflow: visible" in block, f"Column 2 should have overflow: visible: {block}"
+
+

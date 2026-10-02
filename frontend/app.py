@@ -39,15 +39,15 @@ if css_path.exists():
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 if "user_id" not in st.session_state:
-    st.session_state.user_id = "citizen_user_1"
+    st.session_state.user_id = ""
 if "user_name" not in st.session_state:
-    st.session_state.user_name = "Citizen"
+    st.session_state.user_name = None
 if "lang" not in st.session_state:
     st.session_state.lang = "en"
 if "is_admin" not in st.session_state:
     st.session_state.is_admin = False
 if "is_authenticated" not in st.session_state:
-    st.session_state.is_authenticated = True
+    st.session_state.is_authenticated = False
 
 
 def is_in_callback() -> bool:
