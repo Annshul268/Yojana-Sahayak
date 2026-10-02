@@ -14,11 +14,19 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 
-def find_db_path() -> Optional[str]:
-    """Locate the yojana_sahayak.db database file."""
+def find_db_path(create_if_missing: bool = False) -> Optional[str]:
+    """Locate the yojana_sahayak.db database file, optionally initializing if missing."""
     custom_path = os.getenv("SQLITE_DB_PATH")
-    if custom_path and os.path.exists(custom_path):
-        return custom_path
+    if custom_path:
+        if os.path.exists(custom_path):
+            return custom_path
+        if create_if_missing:
+            try:
+                Path(custom_path).parent.mkdir(parents=True, exist_ok=True)
+                Path(custom_path).touch(exist_ok=True)
+                return custom_path
+            except Exception:
+                pass
 
     candidates = [
         Path(__file__).resolve().parent.parent.parent / "yojana_sahayak.db",
@@ -27,7 +35,82 @@ def find_db_path() -> Optional[str]:
     for p in candidates:
         if p.exists():
             return str(p)
+
+    if create_if_missing:
+        target_path = Path.cwd() / "yojana_sahayak.db"
+        try:
+            target_path.touch(exist_ok=True)
+            return str(target_path)
+        except Exception:
+            fallback = Path("/tmp/yojana_sahayak.db")
+            try:
+                fallback.touch(exist_ok=True)
+                return str(fallback)
+            except Exception:
+                return None
+
     return None
+
+
+def ensure_database_schema(db_path: Optional[str] = None) -> bool:
+    """Ensure essential user tables (profiles, scheme_tracking, saved_schemes) exist in SQLite."""
+    path = db_path or find_db_path(create_if_missing=True)
+    if not path:
+        return False
+    try:
+        conn = sqlite3.connect(path, timeout=5.0)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS profiles (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(128) UNIQUE NOT NULL,
+                name VARCHAR(255),
+                state VARCHAR(100),
+                district VARCHAR(100),
+                age INTEGER,
+                gender VARCHAR(50),
+                annual_income REAL,
+                occupation VARCHAR(100),
+                category VARCHAR(50),
+                area VARCHAR(50),
+                disability INTEGER DEFAULT 0,
+                created_at DATETIME,
+                updated_at DATETIME
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS scheme_tracking (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(128) NOT NULL,
+                scheme_id VARCHAR(36) NOT NULL,
+                status VARCHAR(50) DEFAULT 'Saved',
+                notes TEXT,
+                applied_at DATETIME,
+                created_at DATETIME,
+                updated_at DATETIME,
+                UNIQUE(user_id, scheme_id)
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS saved_schemes (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(128) NOT NULL,
+                scheme_id VARCHAR(36) NOT NULL,
+                created_at DATETIME,
+                UNIQUE(user_id, scheme_id)
+            )
+            """
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception:
+        return False
 
 
 def _find_schemes_json_path() -> Optional[Path]:
@@ -395,9 +478,10 @@ def get_user_applications_db(user_id: str) -> List[Dict[str, Any]]:
     if not user_id:
         return []
 
-    db_path = find_db_path()
+    db_path = find_db_path(create_if_missing=True)
     if not db_path:
         return []
+    ensure_database_schema(db_path)
 
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
@@ -461,9 +545,10 @@ def is_scheme_in_applications_db(user_id: str, scheme_id: str) -> bool:
     """Check if a scheme is already in the citizen's applications."""
     if not user_id or not scheme_id:
         return False
-    db_path = find_db_path()
+    db_path = find_db_path(create_if_missing=True)
     if not db_path:
         return False
+    ensure_database_schema(db_path)
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
         cursor = conn.cursor()
@@ -487,9 +572,10 @@ def add_user_application_db(
 
     if not user_id or not scheme_id:
         return {"ok": False, "error": "Missing user_id or scheme_id"}
-    db_path = find_db_path()
+    db_path = find_db_path(create_if_missing=True)
     if not db_path:
         return {"ok": False, "error": "Database not found"}
+    ensure_database_schema(db_path)
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
         cursor = conn.cursor()
@@ -673,9 +759,10 @@ def get_user_profile_db(user_id: str) -> Optional[Dict[str, Any]]:
     """Retrieve citizen profile directly from SQLite."""
     if not user_id:
         return None
-    db_path = find_db_path()
+    db_path = find_db_path(create_if_missing=True)
     if not db_path:
         return None
+    ensure_database_schema(db_path)
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
         cursor = conn.cursor()
@@ -715,9 +802,10 @@ def upsert_user_profile_db(profile_data: Dict[str, Any]) -> Dict[str, Any]:
     user_id = profile_data.get("user_id")
     if not user_id:
         return {"ok": False, "error": "Missing user_id"}
-    db_path = find_db_path()
+    db_path = find_db_path(create_if_missing=True)
     if not db_path:
         return {"ok": False, "error": "Database not found"}
+    ensure_database_schema(db_path)
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
         cursor = conn.cursor()

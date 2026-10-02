@@ -766,5 +766,189 @@ class TestAuthServiceValidation:
         assert authed["name"] == "Test Citizen Real"
 
 
+class TestSupabaseAuthAndDatabaseFlow:
+    """Tests Supabase Auth, REST profile insertion, dynamic secrets, and DB auto-initialization."""
+
+    def test_dynamic_secrets_resolution(self):
+        from frontend.services.auth_service import get_env_or_secret
+
+        with patch.dict("os.environ", {"SUPABASE_URL": "https://test.supabase.co"}):
+            assert get_env_or_secret("SUPABASE_URL") == "https://test.supabase.co"
+
+        with patch.dict("os.environ", {}, clear=True):
+            with patch("streamlit.secrets", {"SUPABASE_URL": "https://secret.supabase.co"}):
+                assert get_env_or_secret("SUPABASE_URL") == "https://secret.supabase.co"
+
+        with patch.dict("os.environ", {}, clear=True):
+            with patch("streamlit.secrets", {"supabase": {"url": "https://nested.supabase.co"}}):
+                assert get_env_or_secret("SUPABASE_URL") == "https://nested.supabase.co"
+
+    @patch("requests.post")
+    def test_supabase_signup_success_with_profile_insert(self, mock_post):
+        from frontend.services.auth_service import auth_service
+
+        # Mock signup response
+        signup_resp = MagicMock()
+        signup_resp.status_code = 200
+        signup_resp.json.return_value = {
+            "user": {"id": "supabase-user-123", "email": "citizen@example.com"},
+            "access_token": "mock-token-abc",
+        }
+
+        # Mock profile post response
+        profile_resp = MagicMock()
+        profile_resp.status_code = 201
+
+        mock_post.side_effect = [signup_resp, profile_resp]
+
+        def mock_secrets(key, default=""):
+            if key == "SUPABASE_URL":
+                return "https://mock.supabase.co"
+            if key in ("SUPABASE_ANON_KEY", "SUPABASE_KEY"):
+                return "mock-key"
+            return default
+
+        with patch("frontend.services.auth_service.get_env_or_secret", side_effect=mock_secrets):
+            ok, msg, user = auth_service.register_user(
+                "Pooja Verma", "citizen@example.com", "mypassword123", "mypassword123"
+            )
+            assert ok is True
+            assert msg == "Account created successfully!"
+            assert user["user_id"] == "supabase-user-123"
+            assert user["name"] == "Pooja Verma"
+
+        # Verify calls
+        assert mock_post.call_count == 2
+        # First call was signup
+        signup_call = mock_post.call_args_list[0]
+        assert "auth/v1/signup" in signup_call[0][0]
+        # Second call was profile insert to REST
+        prof_call = mock_post.call_args_list[1]
+        assert "rest/v1/profiles" in prof_call[0][0]
+        assert prof_call[1]["headers"]["Authorization"] == "Bearer mock-token-abc"
+
+    @patch("requests.post")
+    def test_supabase_signup_already_registered_error(self, mock_post):
+        from frontend.services.auth_service import auth_service
+
+        signup_resp = MagicMock()
+        signup_resp.status_code = 400
+        signup_resp.json.return_value = {"msg": "User already registered"}
+        mock_post.return_value = signup_resp
+
+        def mock_secrets(key, default=""):
+            if key == "SUPABASE_URL":
+                return "https://mock.supabase.co"
+            if key in ("SUPABASE_ANON_KEY", "SUPABASE_KEY"):
+                return "mock-key"
+            return default
+
+        with patch("frontend.services.auth_service.get_env_or_secret", side_effect=mock_secrets):
+            ok, msg, user = auth_service.register_user(
+                "Pooja Verma", "already@example.com", "mypassword123", "mypassword123"
+            )
+            assert ok is False
+            assert "already exists" in msg
+
+    @patch("requests.post")
+    def test_supabase_signup_weak_password_error(self, mock_post):
+        from frontend.services.auth_service import auth_service
+
+        signup_resp = MagicMock()
+        signup_resp.status_code = 422
+        signup_resp.json.return_value = {"message": "Password should be at least 6 characters"}
+        mock_post.return_value = signup_resp
+
+        def mock_secrets(key, default=""):
+            if key == "SUPABASE_URL":
+                return "https://mock.supabase.co"
+            if key in ("SUPABASE_ANON_KEY", "SUPABASE_KEY"):
+                return "mock-key"
+            return default
+
+        with patch("frontend.services.auth_service.get_env_or_secret", side_effect=mock_secrets):
+            ok, msg, user = auth_service.register_user(
+                "Pooja Verma", "pooja@example.com", "weakpw", "weakpw"
+            )
+            assert ok is False
+            assert "Password requirement" in msg or "Account creation failed" in msg
+
+    @patch("requests.post")
+    def test_supabase_signin_success(self, mock_post):
+        from frontend.services.auth_service import auth_service
+
+        signin_resp = MagicMock()
+        signin_resp.status_code = 200
+        signin_resp.json.return_value = {
+            "user": {
+                "id": "supabase-user-456",
+                "email": "user@example.com",
+                "user_metadata": {"name": "Rohan Sharma"},
+            },
+            "access_token": "token-123",
+        }
+        mock_post.return_value = signin_resp
+
+        def mock_secrets(key, default=""):
+            if key == "SUPABASE_URL":
+                return "https://mock.supabase.co"
+            if key in ("SUPABASE_ANON_KEY", "SUPABASE_KEY"):
+                return "mock-key"
+            return default
+
+        with patch("frontend.services.auth_service.get_env_or_secret", side_effect=mock_secrets):
+            ok, msg, authed = auth_service.authenticate_user("user@example.com", "mypassword123")
+            assert ok is True
+            assert msg == "Signed in successfully!"
+            assert authed["user_id"] == "supabase-user-456"
+            assert authed["name"] == "Rohan Sharma"
+
+    @patch("requests.post")
+    def test_supabase_signin_invalid_credentials(self, mock_post):
+        from frontend.services.auth_service import auth_service
+
+        signin_resp = MagicMock()
+        signin_resp.status_code = 400
+        signin_resp.json.return_value = {"error_description": "Invalid login credentials"}
+        mock_post.return_value = signin_resp
+
+        def mock_secrets(key, default=""):
+            if key == "SUPABASE_URL":
+                return "https://mock.supabase.co"
+            if key in ("SUPABASE_ANON_KEY", "SUPABASE_KEY"):
+                return "mock-key"
+            return default
+
+        with patch("frontend.services.auth_service.get_env_or_secret", side_effect=mock_secrets):
+            ok, msg, _ = auth_service.authenticate_user("user@example.com", "wrongpassword")
+            assert ok is False
+            assert msg == "Incorrect email or password."
+
+    def test_database_auto_creation_when_file_missing(self, tmp_path):
+        from frontend.services.scheme_data import find_db_path, ensure_database_schema, upsert_user_profile_db, get_user_profile_db
+
+        mock_db_file = str(tmp_path / "subdir" / "test_auto.db")
+        # Ensure parent exists
+        (tmp_path / "subdir").mkdir(parents=True, exist_ok=True)
+
+        with patch.dict("os.environ", {"SQLITE_DB_PATH": mock_db_file}):
+            # Before creation, file doesn't exist
+            # find_db_path(create_if_missing=True) should create it
+            path = find_db_path(create_if_missing=True)
+            assert path == mock_db_file
+
+            # ensure_database_schema creates tables
+            assert ensure_database_schema(path) is True
+
+            # Test upsert and get
+            res = upsert_user_profile_db({"user_id": "test-uuid-99", "name": "Auto Citizen", "state": "Delhi"})
+            assert res["ok"] is True
+
+            prof = get_user_profile_db("test-uuid-99")
+            assert prof is not None
+            assert prof["name"] == "Auto Citizen"
+            assert prof["state"] == "Delhi"
+
+
 
 
