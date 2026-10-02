@@ -8,7 +8,8 @@ from frontend.utils.i18n import get_current_language, t
 
 def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
     lang = get_current_language()
-    user_id = st.session_state.get("user_id", "citizen_user_1")
+    is_authenticated = bool(st.session_state.get("is_authenticated", False))
+    user_id = st.session_state.get("user_id", "")
 
     # Back Link button
     back_label = "← " + ("पीछे" if lang == "hi" else "Back")
@@ -36,6 +37,36 @@ def render_saved_schemes(navigate_to: Callable[[str], None]) -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    if not is_authenticated or not user_id:
+        st.markdown(
+            f"""
+            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; max-width: 580px; margin: 2rem auto;">
+                <div style="font-size: 2.2rem; margin-bottom: 10px;">⭐</div>
+                <h3 style="color: #0F172A; font-weight: 700; margin-bottom: 8px;">
+                    {"सहेजी गई योजनाएं देखने के लिए साइन इन करें" if lang == "hi" else "Sign in to view Saved Schemes"}
+                </h3>
+                <p style="color: #64748B; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
+                    {"अपनी बुकमार्क की गई योजनाओं को किसी भी डिवाइस से सुरक्षित रूप से एक्सेस करने के लिए साइन इन करें।" if lang == "hi" else "Sign in to access your bookmarked schemes and manage them securely across devices."}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        col_c1, col_c2, col_c3 = st.columns([1, 2, 1])
+        with col_c2:
+            def on_go_to_signin_saved():
+                st.session_state["auth_redirect_target"] = "saved"
+                navigate_to("profile")
+
+            st.button(
+                "खाते में साइन इन करें" if lang == "hi" else "Sign In to Your Account",
+                type="primary",
+                use_container_width=True,
+                key="saved_signin_btn",
+                on_click=on_go_to_signin_saved,
+            )
+        return
 
     res = api_client.list_saved(user_id=user_id)
     if not res["ok"]:

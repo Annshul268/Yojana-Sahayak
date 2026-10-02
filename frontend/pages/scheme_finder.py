@@ -228,12 +228,15 @@ def handle_auto_fill(
     st.session_state.fill_mode = "autofill"
 
     if prof is None:
-        user_id = st.session_state.get("user_id") or "citizen_user_1"
-        try:
-            res = api_client.get_profile(user_id=user_id)
-            if res and res.get("ok"):
-                prof = res.get("data", {}) or {}
-        except Exception:
+        user_id = st.session_state.get("user_id", "")
+        if user_id:
+            try:
+                res = api_client.get_profile(user_id=user_id)
+                if res and res.get("ok"):
+                    prof = res.get("data", {}) or {}
+            except Exception:
+                prof = {}
+        else:
             prof = {}
 
     if prof:

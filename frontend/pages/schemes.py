@@ -130,7 +130,7 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
     st.markdown("<hr style='border: none; border-top: 1px solid #E5E7EB; margin: 14px 0 20px 0;' />", unsafe_allow_html=True)
 
     # Fetch schemes from backend
-    user_id = st.session_state.get("user_id", "citizen_user_1")
+    user_id = st.session_state.get("user_id", "")
     state_param = selected_state if selected_state != "All States" else None
     level_param = st.session_state.pop("selected_level_filter", None)
 
@@ -143,8 +143,11 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
         page_size=100,
     )
 
-    saved_res = api_client.list_saved(user_id=user_id)
-    saved_ids = {s.get("scheme_id") for s in saved_res["data"]} if saved_res["ok"] else set()
+    saved_ids = set()
+    if user_id:
+        saved_res = api_client.list_saved(user_id=user_id)
+        if saved_res.get("ok"):
+            saved_ids = {s.get("scheme_id") for s in saved_res.get("data", [])}
 
     if not res["ok"]:
         st.error("We couldn't connect to the schemes directory right now. Please verify backend service.")
@@ -160,6 +163,9 @@ def render_schemes_directory(navigate_to: Callable[[str], None]) -> None:
         navigate_to("scheme_details")
 
     def on_save(scheme_id: str):
+        if not user_id:
+            st.toast("Please sign in to save schemes to your account." if lang != "hi" else "योजनाएं सहेजने के लिए कृपया साइन इन करें।")
+            return
         if scheme_id in saved_ids:
             api_client.remove_saved_scheme(scheme_id=scheme_id, user_id=user_id)
             st.toast("Scheme removed from bookmarks")

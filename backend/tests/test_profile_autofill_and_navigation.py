@@ -579,15 +579,20 @@ class TestAuthAwareAutoFillAndReturnFlow:
     @patch("streamlit.columns")
     @patch("streamlit.markdown")
     @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.sign_in")
     @patch("frontend.services.api_client.api_client.get_profile")
     def test_profile_signin_redirects_to_finder_when_profile_exists(
-        self, mock_get_profile, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
+        self, mock_get_profile, mock_sign_in, mock_text_input, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
     ):
         mock_columns.side_effect = lambda spec, *args, **kwargs: [
             MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
         ]
-        # Simulate clicking Sign in as Citizen 1 (Aarav Sharma)
-        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_demo_u1"
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signin"
+        mock_sign_in.return_value = {
+            "ok": True,
+            "data": {"user_id": "real_citizen_101", "name": "Aarav Sharma", "email": "aarav@example.com"},
+        }
         mock_get_profile.return_value = {
             "ok": True,
             "data": {"name": "Aarav Sharma", "state": "Delhi", "age": 25, "gender": "Male"},
@@ -604,22 +609,27 @@ class TestAuthAwareAutoFillAndReturnFlow:
         # Should navigate directly back to finder!
         nav_mock.assert_called_with("finder")
         assert st.session_state.is_authenticated is True
-        assert st.session_state.user_id == "citizen_user_1"
+        assert st.session_state.user_id == "real_citizen_101"
 
     @patch("streamlit.rerun")
     @patch("streamlit.toast")
     @patch("streamlit.columns")
     @patch("streamlit.markdown")
     @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.sign_in")
     @patch("frontend.services.api_client.api_client.get_profile")
     def test_profile_signin_stays_for_new_user_without_profile(
-        self, mock_get_profile, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
+        self, mock_get_profile, mock_sign_in, mock_text_input, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
     ):
         mock_columns.side_effect = lambda spec, *args, **kwargs: [
             MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
         ]
-        # Simulate clicking Sign in as Citizen 2 (Priya Patel with empty profile)
-        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_demo_u2"
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signin"
+        mock_sign_in.return_value = {
+            "ok": True,
+            "data": {"user_id": "new_citizen_202", "name": "Priya Patel", "email": "priya@example.com"},
+        }
         mock_get_profile.return_value = {"ok": True, "data": {}}
 
         st.session_state.clear()
@@ -633,7 +643,37 @@ class TestAuthAwareAutoFillAndReturnFlow:
         nav_mock.assert_not_called()
         mock_rerun.assert_called_once()
         assert st.session_state.is_authenticated is True
-        assert st.session_state.user_id == "citizen_user_2"
+        assert st.session_state.user_id == "new_citizen_202"
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.register_user")
+    def test_profile_signup_flow_creates_authenticated_account(
+        self, mock_register_user, mock_text_input, mock_button, mock_markdown, mock_columns, mock_toast, mock_rerun
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signup"
+        mock_register_user.return_value = {
+            "ok": True,
+            "data": {"user_id": "registered_user_303", "name": "Rahul Kumar", "email": "rahul@example.com"},
+        }
+
+        st.session_state.clear()
+        st.session_state["auth_mode"] = "sign_up"
+
+        nav_mock = MagicMock()
+        render_citizen_profile(nav_mock)
+
+        assert st.session_state.is_authenticated is True
+        assert st.session_state.user_id == "registered_user_303"
+        assert st.session_state.user_name == "Rahul Kumar"
+        mock_rerun.assert_called_once()
 
     @patch("streamlit.rerun")
     def test_guest_manual_fill_does_not_prompt_for_auth(self, mock_rerun):
@@ -646,6 +686,85 @@ class TestAuthAwareAutoFillAndReturnFlow:
         assert st.session_state.questionnaire_step == 1
         assert "autofill_prompt_active" not in st.session_state
         assert "auth_return_page" not in st.session_state
+
+
+class TestAuthServiceValidation:
+    """Tests realistic validation rules in AuthService."""
+
+    def test_auth_service_registration_validation(self):
+        from frontend.services.auth_service import auth_service
+
+        # Empty name
+        ok, msg, _ = auth_service.register_user("", "test@example.com", "pass123", "pass123")
+        assert ok is False
+        assert msg == "Please enter your name."
+
+        # Invalid email
+        ok, msg, _ = auth_service.register_user("User", "invalid-email", "pass123", "pass123")
+        assert ok is False
+        assert msg == "Please enter a valid email address."
+
+        # Empty password
+        ok, msg, _ = auth_service.register_user("User", "user@example.com", "", "")
+        assert ok is False
+        assert msg == "Please enter a password."
+
+        # Short password
+        ok, msg, _ = auth_service.register_user("User", "user@example.com", "123", "123")
+        assert ok is False
+        assert msg == "Password must be at least 6 characters."
+
+        # Passwords mismatch
+        ok, msg, _ = auth_service.register_user("User", "user@example.com", "pass123", "different")
+        assert ok is False
+        assert msg == "Passwords do not match."
+
+    def test_auth_service_login_validation(self):
+        from frontend.services.auth_service import auth_service
+
+        # Invalid email
+        ok, msg, _ = auth_service.authenticate_user("not-an-email", "password123")
+        assert ok is False
+        assert msg == "Please enter a valid email address."
+
+        # Empty password
+        ok, msg, _ = auth_service.authenticate_user("valid@example.com", "")
+        assert ok is False
+        assert msg == "Please enter your password."
+
+        # Non-existent user
+        ok, msg, _ = auth_service.authenticate_user("doesnotexist999@example.com", "password123")
+        assert ok is False
+        assert msg == "Incorrect email or password."
+
+    def test_auth_service_end_to_end_flow(self):
+        import uuid
+        from frontend.services.auth_service import auth_service
+
+        unique_email = f"user_{uuid.uuid4().hex[:8]}@example.com"
+        # 1. Register
+        ok, msg, user = auth_service.register_user("Test Citizen Real", unique_email, "securepass123", "securepass123")
+        assert ok is True
+        assert user["name"] == "Test Citizen Real"
+        assert user["email"] == unique_email
+        assert user["user_id"]
+
+        # 2. Duplicate registration rejected
+        ok, msg, _ = auth_service.register_user("Test Citizen Real", unique_email, "securepass123", "securepass123")
+        assert ok is False
+        assert "already exists" in msg
+
+        # 3. Wrong password rejected
+        ok, msg, _ = auth_service.authenticate_user(unique_email, "wrongpassword")
+        assert ok is False
+        assert msg == "Incorrect email or password."
+
+        # 4. Correct credentials succeed
+        ok, msg, authed = auth_service.authenticate_user(unique_email, "securepass123")
+        assert ok is True
+        assert authed["user_id"] == user["user_id"]
+        assert authed["name"] == "Test Citizen Real"
+
 
 
 

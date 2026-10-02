@@ -99,7 +99,7 @@ def render_scheme_details(navigate_to: Callable[[str], None]) -> None:
     category = scheme.get("category", "")
     ministry = scheme.get("ministry", "Government of India")
     official_url = scheme.get("official_url", "#")
-    user_id = st.session_state.get("user_id", "citizen_user_1")
+    user_id = st.session_state.get("user_id", "")
 
     # Scheme Title & Ministry Header
     st.markdown(

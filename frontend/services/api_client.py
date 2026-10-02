@@ -267,5 +267,16 @@ class APIClient:
     def admin_sync_logs(self) -> Dict[str, Any]:
         return self._request("GET", "/api/admin/sync-logs")
 
+    # Citizen Authentication
+    def sign_in(self, email: str, password: str) -> Dict[str, Any]:
+        from frontend.services.auth_service import auth_service
+        ok, msg, user = auth_service.authenticate_user(email, password)
+        return {"ok": ok, "message": msg, "data": user}
+
+    def register_user(self, name: str, email: str, password: str, confirm_password: str) -> Dict[str, Any]:
+        from frontend.services.auth_service import auth_service
+        ok, msg, user = auth_service.register_user(name, email, password, confirm_password)
+        return {"ok": ok, "message": msg, "data": user}
+
 
 api_client = APIClient()

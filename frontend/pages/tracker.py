@@ -67,23 +67,17 @@ def render_application_tracker(navigate_to: Callable[[str], None]) -> None:
 
         col_c1, col_c2, col_c3 = st.columns([1, 2, 1])
         with col_c2:
-            st.markdown("##### " + ("साइन इन" if lang == "hi" else "Sign In"))
-            c_name = st.text_input("Name", value="Aarav Sharma", key="app_login_name")
-            c_uid = st.text_input("Citizen ID", value="citizen_user_1", key="app_login_uid")
+            def on_go_to_signin_tracker():
+                st.session_state["auth_redirect_target"] = "tracker"
+                navigate_to("profile")
 
-            col_sub1, col_sub2 = st.columns(2, gap="small")
-            with col_sub1:
-                if st.button("Sign In" if lang != "hi" else "साइन इन करें", type="primary", use_container_width=True):
-                    st.session_state.is_authenticated = True
-                    st.session_state.user_id = c_uid or "citizen_user_1"
-                    st.session_state.user_name = c_name or "Citizen"
-                    st.rerun()
-            with col_sub2:
-                if st.button("Sign in as Priya (Demo)", type="secondary", use_container_width=True):
-                    st.session_state.is_authenticated = True
-                    st.session_state.user_id = "citizen_user_2"
-                    st.session_state.user_name = "Priya Patel"
-                    st.rerun()
+            st.button(
+                "खाते में साइन इन करें" if lang == "hi" else "Sign In to Your Account",
+                type="primary",
+                use_container_width=True,
+                key="tracker_signin_btn",
+                on_click=on_go_to_signin_tracker,
+            )
         return
 
     # 2. Retrieve Applications

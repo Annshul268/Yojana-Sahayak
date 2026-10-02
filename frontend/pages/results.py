@@ -27,13 +27,14 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
         return
 
     results = match_data.get("results", [])
-    user_id = st.session_state.get("user_id", "citizen_user_1")
+    user_id = st.session_state.get("user_id", "")
 
     # Fetch saved schemes
-    saved_res = api_client.list_saved(user_id=user_id)
     saved_ids = set()
-    if saved_res["ok"]:
-        saved_ids = {s.get("scheme_id") for s in saved_res["data"]}
+    if user_id:
+        saved_res = api_client.list_saved(user_id=user_id)
+        if saved_res.get("ok"):
+            saved_ids = {s.get("scheme_id") for s in saved_res.get("data", [])}
 
     # Clean Heading
     total_matches = match_data.get("total_schemes_evaluated", len(results))
@@ -115,6 +116,9 @@ def render_results(navigate_to: Callable[[str], None]) -> None:
         navigate_to("scheme_details")
 
     def handle_save(scheme_id: str):
+        if not user_id:
+            st.toast("Please sign in to save schemes to your account." if lang != "hi" else "योजनाएं सहेजने के लिए कृपया साइन इन करें।")
+            return
         if scheme_id in saved_ids:
             api_client.remove_saved_scheme(scheme_id=scheme_id, user_id=user_id)
             st.toast("Removed from bookmarks")
