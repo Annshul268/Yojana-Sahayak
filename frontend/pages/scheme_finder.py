@@ -149,7 +149,16 @@ def store_auth_return_context(
     answers: Optional[Dict[str, Any]] = None,
     mode: str = "autofill",
 ) -> None:
-    """Stores the specific questionnaire context before redirecting to authentication."""
+    """Stores the specific questionnaire context before redirecting to authentication / profile."""
+    context = {
+        "source": "eligibility_autofill",
+        "target_page": "finder",
+        "intent": category,
+        "questionnaire_step": max(1, step),
+        "mode": mode,
+        "answers": dict(answers or {}),
+    }
+    st.session_state["profile_return_context"] = context
     st.session_state["auth_return_page"] = "finder"
     st.session_state["auth_return_category"] = category
     st.session_state["auth_return_step"] = max(1, step)
@@ -159,7 +168,8 @@ def store_auth_return_context(
 
 
 def clear_auth_return_context() -> None:
-    """Safely clears temporary auth return state after it has been consumed."""
+    """Safely clears temporary auth / profile return state after it has been consumed."""
+    st.session_state.pop("profile_return_context", None)
     st.session_state.pop("auth_return_page", None)
     st.session_state.pop("auth_return_category", None)
     st.session_state.pop("auth_return_step", None)
@@ -432,18 +442,20 @@ def render_scheme_finder(navigate_to: Callable[[str], None]) -> None:
     st.session_state.adaptive_answers = st.session_state.eligibility_answers
     answers = st.session_state.eligibility_answers
 
-    # 2. Check if returning from authentication with saved context
-    if st.session_state.get("auth_return_page") == "finder" and st.session_state.get("is_authenticated", False):
+    # 2. Check if returning from authentication / profile with saved context
+    ctx = st.session_state.get("profile_return_context")
+    is_return = (ctx and ctx.get("source") == "eligibility_autofill") or (st.session_state.get("auth_return_page") == "finder")
+    if is_return and st.session_state.get("is_authenticated", False):
         has_profile, prof = get_saved_profile_for_autofill()
         if has_profile:
-            ret_category = st.session_state.get("auth_return_category")
+            ret_category = (ctx.get("intent") if ctx else None) or st.session_state.get("auth_return_category")
             if ret_category:
                 st.session_state.eligibility_answers["intent"] = ret_category
-            ret_answers = st.session_state.get("auth_return_answers") or {}
+            ret_answers = (ctx.get("answers") if ctx else None) or st.session_state.get("auth_return_answers") or {}
             for k, v in ret_answers.items():
                 st.session_state.eligibility_answers[k] = v
             apply_profile_to_answers(prof, st.session_state.eligibility_answers, overwrite=False)
-            ret_step = st.session_state.get("auth_return_step", 1)
+            ret_step = (ctx.get("questionnaire_step") if ctx else None) or st.session_state.get("auth_return_step", 1)
             st.session_state.questionnaire_step = max(1, ret_step)
             st.session_state.fill_mode = "autofill"
             st.session_state["_scroll_to_top_needed"] = True

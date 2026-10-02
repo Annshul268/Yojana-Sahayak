@@ -1,10 +1,32 @@
 """Citizen Profile & Authentication Management View."""
 
-from typing import Callable
+from typing import Any, Callable, Dict, Optional
 import streamlit as st
-from frontend.pages.scheme_finder import INDIAN_STATES, OCCUPATION_OPTIONS, clear_auth_return_context
+from frontend.pages.scheme_finder import (
+    INDIAN_STATES,
+    OCCUPATION_OPTIONS,
+    clear_auth_return_context,
+    apply_profile_to_answers,
+)
 from frontend.services.api_client import api_client
 from frontend.utils.i18n import get_current_language, t
+
+
+def get_profile_return_context() -> Optional[Dict[str, Any]]:
+    """Retrieves extensible profile return context from session state."""
+    ctx = st.session_state.get("profile_return_context")
+    if isinstance(ctx, dict):
+        return ctx
+    if st.session_state.get("auth_return_page") == "finder":
+        return {
+            "source": "eligibility_autofill",
+            "target_page": "finder",
+            "intent": st.session_state.get("auth_return_category"),
+            "questionnaire_step": st.session_state.get("auth_return_step", 1),
+            "mode": st.session_state.get("auth_return_mode", "autofill"),
+            "answers": st.session_state.get("auth_return_answers", {}),
+        }
+    return None
 
 
 def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
@@ -13,14 +35,48 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     user_id = st.session_state.get("user_id", "")
     user_name = st.session_state.get("user_name") or "Citizen"
 
-    def handle_eligibility_return(uid: str, profile_just_saved: bool = False) -> bool:
-        if st.session_state.get("auth_return_page") == "finder":
+    def handle_eligibility_return(uid: str, profile_just_saved: bool = False, saved_profile: Optional[Dict[str, Any]] = None) -> bool:
+        ctx = get_profile_return_context()
+        if ctx and ctx.get("source") == "eligibility_autofill":
             if profile_just_saved:
+                prof_res = api_client.get_profile(user_id=uid) if uid else {}
+                db_data = prof_res.get("data") if prof_res and prof_res.get("ok") else {}
+                p = dict(db_data) if isinstance(db_data, dict) else {}
+                if saved_profile:
+                    p.update({k: v for k, v in saved_profile.items() if v is not None})
+                ret_intent = ctx.get("intent") or st.session_state.get("auth_return_category")
+                if "eligibility_answers" not in st.session_state:
+                    st.session_state.eligibility_answers = {}
+                if ret_intent:
+                    st.session_state.eligibility_answers["intent"] = ret_intent
+                prior_answers = ctx.get("answers") or st.session_state.get("auth_return_answers") or {}
+                for k, v in prior_answers.items():
+                    st.session_state.eligibility_answers[k] = v
+                if p:
+                    apply_profile_to_answers(p, st.session_state.eligibility_answers, overwrite=False)
+                st.session_state.fill_mode = "autofill"
+                st.session_state.questionnaire_step = max(1, ctx.get("questionnaire_step", 1))
+                st.session_state["_scroll_to_top_needed"] = True
+                clear_auth_return_context()
                 navigate_to("finder")
                 return True
+
             res = api_client.get_profile(user_id=uid)
             p = res.get("data") if res and res.get("ok") else None
-            if p and any([p.get("state"), p.get("age"), p.get("gender"), p.get("occupation")]):
+            if p and any([p.get("state"), p.get("age"), p.get("gender"), p.get("occupation"), p.get("annual_income")]):
+                ret_intent = ctx.get("intent") or st.session_state.get("auth_return_category")
+                if "eligibility_answers" not in st.session_state:
+                    st.session_state.eligibility_answers = {}
+                if ret_intent:
+                    st.session_state.eligibility_answers["intent"] = ret_intent
+                prior_answers = ctx.get("answers") or st.session_state.get("auth_return_answers") or {}
+                for k, v in prior_answers.items():
+                    st.session_state.eligibility_answers[k] = v
+                apply_profile_to_answers(p, st.session_state.eligibility_answers, overwrite=False)
+                st.session_state.fill_mode = "autofill"
+                st.session_state.questionnaire_step = max(1, ctx.get("questionnaire_step", 1))
+                st.session_state["_scroll_to_top_needed"] = True
+                clear_auth_return_context()
                 navigate_to("finder")
                 return True
             else:
@@ -33,9 +89,14 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     back_label = "← " + ("पीछे" if lang == "hi" else "Back")
 
     def on_profile_back():
-        if st.session_state.get("auth_return_page") == "finder":
+        ctx = get_profile_return_context()
+        if ctx and ctx.get("source") == "eligibility_autofill":
+            if ctx.get("intent"):
+                st.session_state.pending_category_intent = ctx.get("intent")
+            clear_auth_return_context()
             navigate_to("finder")
             return
+        clear_auth_return_context()
         last_page = st.session_state.get("_last_rendered_page")
         if last_page and last_page not in ("profile", "scheme_details", "admin"):
             navigate_to(last_page)
@@ -61,8 +122,9 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
     )
 
     # Eligibility Return Guidance Banner
-    if st.session_state.get("auth_return_page") == "finder":
-        ret_cat = st.session_state.get("auth_return_category", "").capitalize()
+    ctx = get_profile_return_context()
+    if ctx and ctx.get("source") == "eligibility_autofill":
+        ret_cat = (ctx.get("intent") or st.session_state.get("auth_return_category", "")).capitalize()
         st.markdown(
             f"""
             <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 1.1rem 1.35rem; margin-bottom: 1.5rem;">
@@ -78,6 +140,8 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             unsafe_allow_html=True,
         )
         if st.button("← " + ("बिना प्रोफ़ाइल पात्रता जांच जारी रखें" if lang == "hi" else "Continue Eligibility Manually without Profile"), key="btn_return_manual_from_prof"):
+            if ctx.get("intent"):
+                st.session_state.pending_category_intent = ctx.get("intent")
             clear_auth_return_context()
             navigate_to("finder")
             return
@@ -391,10 +455,14 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             }
             api_client.upsert_profile(updated_data)
             st.session_state.user_name = updated_data["name"]
-            st.toast("Profile saved successfully!")
-            if handle_eligibility_return(user_id, profile_just_saved=True):
+            ctx = get_profile_return_context()
+            if ctx and ctx.get("source") == "eligibility_autofill":
+                handle_eligibility_return(user_id, profile_just_saved=True, saved_profile=updated_data)
                 return
-            st.rerun()
+            else:
+                clear_auth_return_context()
+                navigate_to("home")
+                return
 
     # Subtle Admin Login / Switcher in footer of profile for administrators
     st.markdown("<div style='height: 3rem;'></div>", unsafe_allow_html=True)

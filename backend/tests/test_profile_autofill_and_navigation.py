@@ -1176,5 +1176,239 @@ class TestPersonalEligibilityProfileBehavior:
         assert "field_age" not in st.session_state
 
 
+class TestProfileSaveNavigationRouting:
+    """Verifies that 'Save Profile' routes to Home when opened normally,
+    and returns to the specific Auto Fill questionnaire flow when opened from Auto Fill."""
+
+    def setup_method(self):
+        st.session_state.clear()
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "user_nav_test"
+        st.session_state.user_name = "Test Citizen"
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    @patch("frontend.services.api_client.api_client.upsert_profile")
+    def test_save_profile_from_home_navigates_to_home(
+        self,
+        mock_upsert_profile,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_button.return_value = False
+        mock_form_submit_btn.return_value = True  # User clicks "Save Profile"
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "user_nav_test", "name": "Test Citizen"}}
+        mock_upsert_profile.return_value = {"ok": True}
+
+        # Case 1: Normal opening from Home -> Citizen Profile (no autofill return context)
+        assert "profile_return_context" not in st.session_state
+        assert "auth_return_page" not in st.session_state
+
+        mock_text_input.side_effect = lambda label, *args, **kwargs: "Test Citizen" if "Name" in label or "नाम" in label else ""
+        mock_number_input.side_effect = lambda label, *args, **kwargs: 25 if "Age" in label or "आयु" in label else 200000.0
+        mock_selectbox.side_effect = lambda label, *args, **kwargs: "Delhi" if "State" in label or "राज्य" in label else ("Male" if "Gender" in label or "लिंग" in label else "student")
+        mock_radio.side_effect = lambda label, *args, **kwargs: "Urban"
+        mock_checkbox.side_effect = lambda label, *args, **kwargs: False
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        # Upsert profile was called
+        mock_upsert_profile.assert_called_once()
+        # Navigated to home
+        mock_navigate.assert_called_once_with("home")
+        # Did NOT call rerun
+        mock_rerun.assert_not_called()
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    @patch("frontend.services.api_client.api_client.upsert_profile")
+    def test_save_profile_from_autofill_returns_to_finder(
+        self,
+        mock_upsert_profile,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_button.return_value = False
+        mock_form_submit_btn.return_value = True  # User clicks "Save Profile"
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "user_nav_test", "name": "Test Citizen"}}
+        mock_upsert_profile.return_value = {"ok": True}
+
+        # Case 2: Opened from Auto Fill questionnaire
+        st.session_state.profile_return_context = {
+            "source": "eligibility_autofill",
+            "target_page": "finder",
+            "intent": "agriculture",
+            "questionnaire_step": 2,
+            "mode": "autofill",
+            "answers": {"state": "Punjab"},
+        }
+
+        mock_text_input.side_effect = lambda label, *args, **kwargs: "Test Citizen" if "Name" in label or "नाम" in label else ""
+        mock_number_input.side_effect = lambda label, *args, **kwargs: 35 if "Age" in label or "आयु" in label else 150000.0
+        mock_selectbox.side_effect = lambda label, *args, **kwargs: "Punjab" if "State" in label or "राज्य" in label else ("Male" if "Gender" in label or "लिंग" in label else "farmer")
+        mock_radio.side_effect = lambda label, *args, **kwargs: "Rural"
+        mock_checkbox.side_effect = lambda label, *args, **kwargs: False
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        # Upsert profile was called
+        mock_upsert_profile.assert_called_once()
+        # Must return to "finder" (NOT home)
+        mock_navigate.assert_called_once_with("finder")
+        # Context must be cleared to prevent stale navigation
+        assert "profile_return_context" not in st.session_state
+        # Fill mode set to autofill and intent restored
+        assert st.session_state.get("fill_mode") == "autofill"
+        assert st.session_state.get("questionnaire_step") == 2
+        assert st.session_state["eligibility_answers"].get("intent") == "agriculture"
+        assert st.session_state["eligibility_answers"].get("state") == "Punjab"
+        assert st.session_state["eligibility_answers"].get("age") == 35
+
+    @patch("streamlit.button")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    def test_back_from_autofill_returns_to_finder_without_saving(
+        self,
+        mock_get_profile,
+        mock_markdown,
+        mock_columns,
+        mock_button,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "user_nav_test", "name": "Test Citizen"}}
+
+        # User clicked back button
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "profile_back_btn"
+
+        st.session_state.profile_return_context = {
+            "source": "eligibility_autofill",
+            "target_page": "finder",
+            "intent": "education",
+            "questionnaire_step": 1,
+            "mode": "autofill",
+            "answers": {},
+        }
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        # Returned to finder
+        mock_navigate.assert_called_once_with("finder")
+        # Intent preserved in pending_category_intent
+        assert st.session_state.get("pending_category_intent") == "education"
+        # Context cleared
+        assert "profile_return_context" not in st.session_state
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    @patch("frontend.services.api_client.api_client.upsert_profile")
+    def test_subsequent_profile_save_navigates_to_home_after_autofill_cleared(
+        self,
+        mock_upsert_profile,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_button.return_value = False
+        mock_form_submit_btn.return_value = True
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "user_nav_test", "name": "Test Citizen"}}
+        mock_upsert_profile.return_value = {"ok": True}
+
+        # Clear any prior context
+        st.session_state.pop("profile_return_context", None)
+        st.session_state.pop("auth_return_page", None)
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        mock_navigate.assert_called_once_with("home")
+
+
+
 
 
