@@ -102,39 +102,16 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             )
 
     # 2. Mobile Navigation Bar (visible on screens <= 768px)
+    # Order: [ ☰ MENU ] [ YS LOGO + NAME ] [ FLEXIBLE SPACE ] [ LANGUAGE ] [ SIGN IN ]
     with st.container(key="mobile_nav_wrapper"):
-        col_m_logo, col_m_lang, col_m_menu = st.columns([6.2, 1.6, 2.2], gap="small", vertical_alignment="center")
-
-        with col_m_logo:
-            st.markdown(
-                """
-                <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #1E3A8A; color: white; border-radius: 7px; font-size: 13px; font-weight: 800;">
-                        YS
-                    </span>
-                    <span style="font-size: 1.05rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; white-space: nowrap;">
-                        Yojana Sahayak
-                    </span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with col_m_lang:
-            st.markdown("<div class='nav-globe-wrapper'>", unsafe_allow_html=True)
-            st.button(
-                "",
-                key="mob_nav_lang_btn",
-                icon=":material/language:",
-                help="Change language",
-                use_container_width=True,
-                on_click=on_lang_toggle,
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
+        col_m_menu, col_m_logo, col_m_lang, col_m_auth = st.columns(
+            [1.0, 5.0, 1.0, 1.8],
+            gap="small",
+            vertical_alignment="center",
+        )
 
         with col_m_menu:
-            menu_title = "मेनू" if lang == "hi" else "Menu"
-            with st.popover(menu_title, use_container_width=True):
+            with st.popover("☰", use_container_width=True):
                 st.markdown(
                     f"<div style='font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;'>{'नेविगेशन' if lang == 'hi' else 'Navigation'}</div>",
                     unsafe_allow_html=True,
@@ -172,5 +149,41 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                 if st.button(prof_label, key="mob_menu_profile", use_container_width=True, type="primary" if cur_page == "profile" else "secondary"):
                     if navigate_to:
                         navigate_to("profile")
+
+        with col_m_logo:
+            st.markdown(
+                """
+                <div class="mob-brand-box" style="display: flex; align-items: center; gap: 7px; cursor: pointer;">
+                    <span class="mob-logo-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #1E3A8A; color: white; border-radius: 7px; font-size: 13px; font-weight: 800; flex-shrink: 0;">
+                        YS
+                    </span>
+                    <span class="mob-logo-title" style="font-size: 1.02rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; white-space: nowrap;">
+                        Yojana Sahayak
+                    </span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with col_m_lang:
+            st.markdown("<div class='nav-globe-wrapper'>", unsafe_allow_html=True)
+            st.button(
+                "",
+                key="mob_nav_lang_btn",
+                icon=":material/language:",
+                help="Change language",
+                use_container_width=True,
+                on_click=on_lang_toggle,
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_m_auth:
+            st.button(
+                auth_label,
+                key="mob_nav_auth_btn",
+                type=btn_type,
+                use_container_width=True,
+                on_click=on_nav_auth,
+            )
 
     st.markdown("<hr style='border: none; border-top: 1px solid #E2E8F0; margin: 0.5rem 0 1rem 0;' />", unsafe_allow_html=True)
