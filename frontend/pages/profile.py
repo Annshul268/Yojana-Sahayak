@@ -201,6 +201,7 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                             return
                         else:
                             st.session_state["home_scroll_to_top"] = True
+                            st.session_state["scroll_home_to_top"] = True
                             navigate_to("home")
                             return
 
@@ -336,6 +337,8 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
             st.session_state.pop("eligibility_profile", None)
             st.session_state.pop("finder_answers", None)
             st.session_state.pop("pending_category_intent", None)
+            st.session_state.pop("home_scroll_to_top", None)
+            st.session_state.pop("scroll_home_to_top", None)
             for k in list(st.session_state.keys()):
                 if k.startswith("field_") or k.startswith("auth_"):
                     st.session_state.pop(k, None)
@@ -464,6 +467,8 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                 return
             else:
                 clear_auth_return_context()
+                st.session_state["home_scroll_to_top"] = True
+                st.session_state["scroll_home_to_top"] = True
                 navigate_to("home")
                 return
 

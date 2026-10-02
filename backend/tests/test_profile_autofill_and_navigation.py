@@ -1242,8 +1242,10 @@ class TestProfileSaveNavigationRouting:
 
         # Upsert profile was called
         mock_upsert_profile.assert_called_once()
-        # Navigated to home
+        # Navigated to home and requested scroll to top
         mock_navigate.assert_called_once_with("home")
+        assert st.session_state.get("home_scroll_to_top") is True
+        assert st.session_state.get("scroll_home_to_top") is True
         # Did NOT call rerun
         mock_rerun.assert_not_called()
 
@@ -1313,6 +1315,8 @@ class TestProfileSaveNavigationRouting:
         mock_navigate.assert_called_once_with("finder")
         # Context must be cleared to prevent stale navigation
         assert "profile_return_context" not in st.session_state
+        assert "home_scroll_to_top" not in st.session_state
+        assert "scroll_home_to_top" not in st.session_state
         # Fill mode set to autofill and intent restored
         assert st.session_state.get("fill_mode") == "autofill"
         assert st.session_state.get("questionnaire_step") == 2

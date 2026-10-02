@@ -14,8 +14,10 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
     if st.session_state.get("current_page", "home") != "home":
         return
 
-    # One-time scroll to top consumption after successful Sign In
-    should_scroll_to_top = bool(st.session_state.pop("home_scroll_to_top", False))
+    # One-time scroll to top consumption after successful Sign In or Save Profile
+    flag_home = st.session_state.pop("home_scroll_to_top", False)
+    flag_scroll = st.session_state.pop("scroll_home_to_top", False)
+    should_scroll_to_top = bool(flag_home or flag_scroll)
 
     # Top anchor element for home viewport scrolling
     st.markdown(

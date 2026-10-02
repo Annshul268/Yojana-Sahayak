@@ -481,5 +481,149 @@ class TestPostLoginHomeScrollNavigation:
         assert st.session_state.get("home_scroll_to_top") is True
         mock_navigate.assert_called_once_with("home")
 
+    @patch("frontend.pages.home.inject_home_scroll_to_top")
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    @patch("frontend.services.api_client.api_client.upsert_profile")
+    def test_normal_profile_save_scrolls_home_to_top_end_to_end(
+        self,
+        mock_upsert_profile,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+        mock_inject_home_scroll,
+    ):
+        from frontend.pages.profile import render_citizen_profile
+        from frontend.pages.home import render_home
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_button.return_value = False
+        mock_form_submit_btn.return_value = True  # User clicks "Save Profile"
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "usr_999", "name": "Deepak"}}
+        mock_upsert_profile.return_value = {"ok": True}
+
+        # User is authenticated on Profile page normally (not from autofill)
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "usr_999"
+        st.session_state.current_page = "profile"
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        # 1. Normal profile save navigated to home
+        mock_navigate.assert_called_once_with("home")
+        # 2. Scroll flags are set
+        assert st.session_state.get("home_scroll_to_top") is True
+        assert st.session_state.get("scroll_home_to_top") is True
+
+        # 3. Next: Home renders
+        st.session_state.current_page = "home"
+        render_home(mock_navigate)
+
+        # 4. Scroll-to-top was injected strictly for Home
+        mock_inject_home_scroll.assert_called_once_with(anchor_id="home-top")
+        # 5. Flag was consumed
+        assert "home_scroll_to_top" not in st.session_state
+        assert "scroll_home_to_top" not in st.session_state
+
+        # 6. User scrolls down Home and normal rerun occurs
+        mock_inject_home_scroll.reset_mock()
+        render_home(mock_navigate)
+        # Must NOT re-trigger scroll
+        mock_inject_home_scroll.assert_not_called()
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("streamlit.number_input")
+    @patch("streamlit.selectbox")
+    @patch("streamlit.radio")
+    @patch("streamlit.checkbox")
+    @patch("streamlit.form")
+    @patch("streamlit.form_submit_button")
+    @patch("frontend.services.api_client.api_client.get_profile")
+    @patch("frontend.services.api_client.api_client.upsert_profile")
+    def test_autofill_profile_save_does_not_set_home_scroll_and_returns_to_finder(
+        self,
+        mock_upsert_profile,
+        mock_get_profile,
+        mock_form_submit_btn,
+        mock_form,
+        mock_checkbox,
+        mock_radio,
+        mock_selectbox,
+        mock_number_input,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        from frontend.pages.profile import render_citizen_profile
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_form.return_value.__enter__ = MagicMock()
+        mock_form.return_value.__exit__ = MagicMock()
+        mock_button.return_value = False
+        mock_form_submit_btn.return_value = True  # User clicks "Save Profile"
+        mock_get_profile.return_value = {"ok": True, "data": {"user_id": "usr_999", "name": "Deepak"}}
+        mock_upsert_profile.return_value = {"ok": True}
+
+        # User opened Profile from Auto Fill
+        st.session_state.is_authenticated = True
+        st.session_state.user_id = "usr_999"
+        st.session_state.current_page = "profile"
+        st.session_state.profile_return_context = {
+            "source": "eligibility_autofill",
+            "target_page": "finder",
+            "intent": "agriculture",
+            "questionnaire_step": 1,
+            "mode": "autofill",
+            "answers": {},
+        }
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        # 1. Navigated back to finder (NOT home)
+        mock_navigate.assert_called_once_with("finder")
+        # 2. Home scroll flags must NEVER be set
+        assert "home_scroll_to_top" not in st.session_state
+        assert "scroll_home_to_top" not in st.session_state
+        # 3. Return context was consumed and cleared
+        assert "profile_return_context" not in st.session_state
+
+
 
 
