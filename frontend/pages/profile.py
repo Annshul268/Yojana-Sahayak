@@ -196,10 +196,13 @@ def render_citizen_profile(navigate_to: Callable[[str], None]) -> None:
                         if handle_eligibility_return(st.session_state.user_id):
                             return
                         target = st.session_state.pop("auth_redirect_target", None)
-                        if target:
+                        if target and target != "home":
                             navigate_to(target)
+                            return
                         else:
-                            st.rerun()
+                            st.session_state["home_scroll_to_top"] = True
+                            navigate_to("home")
+                            return
 
                 st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
                 st.markdown(

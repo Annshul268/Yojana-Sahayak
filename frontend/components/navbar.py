@@ -86,6 +86,8 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
             btn_type = "primary" if not is_logged_in else "secondary"
             def on_nav_auth():
                 if navigate_to:
+                    if not is_logged_in and cur_page == "home":
+                        st.session_state["auth_redirect_target"] = "home"
                     navigate_to("profile")
 
             st.button(
@@ -139,6 +141,8 @@ def render_navbar(navigate_to: Optional[Callable[[str], None]] = None) -> None:
                 prof_label = user_name if (is_logged_in and user_name) else ("साइन इन" if lang == "hi" else "Sign In")
                 if st.button(prof_label, key="mob_menu_profile", use_container_width=True, type="primary" if cur_page == "profile" else "secondary"):
                     if navigate_to:
+                        if not is_logged_in and cur_page == "home":
+                            st.session_state["auth_redirect_target"] = "home"
                         navigate_to("profile")
 
         with col_m_logo:

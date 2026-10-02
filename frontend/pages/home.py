@@ -7,11 +7,21 @@ from frontend.pages.scheme_finder import reset_eligibility_session
 from frontend.services.api_client import api_client
 from frontend.services.scheme_data import get_featured_schemes_db, get_live_db_statistics
 from frontend.utils.i18n import get_current_language
+from frontend.utils.ui import inject_home_scroll_to_top
 
 
 def render_home(navigate_to: Callable[[str], None]) -> None:
     if st.session_state.get("current_page", "home") != "home":
         return
+
+    # One-time scroll to top consumption after successful Sign In
+    should_scroll_to_top = bool(st.session_state.pop("home_scroll_to_top", False))
+
+    # Top anchor element for home viewport scrolling
+    st.markdown(
+        '<div id="home-top" style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; opacity: 0; pointer-events: none;"></div>',
+        unsafe_allow_html=True,
+    )
 
     lang = get_current_language()
 
@@ -456,3 +466,8 @@ def render_home(navigate_to: Callable[[str], None]) -> None:
                 """,
                 unsafe_allow_html=True,
             )
+
+    # Reset viewport scroll position strictly after Home page elements have rendered
+    if should_scroll_to_top:
+        inject_home_scroll_to_top(anchor_id="home-top")
+

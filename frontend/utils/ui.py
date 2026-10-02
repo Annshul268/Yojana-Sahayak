@@ -117,6 +117,7 @@ def get_scheme_details_scroll_js(anchor_id: str = "scheme-detail-top") -> str:
 
                 // 2. Scroll anchor element into view if present
                 const anchor = doc.getElementById('{anchor_id}') ||
+                               doc.getElementById('home-top') ||
                                doc.getElementById('scheme-detail-top') ||
                                doc.querySelector('.main .block-container') ||
                                doc.querySelector('[data-testid="stAppViewContainer"]');
@@ -233,4 +234,21 @@ def inject_scheme_details_scroll_to_top(anchor_id: str = "scheme-detail-top") ->
             pass
     # Fallback only if st.html is unavailable
     components.html(html_code, height=0, width=0)
+
+
+def inject_home_scroll_to_top(anchor_id: str = "home-top") -> None:
+    """Injects client-side script using Streamlit's native st.html to reset viewport scroll position to the top of Home page.
+    
+    Executes directly in the main document to ensure standard Streamlit containers and window reset to 0.
+    """
+    html_code = get_scheme_details_scroll_js(anchor_id=anchor_id)
+    if hasattr(st, "html"):
+        try:
+            st.html(html_code, unsafe_allow_javascript=True)
+            return
+        except Exception:
+            pass
+    # Fallback only if st.html is unavailable
+    components.html(html_code, height=0, width=0)
+
 

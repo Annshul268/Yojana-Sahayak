@@ -1,7 +1,8 @@
 """Tests for client-side viewport scroll positioning on questionnaire navigation."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import pytest
+import streamlit as st
 from frontend.services.questionnaire_engine import questionnaire_engine
 from frontend.utils.ui import get_scroll_to_top_js, inject_scroll_to_top
 
@@ -63,6 +64,18 @@ class TestScrollToTopUtilities:
         args, kwargs = mock_st_html.call_args
         assert kwargs.get("unsafe_allow_javascript") is True
         assert "scheme-detail-top" in args[0]
+
+    @patch("streamlit.html")
+    @patch("streamlit.components.v1.html")
+    def test_inject_home_scroll_to_top_uses_st_html(self, mock_components_html, mock_st_html):
+        from frontend.utils.ui import inject_home_scroll_to_top
+        inject_home_scroll_to_top(anchor_id="home-top")
+        assert mock_st_html.called
+        assert not mock_components_html.called
+        args, kwargs = mock_st_html.call_args
+        assert kwargs.get("unsafe_allow_javascript") is True
+        assert "home-top" in args[0]
+
 
 
 class TestScrollNavigationStateLogic:
@@ -291,5 +304,182 @@ class TestResultsBackNavigation:
             step = min(step, max(0, len(active_groups) - 1)) if active_groups else 0
 
         assert step == 0
+
+
+class TestPostLoginHomeScrollNavigation:
+    """Verifies that successful Sign In marks home_scroll_to_top = True,
+    and Home consumes the flag strictly once to scroll to the top."""
+
+    def setup_method(self):
+        st.session_state.clear()
+        st.session_state.current_page = "home"
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.sign_in")
+    def test_successful_sign_in_navigates_to_home_with_scroll_flag(
+        self,
+        mock_sign_in,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        from frontend.pages.profile import render_citizen_profile
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        # Simulate user filling in email/password and clicking Sign In button
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signin"
+        mock_text_input.side_effect = lambda label, *args, **kwargs: "user@example.com" if "Email" in label or "ईमेल" in label else "pass123"
+        mock_sign_in.return_value = {
+            "ok": True,
+            "data": {"user_id": "usr_test_123", "name": "Rahul Verma", "email": "user@example.com"},
+        }
+
+        st.session_state.is_authenticated = False
+        st.session_state.current_page = "profile"
+        st.session_state.auth_redirect_target = "home"
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        assert st.session_state.is_authenticated is True
+        assert st.session_state.user_name == "Rahul Verma"
+        # Must mark home_scroll_to_top = True
+        assert st.session_state.get("home_scroll_to_top") is True
+        # Must navigate to "home"
+        mock_navigate.assert_called_once_with("home")
+
+    @patch("frontend.pages.home.inject_home_scroll_to_top")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    def test_home_consumes_scroll_flag_once_and_resets(
+        self,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_inject_home_scroll,
+    ):
+        from frontend.pages.home import render_home
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.return_value = False
+
+        st.session_state.current_page = "home"
+        st.session_state.home_scroll_to_top = True
+
+        mock_navigate = MagicMock()
+        render_home(mock_navigate)
+
+        # 1. Scroll-to-top was injected for home-top
+        mock_inject_home_scroll.assert_called_once_with(anchor_id="home-top")
+        # 2. Flag was consumed (popped)
+        assert "home_scroll_to_top" not in st.session_state
+        assert st.session_state.get("home_scroll_to_top") is None
+
+        # 3. Subsequent normal render / rerun: flag is no longer present
+        mock_inject_home_scroll.reset_mock()
+        render_home(mock_navigate)
+
+        # Must NOT inject scroll-to-top again (user can scroll freely without being forced back to top)
+        mock_inject_home_scroll.assert_not_called()
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.sign_in")
+    def test_sign_in_from_other_pages_does_not_set_home_scroll_flag(
+        self,
+        mock_sign_in,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        from frontend.pages.profile import render_citizen_profile
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signin"
+        mock_text_input.side_effect = lambda label, *args, **kwargs: "user@example.com" if "Email" in label or "ईमेल" in label else "pass123"
+        mock_sign_in.return_value = {
+            "ok": True,
+            "data": {"user_id": "usr_test_123", "name": "Rahul Verma", "email": "user@example.com"},
+        }
+
+        # User clicked sign in from Tracker
+        st.session_state.is_authenticated = False
+        st.session_state.current_page = "profile"
+        st.session_state.auth_redirect_target = "tracker"
+
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        assert st.session_state.is_authenticated is True
+        # Must navigate to "tracker"
+        mock_navigate.assert_called_once_with("tracker")
+        # home_scroll_to_top must NOT be set
+        assert "home_scroll_to_top" not in st.session_state
+
+    @patch("streamlit.rerun")
+    @patch("streamlit.toast")
+    @patch("streamlit.columns")
+    @patch("streamlit.markdown")
+    @patch("streamlit.button")
+    @patch("streamlit.text_input")
+    @patch("frontend.services.api_client.api_client.sign_in")
+    def test_logout_and_sign_in_again_resets_home_scroll_flag(
+        self,
+        mock_sign_in,
+        mock_text_input,
+        mock_button,
+        mock_markdown,
+        mock_columns,
+        mock_toast,
+        mock_rerun,
+    ):
+        from frontend.pages.profile import render_citizen_profile
+
+        mock_columns.side_effect = lambda spec, *args, **kwargs: [
+            MagicMock() for _ in range(len(spec) if isinstance(spec, (list, tuple)) else int(spec))
+        ]
+        mock_text_input.side_effect = lambda label, *args, **kwargs: "user@example.com" if "Email" in label or "ईमेल" in label else "pass123"
+        mock_sign_in.return_value = {
+            "ok": True,
+            "data": {"user_id": "usr_test_123", "name": "Rahul Verma", "email": "user@example.com"},
+        }
+
+        # First: simulate user was logged in, then logged out
+        st.session_state.is_authenticated = False
+        st.session_state.user_id = ""
+        st.session_state.current_page = "profile"
+        st.session_state.auth_redirect_target = "home"
+
+        # Now sign in again
+        mock_button.side_effect = lambda *args, **kwargs: kwargs.get("key") == "btn_auth_signin"
+        mock_navigate = MagicMock()
+        render_citizen_profile(mock_navigate)
+
+        assert st.session_state.is_authenticated is True
+        assert st.session_state.get("home_scroll_to_top") is True
+        mock_navigate.assert_called_once_with("home")
+
 
 
